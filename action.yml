@@ -223,7 +223,9 @@ runs:
         body="$(render_template "$PR_BODY_TEMPLATE")"
 
         {
-          echo "title=$title"
+          echo 'title<<__CHANGEWRITE_PR_TITLE__'
+          printf '%s\n' "$title"
+          echo '__CHANGEWRITE_PR_TITLE__'
           echo 'body<<__CHANGEWRITE_PR_BODY__'
           printf '%s\n' "$body"
           echo '__CHANGEWRITE_PR_BODY__'

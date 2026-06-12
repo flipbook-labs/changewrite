@@ -76,6 +76,7 @@ jobs:
           path: build/changewrite
 
   release:
+    needs: build
     if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'debug:release-pr')
     runs-on: ubuntu-latest
     timeout-minutes: 10
