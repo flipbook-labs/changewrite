@@ -175,6 +175,7 @@ runs:
         # workflow files, even for tag pushes. Switch the remote to GITHUB_TOKEN
         # (which doesn't carry that restriction) for the tag push only; gh CLI
         # calls continue to use the app token via GH_TOKEN.
+        git config --local --unset-all "http.https://github.com/.extraheader" || true
         git remote set-url origin "https://x-access-token:${GIT_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
         "$GITHUB_ACTION_PATH/build/changewrite" draft --version "${{ steps.gate.outputs.version }}"
         echo "draft_created=true" >> "$GITHUB_OUTPUT"
