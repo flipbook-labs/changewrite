@@ -74,6 +74,28 @@ inputs:
     description: Prepare the publish PR without drafting or publishing a release.
     required: false
     default: "false"
+  post-draft-hook:
+    description: >-
+      Bash run after the draft release is created, before it is published. Use it
+      to attach build artifacts so they ship with the release without a separate
+      job. Receives CHANGEWRITE_VERSION, CHANGEWRITE_TAG, CHANGEWRITE_BIN, and
+      GH_TOKEN in the environment. Security: this value is spliced into a shell
+      script, so it must be a static literal. Never interpolate untrusted
+      ${{ }} expressions (e.g. event titles, branch names) into it; read such
+      values from the environment inside the hook instead.
+    required: false
+    default: ""
+  post-publish-hook:
+    description: >-
+      Bash run after the GitHub release is published. Use it to announce the
+      release, push to a registry, or trigger downstream work. Receives
+      CHANGEWRITE_VERSION, CHANGEWRITE_TAG, CHANGEWRITE_BIN, and GH_TOKEN in the
+      environment. Security: this value is spliced into a shell script, so it
+      must be a static literal. Never interpolate untrusted ${{ }} expressions
+      (e.g. event titles, branch names) into it; read such values from the
+      environment inside the hook instead.
+    required: false
+    default: ""
 
 outputs:
   should_publish:
@@ -151,6 +173,16 @@ runs:
         "$GITHUB_ACTION_PATH/build/changewrite" draft --version "${{ steps.gate.outputs.version }}"
         echo "draft_created=true" >> "$GITHUB_OUTPUT"
 
+    - name: Run post-draft hook
+      if: steps.draft.outputs.draft_created == 'true' && inputs.post-draft-hook != ''
+      shell: bash
+      env:
+        GH_TOKEN: ${{ steps.app-token.outputs.token || inputs.github-token }}
+        CHANGEWRITE_VERSION: ${{ steps.gate.outputs.version }}
+        CHANGEWRITE_TAG: v${{ steps.gate.outputs.version }}
+        CHANGEWRITE_BIN: ${{ github.action_path }}/build/changewrite
+      run: ${{ inputs.post-draft-hook }}
+
     - name: Publish release
       id: publish
       if: steps.gate.outputs.should_publish == 'true' && inputs.publish-immediately == 'true' && inputs.prepare-only != 'true'
@@ -161,6 +193,16 @@ runs:
         set -euo pipefail
         "$GITHUB_ACTION_PATH/build/changewrite" publish --tag "v${{ steps.gate.outputs.version }}"
         echo "release_created=true" >> "$GITHUB_OUTPUT"
+
+    - name: Run post-publish hook
+      if: steps.publish.outputs.release_created == 'true' && inputs.post-publish-hook != ''
+      shell: bash
+      env:
+        GH_TOKEN: ${{ steps.app-token.outputs.token || inputs.github-token }}
+        CHANGEWRITE_VERSION: ${{ steps.gate.outputs.version }}
+        CHANGEWRITE_TAG: v${{ steps.gate.outputs.version }}
+        CHANGEWRITE_BIN: ${{ github.action_path }}/build/changewrite
+      run: ${{ inputs.post-publish-hook }}
 
     - name: Prepare release changes
       id: prepare
