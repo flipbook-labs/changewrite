@@ -4,7 +4,7 @@ local getCurrentVersion = require("@root/release/getCurrentVersion")
 local renderReleaseNotes = require("@root/release/renderReleaseNotes")
 local types = require("@root/cli/types")
 
-local title = "release notes"
+local title = "notes"
 local summary = "Print the Markdown notes for a version (the body of its GitHub release)."
 
 local parser = cli.parser()

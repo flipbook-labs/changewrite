@@ -13,7 +13,7 @@ local run = FlipbookBatteries.run
 
 type VersionComponent = getNextVersion.VersionComponent
 
-local title = "release prepare-pr"
+local title = "prepare-pr"
 local summary = "Bump the version and regenerate the changelog for the next release."
 
 local parser = cli.parser()

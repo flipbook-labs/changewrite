@@ -13,7 +13,7 @@ local types = require("@root/cli/types")
 
 local run = FlipbookBatteries.run
 
-local title = "release draft"
+local title = "draft"
 local summary = "Tag the current version and open a draft GitHub release with generated notes."
 
 local parser = cli.parser()

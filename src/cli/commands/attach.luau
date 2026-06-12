@@ -4,7 +4,7 @@ local process = require("@std/process")
 local config = require("@root/config")
 local types = require("@root/cli/types")
 
-local title = "release attach"
+local title = "attach"
 local summary = "Upload build artifacts to the draft GitHub release for a tag."
 
 local parser = cli.parser()

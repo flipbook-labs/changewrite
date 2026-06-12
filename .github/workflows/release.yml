@@ -66,8 +66,8 @@ jobs:
           name: asset-${{ matrix.os }}
           path: ${{ matrix.zip_name }}
 
-      # The Linux binary is reused by the jobs below to run the release
-      # subcommands, so upload it unzipped for them to download.
+      # The Linux binary is reused by the jobs below to run the changewrite
+      # commands, so upload it unzipped for them to download.
       - name: Upload runnable CLI
         if: matrix.os == 'linux'
         uses: actions/upload-artifact@v7
@@ -98,7 +98,7 @@ jobs:
         run: |
           set -euo pipefail
           chmod +x changewrite
-          result="$(./changewrite release gate ${{ inputs.force_publish && '--force-publish' || '' }})"
+          result="$(./changewrite gate ${{ inputs.force_publish && '--force-publish' || '' }})"
           echo "$result"
           jq -r 'to_entries[] | "\(.key)=\(.value)"' <<< "$result" >> "$GITHUB_OUTPUT"
 
@@ -126,7 +126,7 @@ jobs:
       - name: Tag and draft release
         run: |
           chmod +x changewrite
-          ./changewrite release draft --version "${{ needs.gate.outputs.version }}"
+          ./changewrite draft --version "${{ needs.gate.outputs.version }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -155,7 +155,7 @@ jobs:
       - name: Attach assets to draft release
         run: |
           chmod +x changewrite
-          ./changewrite release attach --tag "v${{ needs.gate.outputs.version }}" --files assets/*.zip
+          ./changewrite attach --tag "v${{ needs.gate.outputs.version }}" --files assets/*.zip
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -177,7 +177,7 @@ jobs:
       - name: Publish release
         run: |
           chmod +x changewrite
-          ./changewrite release publish --tag "v${{ needs.gate.outputs.version }}"
+          ./changewrite publish --tag "v${{ needs.gate.outputs.version }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -237,9 +237,9 @@ jobs:
         run: |
           set -euo pipefail
           chmod +x changewrite
-          result="$(./changewrite release prepare-pr)"
+          result="$(./changewrite prepare-pr)"
           echo "$result"
-          # `release prepare-pr` shells out to git-cliff, whose command echo lands
+          # `prepare-pr` shells out to git-cliff, whose command echo lands
           # on stdout ahead of the JSON result; keep only the final JSON line.
           jq -r 'to_entries[] | "\(.key)=\(.value)"' <<< "$(tail -n1 <<< "$result")" >> "$GITHUB_OUTPUT"
 
@@ -249,7 +249,7 @@ jobs:
           set -euo pipefail
           {
             echo 'body<<__RELEASE_NOTES_EOF__'
-            ./changewrite release notes --version "${{ steps.prepare.outputs.version }}"
+            ./changewrite notes --version "${{ steps.prepare.outputs.version }}"
             echo '__RELEASE_NOTES_EOF__'
           } >> "$GITHUB_OUTPUT"
 

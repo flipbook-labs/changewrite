@@ -2,7 +2,7 @@
 -- version, whether it's been tagged, and how many commits sit on top of that
 -- tag) it decides whether this run should publish the current version or leave
 -- it for a future publish PR. Kept free of IO so it can be unit tested; the
--- `release gate` command feeds it real git queries.
+-- `gate` command feeds it real git queries.
 
 export type GateInput = {
 	-- The version currently in the configured source of truth.

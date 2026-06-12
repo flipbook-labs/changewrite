@@ -93,7 +93,7 @@ runs:
       run: |
         set -euo pipefail
 
-        args=(release gate)
+        args=(gate)
         if [[ "$FORCE_PUBLISH" == "true" ]]; then
           args+=(--force-publish)
         fi
@@ -113,7 +113,7 @@ runs:
         GH_TOKEN: ${{ steps.app-token.outputs.token || inputs.github-token }}
       run: |
         set -euo pipefail
-        "$GITHUB_ACTION_PATH/build/changewrite" release draft --version "${{ steps.gate.outputs.version }}"
+        "$GITHUB_ACTION_PATH/build/changewrite" draft --version "${{ steps.gate.outputs.version }}"
         echo "draft_created=true" >> "$GITHUB_OUTPUT"
 
     - name: Publish release
@@ -124,7 +124,7 @@ runs:
         GH_TOKEN: ${{ steps.app-token.outputs.token || inputs.github-token }}
       run: |
         set -euo pipefail
-        "$GITHUB_ACTION_PATH/build/changewrite" release publish --tag "v${{ steps.gate.outputs.version }}"
+        "$GITHUB_ACTION_PATH/build/changewrite" publish --tag "v${{ steps.gate.outputs.version }}"
         echo "release_created=true" >> "$GITHUB_OUTPUT"
 
     - name: Prepare release changes
@@ -135,7 +135,7 @@ runs:
         BUMP: ${{ inputs.bump }}
       run: |
         set -euo pipefail
-        result="$("$GITHUB_ACTION_PATH/build/changewrite" release prepare-pr --bump "$BUMP")"
+        result="$("$GITHUB_ACTION_PATH/build/changewrite" prepare-pr --bump "$BUMP")"
         echo "$result"
         json="$(tail -n1 <<< "$result")"
 
@@ -155,7 +155,7 @@ runs:
         set -euo pipefail
         {
           echo 'body<<__CHANGEWRITE_NOTES__'
-          "$GITHUB_ACTION_PATH/build/changewrite" release notes --version "${{ steps.prepare.outputs.version }}"
+          "$GITHUB_ACTION_PATH/build/changewrite" notes --version "${{ steps.prepare.outputs.version }}"
           echo '__CHANGEWRITE_NOTES__'
         } >> "$GITHUB_OUTPUT"
 

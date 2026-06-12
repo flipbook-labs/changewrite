@@ -31,7 +31,7 @@ When `pattern` is omitted, changewrite auto-detects common manifests:
 - `package.json`
 - `loom.config.luau`
 
-You can also keep `changewrite.toml` as the source of truth and mirror the bumped version into other files during `release prepare-pr`:
+You can also keep `changewrite.toml` as the source of truth and mirror the bumped version into other files during `prepare-pr`:
 
 ```toml
 [version]
@@ -45,12 +45,12 @@ mirror = [
 ## CLI
 
 ```sh
-changewrite release gate
-changewrite release draft --version 1.2.0
-changewrite release publish --tag v1.2.0
-changewrite release attach --tag v1.2.0 --files changewrite-linux-x86_64.zip
-changewrite release prepare-pr --bump minor
-changewrite release notes --version 1.2.0
+changewrite gate
+changewrite draft --version 1.2.0
+changewrite publish --tag v1.2.0
+changewrite attach --tag v1.2.0 --files changewrite-linux-x86_64.zip
+changewrite prepare-pr --bump minor
+changewrite notes --version 1.2.0
 ```
 
 Command path overrides:
@@ -163,11 +163,11 @@ jobs:
 
       - run: rokit add --global flipbook-labs/changewrite@0.1.0
 
-      - run: changewrite release attach --tag "${{ needs.release.outputs.tag }}" --files assets/*.zip
+      - run: changewrite attach --tag "${{ needs.release.outputs.tag }}" --files assets/*.zip
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: changewrite release publish --tag "${{ needs.release.outputs.tag }}"
+      - run: changewrite publish --tag "${{ needs.release.outputs.tag }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```

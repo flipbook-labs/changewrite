@@ -7,7 +7,7 @@ local evaluateReleaseGate = require("@root/release/evaluateReleaseGate")
 local getCurrentVersion = require("@root/release/getCurrentVersion")
 local types = require("@root/cli/types")
 
-local title = "release gate"
+local title = "gate"
 local summary = "Decide whether to publish the current version or prepare the next one."
 
 local parser = cli.parser()
