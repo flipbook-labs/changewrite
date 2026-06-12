@@ -90,7 +90,7 @@ jobs:
       tag: ${{ steps.changewrite.outputs.tag }}
     concurrency:
       group: release-pr-${{ github.ref }}
-      cancel-in-progress: true
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     steps:
       - name: Generate app token
         id: app-token
