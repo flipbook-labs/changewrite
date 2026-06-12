@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: CompeyDev/setup-rokit@v0.2.1
+        with:
+          version: v1.2.0
+
+      - name: Install dependencies
+        run: lute run install
+
+      - name: Build changewrite
+        run: lute run build
+
+      - name: Smoketest
+        run: ./build/changewrite --help
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: CompeyDev/setup-rokit@v0.2.1
+        with:
+          version: v1.2.0
+
+      - name: Install dependencies
+        run: lute run install
+
+      - name: Test
+        run: lute test
+
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: CompeyDev/setup-rokit@v0.2.1
+        with:
+          version: v1.2.0
+
+      - name: Setup Lute typedefs
+        run: lute setup
+
+      - name: Install dependencies
+        run: lute run install
+
+      - name: Analyze
+        run: lute run analyze

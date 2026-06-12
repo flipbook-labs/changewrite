@@ -1,0 +1,299 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [
+        opened,
+        synchronize,
+        reopened,
+        # We include `labeled` so that tagging the PR with `debug:release-pr`
+        # will trigger a debug version of the release workflow.
+        labeled,
+      ]
+  workflow_dispatch:
+    inputs:
+      force_publish:
+        description: Tag and create draft release from version on `main`
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    name: build (${{ matrix.os }})
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'debug:release-pr')
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    # The Windows build currently fails on a Lute-adjacent issue we still
+    # need to work out. Tolerate it for now so its artifact is omitted
+    # rather than blocking the release.
+    continue-on-error: ${{ matrix.os == 'windows' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos
+            runner: macos-latest
+            zip_name: changewrite-macos-arm64.zip
+          - os: linux
+            runner: ubuntu-latest
+            zip_name: changewrite-linux-x86_64.zip
+          - os: windows
+            runner: windows-latest
+            binary: build/changewrite.exe
+            zip_name: changewrite-windows-x86_64.zip
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: CompeyDev/setup-rokit@v0.2.1
+        with:
+          version: v1.2.0
+
+      - name: Install dependencies
+        run: lute run install
+
+      - name: Build changewrite
+        run: lute run build
+
+      - name: Package binary
+        shell: bash
+        run: zip -j "${{ matrix.zip_name }}" "${{ matrix.binary || 'build/changewrite' }}"
+
+      - name: Upload release asset
+        uses: actions/upload-artifact@v7
+        with:
+          name: asset-${{ matrix.os }}
+          path: ${{ matrix.zip_name }}
+
+      # The Linux binary is reused by the jobs below to run the release
+      # subcommands, so upload it unzipped for them to download.
+      - name: Upload runnable CLI
+        if: matrix.os == 'linux'
+        uses: actions/upload-artifact@v7
+        with:
+          name: changewrite
+          path: build/changewrite
+
+  gate:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      has_changes: ${{ steps.eval.outputs.has_changes }}
+      should_publish: ${{ steps.eval.outputs.should_publish }}
+      version: ${{ steps.eval.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download changewrite
+        uses: actions/download-artifact@v8
+        with:
+          name: changewrite
+
+      - name: Evaluate release action
+        id: eval
+        run: |
+          set -euo pipefail
+          chmod +x changewrite
+          result="$(./changewrite release gate ${{ inputs.force_publish && '--force-publish' || '' }})"
+          echo "$result"
+          jq -r 'to_entries[] | "\(.key)=\(.value)"' <<< "$result" >> "$GITHUB_OUTPUT"
+
+  publish-release:
+    needs: [build, gate]
+    if: github.event_name != 'pull_request' && needs.gate.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: CompeyDev/setup-rokit@v0.2.1
+        with:
+          version: v1.2.0
+
+      - name: Download changewrite
+        uses: actions/download-artifact@v8
+        with:
+          name: changewrite
+
+      - name: Tag and draft release
+        run: |
+          chmod +x changewrite
+          ./changewrite release draft --version "${{ needs.gate.outputs.version }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  attach:
+    needs: [build, gate, publish-release]
+    if: github.event_name != 'pull_request' && needs.gate.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download changewrite
+        uses: actions/download-artifact@v8
+        with:
+          name: changewrite
+
+      - name: Download release assets
+        uses: actions/download-artifact@v8
+        with:
+          pattern: asset-*
+          path: assets
+          merge-multiple: true
+
+      - name: Attach assets to draft release
+        run: |
+          chmod +x changewrite
+          ./changewrite release attach --tag "v${{ needs.gate.outputs.version }}" --files assets/*.zip
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish:
+    needs: [build, gate, attach]
+    if: github.event_name != 'pull_request' && needs.gate.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download changewrite
+        uses: actions/download-artifact@v8
+        with:
+          name: changewrite
+
+      - name: Publish release
+        run: |
+          chmod +x changewrite
+          ./changewrite release publish --tag "v${{ needs.gate.outputs.version }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  prepare-release-pr:
+    needs: [build, gate, publish-release]
+    if: |
+      always() &&
+      needs.gate.result == 'success' &&
+      (
+        (
+          github.event_name != 'pull_request' &&
+          (
+            (needs.gate.outputs.has_changes == 'true' && needs.gate.outputs.should_publish != 'true') ||
+            (needs.gate.outputs.should_publish == 'true' && needs.publish-release.result == 'success')
+          )
+        ) ||
+        (
+          github.event_name == 'pull_request' &&
+          contains(github.event.pull_request.labels.*.name, 'debug:release-pr')
+        )
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    concurrency:
+      group: release-pr-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.CHANGEWRITE_APP_ID }}
+          private-key: ${{ secrets.CHANGEWRITE_APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+          # This makes sure even on PR-triggered runs that the changelog gets
+          # generated the expected way (by building it off `main`).
+          ref: main
+
+      - uses: CompeyDev/setup-rokit@v0.2.1
+        with:
+          version: v1.2.0
+
+      - name: Download our build of changewrite
+        uses: actions/download-artifact@v8
+        with:
+          name: changewrite
+
+      - name: Prepare release changes
+        id: prepare
+        run: |
+          set -euo pipefail
+          chmod +x changewrite
+          result="$(./changewrite release prepare-pr)"
+          echo "$result"
+          # `release prepare-pr` shells out to git-cliff, whose command echo lands
+          # on stdout ahead of the JSON result; keep only the final JSON line.
+          jq -r 'to_entries[] | "\(.key)=\(.value)"' <<< "$(tail -n1 <<< "$result")" >> "$GITHUB_OUTPUT"
+
+      - name: Render preview of release notes
+        id: notes
+        run: |
+          set -euo pipefail
+          {
+            echo 'body<<__RELEASE_NOTES_EOF__'
+            ./changewrite release notes --version "${{ steps.prepare.outputs.version }}"
+            echo '__RELEASE_NOTES_EOF__'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create or update publish PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          # Push as the GitHub App rather than the default GITHUB_TOKEN so the
+          # branch push triggers CI on the publish PR. Pushes made with
+          # GITHUB_TOKEN do not trigger further workflow runs.
+          #
+          # [Read more](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/triggering-a-workflow#triggering-a-workflow-from-a-workflow)
+          token: ${{ steps.app-token.outputs.token }}
+          base: main
+          branch: ${{ github.event_name == 'pull_request' && 'debug-publish-next-version' || 'publish-next-version' }}
+          draft: true
+          commit-message: Publish v${{ steps.prepare.outputs.version }}
+          title: ${{ github.event_name == 'pull_request' && '[DEBUG]' || '' }} Publish v${{ steps.prepare.outputs.version }}
+          add-paths: |
+            CHANGELOG.md
+            changewrite.toml
+            loom.config.luau
+          body: |
+            >[!IMPORTANT]
+            > This PR prepares the next release by bumping the version and updating the changelog.
+            >
+            > **Merging this PR will:**
+            >
+            > 1. Create and push tag `v${{ steps.prepare.outputs.version }}`
+            > 2. Create a draft GitHub release for that tag
+            > 3. Trigger binary builds for macOS, Linux, and Windows
+            > 4. Attach the build artifacts to the release
+            > 5. Publish the release once the artifacts are attached
+
+            <details>
+            <summary><b>GitHub Release preview</b></summary>
+
+            # v${{ steps.prepare.outputs.version }}
+
+            **github-actions** released this 0 seconds ago 🔒 Immutable 🏷️ v${{ steps.prepare.outputs.version }} 🔗 SHA
+
+            ${{ steps.notes.outputs.body }}
+            </details>
+
+            Next release will be available here:
+            ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ steps.prepare.outputs.version }}
+
+            🤖 This PR was generated by [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
