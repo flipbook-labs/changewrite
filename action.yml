@@ -153,12 +153,27 @@ runs:
         echo "should_publish=$(jq -r '.should_publish' <<< "$result")" >> "$GITHUB_OUTPUT"
         echo "has_changes=$(jq -r '.has_changes' <<< "$result")" >> "$GITHUB_OUTPUT"
 
+    - name: Debug release auth
+      if: steps.gate.outputs.should_publish == 'true' && inputs.prepare-only != 'true'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        GH_REPO: ${{ github.repository }}
+      run: |
+        echo "=== gh version ==="
+        gh --version
+        echo "=== gh auth status ==="
+        gh auth status 2>&1 || true
+        echo "=== releases GET ==="
+        gh api "repos/${{ github.repository }}/releases" --jq 'length' 2>&1 || true
+
     - name: Draft release
       id: draft
       if: steps.gate.outputs.should_publish == 'true' && inputs.prepare-only != 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
+        GH_REPO: ${{ github.repository }}
       run: |
         set -euo pipefail
         "$GITHUB_ACTION_PATH/build/changewrite" draft --version "${{ steps.gate.outputs.version }}"
@@ -169,6 +184,7 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
+        GH_REPO: ${{ github.repository }}
         CHANGEWRITE_VERSION: ${{ steps.gate.outputs.version }}
         CHANGEWRITE_TAG: v${{ steps.gate.outputs.version }}
         CHANGEWRITE_BIN: ${{ github.action_path }}/build/changewrite
@@ -180,6 +196,7 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
+        GH_REPO: ${{ github.repository }}
       run: |
         set -euo pipefail
         "$GITHUB_ACTION_PATH/build/changewrite" publish --tag "v${{ steps.gate.outputs.version }}"
@@ -190,6 +207,7 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
+        GH_REPO: ${{ github.repository }}
         CHANGEWRITE_VERSION: ${{ steps.gate.outputs.version }}
         CHANGEWRITE_TAG: v${{ steps.gate.outputs.version }}
         CHANGEWRITE_BIN: ${{ github.action_path }}/build/changewrite
