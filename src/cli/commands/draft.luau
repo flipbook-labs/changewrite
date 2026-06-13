@@ -28,20 +28,29 @@ local function draft()
 	local current = parser:get("version") or getCurrentVersion()
 	local tag = `v{current}`
 
-	-- Tag the commit that set this version rather than whichever commit happened
-	-- to trip the gate.
-	local sha = assert(
-		getLastVersionBumpCommit(current),
-		`Could not find the commit that set version {current} in the configured version source`
-	)
+	-- For the first release there are no prior `v*` tags, and the version string
+	-- may have existed since the root commit (e.g. committed with initial
+	-- scaffolding). Tagging the root commit is rejected by GitHub because pointing
+	-- a ref at a parentless commit counts as introducing its `.github/workflows`
+	-- files, which requires a `workflows` permission the release token can't hold.
+	-- "Everything up to now" is also the natural meaning of a first release, so
+	-- use HEAD in that case.
+	local existingTags = process.run({ config.gitCmd, "tag", "--list", "v*" })
+	assert(existingTags.ok, existingTags.stderr)
+	local isFirstRelease = existingTags.stdout:match("%S") == nil
 
-	-- The very first release's version-bump commit is also the initial commit,
-	-- which includes workflow files. GitHub blocks release creation targeting such
-	-- a commit, so fall back to HEAD for root commits only.
-	if not process.run({ config.gitCmd, "rev-parse", "--verify", `{sha}^` }).ok then
+	local sha: string
+	if isFirstRelease then
 		local headResult = process.run({ config.gitCmd, "rev-parse", "HEAD" })
 		assert(headResult.ok, headResult.stderr)
 		sha = headResult.stdout:gsub("%s+$", "")
+	else
+		-- Tag the commit that set this version rather than whichever commit
+		-- happened to trip the gate.
+		sha = assert(
+			getLastVersionBumpCommit(current),
+			`Could not find the commit that set version {current} in the configured version source`
+		)
 	end
 
 	if process.run({ config.ghCmd, "release", "view", tag }).ok then
