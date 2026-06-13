@@ -35,6 +35,15 @@ local function draft()
 		`Could not find the commit that set version {current} in the configured version source`
 	)
 
+	-- The very first release's version-bump commit is also the initial commit,
+	-- which includes workflow files. GitHub blocks release creation targeting such
+	-- a commit, so fall back to HEAD for root commits only.
+	if not process.run({ config.gitCmd, "rev-parse", "--verify", `{sha}^` }).ok then
+		local headResult = process.run({ config.gitCmd, "rev-parse", "HEAD" })
+		assert(headResult.ok, headResult.stderr)
+		sha = headResult.stdout:gsub("%s+$", "")
+	end
+
 	if process.run({ config.ghCmd, "release", "view", tag }).ok then
 		print(`Release {tag} already exists`)
 		return
