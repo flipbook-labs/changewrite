@@ -74,7 +74,6 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      workflows: write
     outputs:
       has_changes: ${{ steps.changewrite.outputs.has_changes }}
       should_publish: ${{ steps.changewrite.outputs.should_publish }}
@@ -126,7 +125,7 @@ jobs:
             >
             > **Merging this PR will:**
             >
-            > 1. Create and push tag `{{tag}}`
+            > 1. Create tag `{{tag}}` via the GitHub API
             > 2. Create a GitHub release for that tag
             > 3. Publish the release after any configured follow-up jobs finish
 

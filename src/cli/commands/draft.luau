@@ -35,25 +35,14 @@ local function draft()
 		`Could not find the commit that set version {current} in the configured version source`
 	)
 
-	-- `ls-remote` talks to the remote directly, so this is accurate even without a
-	-- prior fetch. A non-zero exit from `--exit-code` means the ref is absent.
-	local remoteTag = process.run({ config.gitCmd, "ls-remote", "--exit-code", "origin", `refs/tags/{tag}` })
-	if remoteTag.ok then
-		print(`Tag {tag} already exists on origin`)
-	else
-		run(config.gitCmd, { "tag", tag, sha })
-		run(config.gitCmd, { "push", "origin", tag })
-		print(`Pushed tag {tag}`)
-	end
-
 	if process.run({ config.ghCmd, "release", "view", tag }).ok then
 		print(`Release {tag} already exists`)
 		return
 	end
 
 	-- Same renderer the publish PR uses for its preview, so the drafted notes and
-	-- the previewed notes can't drift. By now the tag exists, so it renders the
-	-- newest tagged release.
+	-- the previewed notes can't drift. The tag doesn't exist locally yet, so
+	-- renderReleaseNotes renders the unreleased commits under the prospective tag.
 	local notesPath = path.join(getTempDir(), "release-notes.md")
 	fs.writeStringToFile(notesPath, renderReleaseNotes(tag))
 

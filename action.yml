@@ -52,7 +52,7 @@ inputs:
       >
       > **Merging this PR will:**
       >
-      > 1. Create and push tag `{{tag}}`
+      > 1. Create tag `{{tag}}` via the GitHub API
       > 2. Create a GitHub release for that tag
       > 3. Publish the release after any configured follow-up jobs finish
 
@@ -168,15 +168,8 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ steps.app-token.outputs.token || inputs.github-token }}
-        GIT_TOKEN: ${{ inputs.github-token }}
       run: |
         set -euo pipefail
-        # GitHub App tokens are rejected when pushing refs to commits that contain
-        # workflow files, even for tag pushes. Switch the remote to GITHUB_TOKEN
-        # (which doesn't carry that restriction) for the tag push only; gh CLI
-        # calls continue to use the app token via GH_TOKEN.
-        git config --local --unset-all "http.https://github.com/.extraheader" || true
-        git remote set-url origin "https://x-access-token:${GIT_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
         "$GITHUB_ACTION_PATH/build/changewrite" draft --version "${{ steps.gate.outputs.version }}"
         echo "draft_created=true" >> "$GITHUB_OUTPUT"
 
