@@ -93,7 +93,6 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          token: ${{ steps.app-token.outputs.token }}
           # This makes sure even on PR-triggered runs that the changelog gets
           # generated the expected way (by building it off `main`).
           ref: main
