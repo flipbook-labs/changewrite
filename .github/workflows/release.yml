@@ -74,7 +74,6 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      workflows: write
     outputs:
       has_changes: ${{ steps.changewrite.outputs.has_changes }}
       should_publish: ${{ steps.changewrite.outputs.should_publish }}
