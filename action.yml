@@ -124,9 +124,6 @@ runs:
       with:
         version: ${{ inputs.rokit-version }}
         token: ${{ inputs.github-token }}
-        # Install *this action's* toolchain (lute, …), not the consumer repo's.
-        # setup-rokit defaults to the consumer working dir, which has no reason to
-        # declare our build tools.
         path: ${{ github.action_path }}
 
     - name: Build changewrite CLI
