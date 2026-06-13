@@ -28,13 +28,20 @@ local function draft()
 	local current = parser:get("version") or getCurrentVersion()
 	local tag = `v{current}`
 
-	-- For the first release there are no prior `v*` tags, and the version string
-	-- may have existed since the root commit (e.g. committed with initial
-	-- scaffolding). Tagging the root commit is rejected by GitHub because pointing
-	-- a ref at a parentless commit counts as introducing its `.github/workflows`
-	-- files, which requires a `workflows` permission the release token can't hold.
-	-- "Everything up to now" is also the natural meaning of a first release, so
-	-- use HEAD in that case.
+	--[[
+		For the first release there are no prior `v*` tags, and the version
+		string may have existed since the root commit (e.g. committed with
+		initial scaffolding).
+
+		We've been hitting issues with creating a release for this root commit
+		centering around "workflow" permissions. This may be a general
+		bootstrapping issue, or it might just be because we can't make a release
+		(with GITHUB_TOKEN) when the commit we're publishing _also_ has
+		workflows in it.
+
+		In any case, we work around this by making sure the first release points
+		at HEAD to bootstrap the project into the Changewrite release flow.
+	]]
 	local existingTags = process.run({ config.gitCmd, "tag", "--list", "v*" })
 	assert(existingTags.ok, existingTags.stderr)
 	local isFirstRelease = existingTags.stdout:match("%S") == nil
