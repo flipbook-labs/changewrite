@@ -130,6 +130,9 @@ runs:
       run: |
         set -euo pipefail
         cd "$GITHUB_ACTION_PATH"
+        # setup-rokit installs the *consumer's* rokit.toml (its working dir), not
+        # ours, so install this action's own toolchain (lute, …) before building.
+        rokit install --no-trust-check
         lute run install
         lute run build
 
