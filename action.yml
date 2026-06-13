@@ -165,7 +165,7 @@ runs:
         echo "=== gh auth status ==="
         gh auth status 2>&1 || true
         echo "=== releases GET ==="
-        gh api "repos/${{ github.repository }}/releases" --jq 'length' 2>&1 || true
+        gh api "repos/$GH_REPO/releases" --jq 'length' 2>&1 || true
 
     - name: Draft release
       id: draft
