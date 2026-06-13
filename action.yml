@@ -124,6 +124,7 @@ runs:
       with:
         version: ${{ inputs.rokit-version }}
         token: ${{ inputs.github-token }}
+        path: ${{ github.action_path }}
 
     - name: Build changewrite CLI
       shell: bash
