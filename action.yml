@@ -124,15 +124,16 @@ runs:
       with:
         version: ${{ inputs.rokit-version }}
         token: ${{ inputs.github-token }}
+        # Install *this action's* toolchain (lute, …), not the consumer repo's.
+        # setup-rokit defaults to the consumer working dir, which has no reason to
+        # declare our build tools.
+        path: ${{ github.action_path }}
 
     - name: Build changewrite CLI
       shell: bash
       run: |
         set -euo pipefail
         cd "$GITHUB_ACTION_PATH"
-        # setup-rokit installs the *consumer's* rokit.toml (its working dir), not
-        # ours, so install this action's own toolchain (lute, …) before building.
-        rokit install --no-trust-check
         lute run install
         lute run build
 
