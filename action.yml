@@ -8,15 +8,14 @@ inputs:
     required: false
     default: v1.2.0
   github-token:
-    description: Token used for GitHub API calls when no GitHub App credentials are supplied.
+    description: Token used for GitHub API calls (release creation, publishing). Defaults to the built-in GITHUB_TOKEN.
     required: false
     default: ${{ github.token }}
-  app-id:
-    description: Optional GitHub App client/app ID used to mint a token for publish and PR pushes.
-    required: false
-    default: ""
-  private-key:
-    description: Optional GitHub App private key used with app-id.
+  pr-token:
+    description: >-
+      Token used to create the publish PR. Pass a GitHub App installation token or a PAT
+      if the resulting PR should trigger workflow runs; PRs created with GITHUB_TOKEN do not
+      trigger other workflows.
     required: false
     default: ""
   bump:
@@ -134,14 +133,6 @@ runs:
         lute run install
         lute run build
 
-    - name: Generate app token
-      id: app-token
-      if: inputs.app-id != '' && inputs.private-key != ''
-      uses: actions/create-github-app-token@v3
-      with:
-        client-id: ${{ inputs.app-id }}
-        private-key: ${{ inputs.private-key }}
-
     - name: Evaluate release gate
       id: gate
       shell: bash
@@ -167,7 +158,7 @@ runs:
       if: steps.gate.outputs.should_publish == 'true' && inputs.prepare-only != 'true'
       shell: bash
       env:
-        GH_TOKEN: ${{ steps.app-token.outputs.token || inputs.github-token }}
+        GH_TOKEN: ${{ inputs.github-token }}
       run: |
         set -euo pipefail
         "$GITHUB_ACTION_PATH/build/changewrite" draft --version "${{ steps.gate.outputs.version }}"
@@ -177,7 +168,7 @@ runs:
       if: steps.draft.outputs.draft_created == 'true' && inputs.post-draft-hook != ''
       shell: bash
       env:
-        GH_TOKEN: ${{ steps.app-token.outputs.token || inputs.github-token }}
+        GH_TOKEN: ${{ inputs.github-token }}
         CHANGEWRITE_VERSION: ${{ steps.gate.outputs.version }}
         CHANGEWRITE_TAG: v${{ steps.gate.outputs.version }}
         CHANGEWRITE_BIN: ${{ github.action_path }}/build/changewrite
@@ -188,7 +179,7 @@ runs:
       if: steps.gate.outputs.should_publish == 'true' && inputs.publish-immediately == 'true' && inputs.prepare-only != 'true'
       shell: bash
       env:
-        GH_TOKEN: ${{ steps.app-token.outputs.token || inputs.github-token }}
+        GH_TOKEN: ${{ inputs.github-token }}
       run: |
         set -euo pipefail
         "$GITHUB_ACTION_PATH/build/changewrite" publish --tag "v${{ steps.gate.outputs.version }}"
@@ -198,7 +189,7 @@ runs:
       if: steps.publish.outputs.release_created == 'true' && inputs.post-publish-hook != ''
       shell: bash
       env:
-        GH_TOKEN: ${{ steps.app-token.outputs.token || inputs.github-token }}
+        GH_TOKEN: ${{ inputs.github-token }}
         CHANGEWRITE_VERSION: ${{ steps.gate.outputs.version }}
         CHANGEWRITE_TAG: v${{ steps.gate.outputs.version }}
         CHANGEWRITE_BIN: ${{ github.action_path }}/build/changewrite
@@ -277,7 +268,7 @@ runs:
       if: steps.prepare.outputs.version != ''
       uses: peter-evans/create-pull-request@v7
       with:
-        token: ${{ steps.app-token.outputs.token || inputs.github-token }}
+        token: ${{ inputs.pr-token || inputs.github-token }}
         base: ${{ inputs.base }}
         branch: ${{ inputs.branch }}
         draft: true
