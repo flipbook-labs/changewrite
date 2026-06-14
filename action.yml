@@ -292,6 +292,7 @@ runs:
       if: always()
       shell: bash
       run: |
+        set -euo pipefail
         if [ -f "$HOME/.rokit/auth.toml.changewrite-bak" ]; then
           mv "$HOME/.rokit/auth.toml.changewrite-bak" "$HOME/.rokit/auth.toml"
         else
