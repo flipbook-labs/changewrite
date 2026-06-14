@@ -120,6 +120,13 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Clear existing rokit auth
+      shell: bash
+      run: |
+        if command -v rokit &>/dev/null; then
+          rokit authenticate github --remove 2>/dev/null || true
+        fi
+
     - name: Install Rokit
       uses: CompeyDev/setup-rokit@v0.2.1
       with:
