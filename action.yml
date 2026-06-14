@@ -142,6 +142,7 @@ runs:
         cd "$GITHUB_ACTION_PATH"
         lute run install
         lute run build
+        echo "CHANGEWRITE_BIN=$GITHUB_ACTION_PATH/build/changewrite" >> "$GITHUB_ENV"
 
     - name: Evaluate release gate
       id: gate
@@ -156,7 +157,7 @@ runs:
           args+=(--force-publish)
         fi
 
-        result="$("$GITHUB_ACTION_PATH/build/changewrite" "${args[@]}")"
+        result="$("$CHANGEWRITE_BIN" "${args[@]}")"
         echo "$result"
 
         echo "version=$(jq -r '.version' <<< "$result")" >> "$GITHUB_OUTPUT"
@@ -171,7 +172,7 @@ runs:
         GH_TOKEN: ${{ inputs.github-token }}
       run: |
         set -euo pipefail
-        "$GITHUB_ACTION_PATH/build/changewrite" draft --version "${{ steps.gate.outputs.version }}"
+        "$CHANGEWRITE_BIN" draft --version "${{ steps.gate.outputs.version }}"
         echo "draft_created=true" >> "$GITHUB_OUTPUT"
 
     - name: Run post-draft hook
@@ -192,7 +193,7 @@ runs:
         GH_TOKEN: ${{ inputs.github-token }}
       run: |
         set -euo pipefail
-        "$GITHUB_ACTION_PATH/build/changewrite" publish --tag "v${{ steps.gate.outputs.version }}"
+        "$CHANGEWRITE_BIN" publish --tag "v${{ steps.gate.outputs.version }}"
         echo "release_created=true" >> "$GITHUB_OUTPUT"
 
     - name: Run post-publish hook
@@ -213,7 +214,7 @@ runs:
         BUMP: ${{ inputs.bump }}
       run: |
         set -euo pipefail
-        result="$("$GITHUB_ACTION_PATH/build/changewrite" prepare-pr --bump "$BUMP")"
+        result="$("$CHANGEWRITE_BIN" prepare-pr --bump "$BUMP")"
         echo "$result"
         json="$(tail -n1 <<< "$result")"
 
@@ -233,7 +234,7 @@ runs:
         FORCE_VERSION: ${{ inputs.force-version }}
       run: |
         set -euo pipefail
-        result="$("$GITHUB_ACTION_PATH/build/changewrite" bump "$FORCE_VERSION")"
+        result="$("$CHANGEWRITE_BIN" bump "$FORCE_VERSION")"
         echo "$result"
         json="$(tail -n1 <<< "$result")"
 
@@ -253,7 +254,7 @@ runs:
         set -euo pipefail
         {
           echo 'body<<__CHANGEWRITE_NOTES__'
-          "$GITHUB_ACTION_PATH/build/changewrite" notes --version "${{ steps.prepare.outputs.version || steps.bump.outputs.version }}"
+          "$CHANGEWRITE_BIN" notes --version "${{ steps.prepare.outputs.version || steps.bump.outputs.version }}"
           echo '__CHANGEWRITE_NOTES__'
         } >> "$GITHUB_OUTPUT"
 

@@ -1,5 +1,11 @@
 local FLAG_COLUMN_WIDTH = 26
 
+type FormatOptions = {
+	help: string?,
+	aliases: { string }?,
+	default: string?,
+}
+
 local function formatFlagPart(name: string, kind: string, aliases: { string }?): string
 	if kind == "option" then
 		return `--{name} <{name}>`
@@ -23,28 +29,14 @@ local function formatHelpSuffix(help: string?, default: string?): string
 	return table.concat(parts, " ")
 end
 
-local function formatArgLine(
-	name: string,
-	kind: string,
-	options: {
-		help: string?,
-		aliases: { string }?,
-		default: string?,
-	}
-): string
+local function formatArgLine(name: string, kind: string, options: FormatOptions): string
 	local flagPart = formatFlagPart(name, kind, options.aliases)
 	local padding = math.max(1, FLAG_COLUMN_WIDTH - #flagPart)
 	local helpPart = formatHelpSuffix(options.help, options.default)
 	return `  {flagPart}{string.rep(" ", padding)}{helpPart}`
 end
 
-local function formatPositionalLine(
-	name: string,
-	options: {
-		help: string?,
-		default: string?,
-	}
-): string
+local function formatPositionalLine(name: string, options: FormatOptions): string
 	local namePart = `<{name}>`
 	local padding = math.max(1, FLAG_COLUMN_WIDTH - #namePart)
 	local helpPart = formatHelpSuffix(options.help, options.default)
