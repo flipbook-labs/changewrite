@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.3.0
+
+### Changes
+
+- Clear existing rokit auth before setup-rokit runs (#21) ([d508ba3](https://github.com/flipbook-labs/changewrite/commit/d508ba3c95489268dd1c4488cb89bc1acfd5b206))
+
+- Add a bump escape hatch and auto-recover from burned tags (#23) ([50378bf](https://github.com/flipbook-labs/changewrite/commit/50378bf7f797b1217304ee40282ed50fc94b8374))
+
+
+
 ## v0.2.0
 
 ### Changes
