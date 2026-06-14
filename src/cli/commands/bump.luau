@@ -20,13 +20,8 @@ parser:add("help", "flag", {
 })
 
 local function bump()
-	-- `version` is required, so the parser guarantees a value by the time we run.
 	local target = parser:get("version") :: string
 
-	-- `major`/`minor`/`patch` step the current version. Anything else is an exact
-	-- target. We deliberately allow it to be lower than the current version --
-	-- redoing a release sometimes means going back, and the publish PR is the
-	-- real guard against an unwanted version.
 	local nextVersion: string
 	if target == "major" or target == "minor" or target == "patch" then
 		nextVersion = getNextVersion(getCurrentVersion(), target)
@@ -37,9 +32,6 @@ local function bump()
 
 	local changedFiles = prepareReleaseFiles(nextVersion)
 
-	-- Same contract as `prepare-pr`: leave the bumped version + regenerated
-	-- changelog in the working tree and emit the new version as JSON so a caller
-	-- can open the publish PR.
 	print(json.serialize({
 		version = nextVersion,
 		changed_files = changedFiles,
