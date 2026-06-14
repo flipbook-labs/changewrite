@@ -128,6 +128,15 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Save and clear rokit auth
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [ -f "$HOME/.rokit/auth.toml" ]; then
+          cp "$HOME/.rokit/auth.toml" "$HOME/.rokit/auth.toml.changewrite-bak"
+          rokit authenticate github --remove 2>/dev/null || true
+        fi
+
     - name: Install Rokit
       uses: CompeyDev/setup-rokit@v0.2.1
       with:
@@ -308,6 +317,17 @@ runs:
         add-paths: |
           ${{ steps.prepare.outputs.changed_files || steps.bump.outputs.changed_files }}
         body: ${{ steps.pr.outputs.body }}
+
+    - name: Restore rokit auth
+      if: always()
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [ -f "$HOME/.rokit/auth.toml.changewrite-bak" ]; then
+          mv "$HOME/.rokit/auth.toml.changewrite-bak" "$HOME/.rokit/auth.toml"
+        else
+          rm -f "$HOME/.rokit/auth.toml"
+        fi
 
     - name: Set action outputs
       id: result
