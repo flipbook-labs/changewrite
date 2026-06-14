@@ -28,12 +28,37 @@ local function draft()
 	local current = parser:get("version") or getCurrentVersion()
 	local tag = `v{current}`
 
-	-- Tag the commit that set this version rather than whichever commit happened
-	-- to trip the gate.
-	local sha = assert(
-		getLastVersionBumpCommit(current),
-		`Could not find the commit that set version {current} in the configured version source`
-	)
+	--[[
+		For the first release there are no prior `v*` tags, and the version
+		string may have existed since the root commit (e.g. committed with
+		initial scaffolding).
+
+		We've been hitting issues with creating a release for this root commit
+		centering around "workflow" permissions. This may be a general
+		bootstrapping issue, or it might just be because we can't make a release
+		(with GITHUB_TOKEN) when the commit we're publishing _also_ has
+		workflows in it.
+
+		In any case, we work around this by making sure the first release points
+		at HEAD to bootstrap the project into the Changewrite release flow.
+	]]
+	local existingTags = process.run({ config.gitCmd, "tag", "--list", "v*" })
+	assert(existingTags.ok, existingTags.stderr)
+	local isFirstRelease = existingTags.stdout:match("%S") == nil
+
+	local sha: string
+	if isFirstRelease then
+		local headResult = process.run({ config.gitCmd, "rev-parse", "HEAD" })
+		assert(headResult.ok, headResult.stderr)
+		sha = headResult.stdout:gsub("%s+$", "")
+	else
+		-- Tag the commit that set this version rather than whichever commit
+		-- happened to trip the gate.
+		sha = assert(
+			getLastVersionBumpCommit(current),
+			`Could not find the commit that set version {current} in the configured version source`
+		)
+	end
 
 	if process.run({ config.ghCmd, "release", "view", tag }).ok then
 		print(`Release {tag} already exists`)
