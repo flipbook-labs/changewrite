@@ -30,19 +30,13 @@ inputs:
     description: Tag and draft the configured version even if it already has a tag.
     required: false
     default: "false"
-  version-bump:
-    description: >-
-      Open a publish PR that bumps this semver component (major, minor, or
-      patch), regardless of release state. Use it to step past a version whose
-      tag can never be published -- e.g. one GitHub reserved after its immutable
-      release was deleted. The run skips drafting and publishing when set.
-    required: false
-    default: ""
   force-version:
     description: >-
-      Open a publish PR that sets this exact version (e.g. 1.2.3). Like
-      `version-bump`, but pins the version instead of stepping a component; wins
-      when both are set.
+      Open a publish PR that sets this exact version (e.g. 1.2.3), regardless of
+      release state. Use it to forget the version currently being published and
+      release this one instead, for example to step past a tag that can never be
+      published or to redo a release at a different version. The run skips
+      drafting and publishing when set.
     required: false
     default: ""
   base:
@@ -171,7 +165,7 @@ runs:
 
     - name: Draft release
       id: draft
-      if: steps.gate.outputs.should_publish == 'true' && inputs.prepare-only != 'true' && inputs.version-bump == '' && inputs.force-version == ''
+      if: steps.gate.outputs.should_publish == 'true' && inputs.prepare-only != 'true' && inputs.force-version == ''
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
@@ -192,7 +186,7 @@ runs:
 
     - name: Publish release
       id: publish
-      if: steps.gate.outputs.should_publish == 'true' && inputs.publish-immediately == 'true' && inputs.prepare-only != 'true' && inputs.version-bump == '' && inputs.force-version == ''
+      if: steps.gate.outputs.should_publish == 'true' && inputs.publish-immediately == 'true' && inputs.prepare-only != 'true' && inputs.force-version == ''
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
@@ -213,7 +207,7 @@ runs:
 
     - name: Prepare release changes
       id: prepare
-      if: inputs.version-bump == '' && inputs.force-version == '' && (inputs.prepare-only == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true'))
+      if: inputs.force-version == '' && (inputs.prepare-only == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true'))
       shell: bash
       env:
         BUMP: ${{ inputs.bump }}
@@ -231,16 +225,15 @@ runs:
           echo '__CHANGEWRITE_FILES__'
         } >> "$GITHUB_OUTPUT"
 
-    - name: Bump past an unpublishable version
+    - name: Bump to the forced version
       id: bump
-      if: inputs.version-bump != '' || inputs.force-version != ''
+      if: inputs.force-version != ''
       shell: bash
       env:
-        # An exact version wins over a component bump when both are set.
-        BUMP_TARGET: ${{ inputs.force-version != '' && inputs.force-version || inputs.version-bump }}
+        FORCE_VERSION: ${{ inputs.force-version }}
       run: |
         set -euo pipefail
-        result="$("$GITHUB_ACTION_PATH/build/changewrite" bump "$BUMP_TARGET")"
+        result="$("$GITHUB_ACTION_PATH/build/changewrite" bump "$FORCE_VERSION")"
         echo "$result"
         json="$(tail -n1 <<< "$result")"
 
