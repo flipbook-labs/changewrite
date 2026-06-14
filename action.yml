@@ -120,10 +120,11 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Clear existing rokit auth
+    - name: Save and clear rokit auth
       shell: bash
       run: |
-        if command -v rokit &>/dev/null; then
+        if [ -f "$HOME/.rokit/auth.toml" ]; then
+          cp "$HOME/.rokit/auth.toml" "$HOME/.rokit/auth.toml.changewrite-bak"
           rokit authenticate github --remove 2>/dev/null || true
         fi
 
@@ -293,6 +294,14 @@ runs:
         add-paths: |
           ${{ steps.prepare.outputs.changed_files }}
         body: ${{ steps.pr.outputs.body }}
+
+    - name: Restore rokit auth
+      if: always()
+      shell: bash
+      run: |
+        if [ -f "$HOME/.rokit/auth.toml.changewrite-bak" ]; then
+          mv "$HOME/.rokit/auth.toml.changewrite-bak" "$HOME/.rokit/auth.toml"
+        fi
 
     - name: Set action outputs
       id: result
