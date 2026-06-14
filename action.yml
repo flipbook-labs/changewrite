@@ -126,6 +126,8 @@ runs:
         if [ -f "$HOME/.rokit/auth.toml" ]; then
           cp "$HOME/.rokit/auth.toml" "$HOME/.rokit/auth.toml.changewrite-bak"
           rokit authenticate github --remove 2>/dev/null || true
+        else
+          touch "$HOME/.rokit/auth.toml.changewrite-no-bak"
         fi
 
     - name: Install Rokit
@@ -295,8 +297,8 @@ runs:
         set -euo pipefail
         if [ -f "$HOME/.rokit/auth.toml.changewrite-bak" ]; then
           mv "$HOME/.rokit/auth.toml.changewrite-bak" "$HOME/.rokit/auth.toml"
-        else
-          rm -f "$HOME/.rokit/auth.toml"
+        elif [ -f "$HOME/.rokit/auth.toml.changewrite-no-bak" ]; then
+          rm -f "$HOME/.rokit/auth.toml" "$HOME/.rokit/auth.toml.changewrite-no-bak"
         fi
 
     - name: Set action outputs
