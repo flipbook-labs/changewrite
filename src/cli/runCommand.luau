@@ -10,6 +10,18 @@ local types = require("@root/cli/types")
 local function runCommand(command: types.Command, args: { string })
 	if command.parser then
 		local ok, err = pcall(command.parser.parse, command.parser, args)
+
+		-- Surface `--help` before any parse error so a command with required
+		-- arguments can still print its usage instead of erroring on the missing
+		-- value (the flag is recorded before parsing validates required args).
+		if command.parser:has("help") then
+			helpText.print(command.parser, {
+				title = command.title,
+				summary = command.summary,
+			})
+			process.exit(0)
+		end
+
 		if not ok then
 			local message = tostring(err):match(":%d+: (.+)$") or tostring(err)
 			print(richterm.red("Error: " .. message))
@@ -19,14 +31,6 @@ local function runCommand(command: types.Command, args: { string })
 				summary = command.summary,
 			})
 			process.exit(1)
-		end
-
-		if command.parser:has("help") then
-			helpText.print(command.parser, {
-				title = command.title,
-				summary = command.summary,
-			})
-			process.exit(0)
 		end
 	end
 

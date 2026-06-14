@@ -22,7 +22,8 @@ type ArgData = {
 	},
 }
 
-local function collectArgLines(parser: cli.Parser): ({ string }, { string })
+local function collectArgLines(parser: cli.Parser): ({ string }, { string }, { string })
+	local argumentLines: { string } = {}
 	local requiredLines: { string } = {}
 	local optionLines: { string } = {}
 
@@ -30,7 +31,11 @@ local function collectArgLines(parser: cli.Parser): ({ string }, { string })
 		if argument.options.hidden then
 			continue
 		end
-		if argument.kind == "positional" or argument.kind == "variadic" then
+		if argument.kind == "positional" then
+			table.insert(argumentLines, format.formatPositionalLine(argument.name, argument.options))
+			continue
+		end
+		if argument.kind == "variadic" then
 			continue
 		end
 
@@ -42,7 +47,7 @@ local function collectArgLines(parser: cli.Parser): ({ string }, { string })
 		end
 	end
 
-	return requiredLines, optionLines
+	return argumentLines, requiredLines, optionLines
 end
 
 local function build(parser: cli.Parser, config: HelpConfig): string
@@ -58,7 +63,11 @@ local function build(parser: cli.Parser, config: HelpConfig): string
 	table.insert(lines, `  {parser:usage(title)}`)
 	table.insert(lines, "")
 
-	local requiredLines, optionLines = collectArgLines(parser)
+	local argumentLines, requiredLines, optionLines = collectArgLines(parser)
+
+	if #argumentLines > 0 then
+		format.appendSection(lines, "ARGUMENTS", argumentLines)
+	end
 
 	if #requiredLines > 0 then
 		format.appendSection(lines, "REQUIRED", requiredLines)

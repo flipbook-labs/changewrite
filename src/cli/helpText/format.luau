@@ -38,6 +38,19 @@ local function formatArgLine(
 	return `  {flagPart}{string.rep(" ", padding)}{helpPart}`
 end
 
+local function formatPositionalLine(
+	name: string,
+	options: {
+		help: string?,
+		default: string?,
+	}
+): string
+	local namePart = `<{name}>`
+	local padding = math.max(1, FLAG_COLUMN_WIDTH - #namePart)
+	local helpPart = formatHelpSuffix(options.help, options.default)
+	return `  {namePart}{string.rep(" ", padding)}{helpPart}`
+end
+
 local function appendSection(lines: { string }, heading: string, bodyLines: { string })
 	table.insert(lines, heading .. ":")
 	for _, line in bodyLines do
@@ -49,5 +62,6 @@ end
 return {
 	FLAG_COLUMN_WIDTH = FLAG_COLUMN_WIDTH,
 	formatArgLine = formatArgLine,
+	formatPositionalLine = formatPositionalLine,
 	appendSection = appendSection,
 }

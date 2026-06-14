@@ -30,15 +30,21 @@ inputs:
     description: Tag and draft the configured version even if it already has a tag.
     required: false
     default: "false"
-  bump-version:
+  version-bump:
     description: >-
-      Open a publish PR that bumps the version forward, regardless of release
-      state. Use it to step past a version whose tag can never be published --
-      e.g. one GitHub reserved after its immutable release was deleted. The
-      `bump` input selects the semver component. The run skips drafting and
-      publishing when this is set.
+      Open a publish PR that bumps this semver component (major, minor, or
+      patch), regardless of release state. Use it to step past a version whose
+      tag can never be published -- e.g. one GitHub reserved after its immutable
+      release was deleted. The run skips drafting and publishing when set.
     required: false
-    default: "false"
+    default: ""
+  force-version:
+    description: >-
+      Open a publish PR that sets this exact version (e.g. 1.2.3). Like
+      `version-bump`, but pins the version instead of stepping a component; wins
+      when both are set.
+    required: false
+    default: ""
   base:
     description: Base branch for the generated publish PR.
     required: false
@@ -165,7 +171,7 @@ runs:
 
     - name: Draft release
       id: draft
-      if: steps.gate.outputs.should_publish == 'true' && inputs.prepare-only != 'true' && inputs.bump-version != 'true'
+      if: steps.gate.outputs.should_publish == 'true' && inputs.prepare-only != 'true' && inputs.version-bump == '' && inputs.force-version == ''
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
@@ -186,23 +192,14 @@ runs:
 
     - name: Publish release
       id: publish
-      if: steps.gate.outputs.should_publish == 'true' && inputs.publish-immediately == 'true' && inputs.prepare-only != 'true' && inputs.bump-version != 'true'
+      if: steps.gate.outputs.should_publish == 'true' && inputs.publish-immediately == 'true' && inputs.prepare-only != 'true' && inputs.version-bump == '' && inputs.force-version == ''
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
       run: |
         set -euo pipefail
-        output="$("$GITHUB_ACTION_PATH/build/changewrite" publish --tag "v${{ steps.gate.outputs.version }}")"
-        echo "$output"
-
-        # The tag can be permanently reserved (e.g. by a deleted immutable
-        # release), in which case publish exits cleanly with this marker instead
-        # of failing. Flag it so the recovery step bumps past the version.
-        if grep -q 'changewrite::burned-tag' <<< "$output"; then
-          echo "tag_burned=true" >> "$GITHUB_OUTPUT"
-        else
-          echo "release_created=true" >> "$GITHUB_OUTPUT"
-        fi
+        "$GITHUB_ACTION_PATH/build/changewrite" publish --tag "v${{ steps.gate.outputs.version }}"
+        echo "release_created=true" >> "$GITHUB_OUTPUT"
 
     - name: Run post-publish hook
       if: steps.publish.outputs.release_created == 'true' && inputs.post-publish-hook != ''
@@ -216,7 +213,7 @@ runs:
 
     - name: Prepare release changes
       id: prepare
-      if: inputs.bump-version != 'true' && (inputs.prepare-only == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true'))
+      if: inputs.version-bump == '' && inputs.force-version == '' && (inputs.prepare-only == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true'))
       shell: bash
       env:
         BUMP: ${{ inputs.bump }}
@@ -236,15 +233,14 @@ runs:
 
     - name: Bump past an unpublishable version
       id: bump
-      if: steps.publish.outputs.tag_burned == 'true' || inputs.bump-version == 'true'
+      if: inputs.version-bump != '' || inputs.force-version != ''
       shell: bash
       env:
-        # Auto-recovery always advances by a patch to keep things moving; a
-        # manual bump honors the configured component.
-        BUMP: ${{ steps.publish.outputs.tag_burned == 'true' && 'patch' || inputs.bump }}
+        # An exact version wins over a component bump when both are set.
+        BUMP_TARGET: ${{ inputs.force-version != '' && inputs.force-version || inputs.version-bump }}
       run: |
         set -euo pipefail
-        result="$("$GITHUB_ACTION_PATH/build/changewrite" bump --bump "$BUMP")"
+        result="$("$GITHUB_ACTION_PATH/build/changewrite" bump "$BUMP_TARGET")"
         echo "$result"
         json="$(tail -n1 <<< "$result")"
 
@@ -327,9 +323,7 @@ runs:
 
         version="${{ steps.prepare.outputs.version || steps.bump.outputs.version || steps.gate.outputs.version }}"
 
-        # A burned tag means nothing was published this run, so report that
-        # honestly even though the gate had cleared the version to publish.
-        echo "should_publish=${{ steps.publish.outputs.tag_burned == 'true' && 'false' || steps.gate.outputs.should_publish }}" >> "$GITHUB_OUTPUT"
+        echo "should_publish=${{ steps.gate.outputs.should_publish }}" >> "$GITHUB_OUTPUT"
         echo "has_changes=${{ steps.gate.outputs.has_changes }}" >> "$GITHUB_OUTPUT"
         echo "version=$version" >> "$GITHUB_OUTPUT"
         echo "tag=v$version" >> "$GITHUB_OUTPUT"

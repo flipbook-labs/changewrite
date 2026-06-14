@@ -18,10 +18,14 @@ on:
         description: Tag and create draft release from version on `main`
         type: boolean
         default: false
-      bump_version:
-        description: Open a publish PR that bumps past the current version (e.g. when its tag can't be published)
-        type: boolean
-        default: false
+      version_bump:
+        description: Open a publish PR bumping a semver component (major, minor, or patch) past the current version
+        type: string
+        default: ""
+      force_version:
+        description: Open a publish PR setting an exact version (e.g. 1.2.3); wins over version_bump
+        type: string
+        default: ""
 
 jobs:
   build:
@@ -116,7 +120,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           pr-token: ${{ steps.app-token.outputs.token }}
           force-publish: ${{ inputs.force_publish || false }}
-          bump-version: ${{ inputs.bump_version || false }}
+          version-bump: ${{ inputs.version_bump }}
+          force-version: ${{ inputs.force_version }}
           base: main
           branch: ${{ github.event_name == 'pull_request' && 'debug-publish-next-version' || 'publish-next-version' }}
           prepare-only: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'debug:release-pr') }}
