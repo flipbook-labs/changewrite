@@ -9,13 +9,14 @@ if not fs.exists(packagesDir) then
 	fs.createDirectory(packagesDir)
 end
 
-process.run({
+local installResult = process.run({
 	"lute",
 	"pkg",
 	"install",
 }, {
 	stdio = "inherit",
 })
+assert(installResult.ok, "lute pkg install failed")
 
 local lock = require("@repo/loom.lock")
 
