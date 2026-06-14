@@ -30,6 +30,15 @@ inputs:
     description: Tag and draft the configured version even if it already has a tag.
     required: false
     default: "false"
+  bump-version:
+    description: >-
+      Open a publish PR that bumps the version forward, regardless of release
+      state. Use it to step past a version whose tag can never be published --
+      e.g. one GitHub reserved after its immutable release was deleted. The
+      `bump` input selects the semver component. The run skips drafting and
+      publishing when this is set.
+    required: false
+    default: "false"
   base:
     description: Base branch for the generated publish PR.
     required: false
@@ -156,7 +165,7 @@ runs:
 
     - name: Draft release
       id: draft
-      if: steps.gate.outputs.should_publish == 'true' && inputs.prepare-only != 'true'
+      if: steps.gate.outputs.should_publish == 'true' && inputs.prepare-only != 'true' && inputs.bump-version != 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
@@ -177,14 +186,23 @@ runs:
 
     - name: Publish release
       id: publish
-      if: steps.gate.outputs.should_publish == 'true' && inputs.publish-immediately == 'true' && inputs.prepare-only != 'true'
+      if: steps.gate.outputs.should_publish == 'true' && inputs.publish-immediately == 'true' && inputs.prepare-only != 'true' && inputs.bump-version != 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
       run: |
         set -euo pipefail
-        "$GITHUB_ACTION_PATH/build/changewrite" publish --tag "v${{ steps.gate.outputs.version }}"
-        echo "release_created=true" >> "$GITHUB_OUTPUT"
+        output="$("$GITHUB_ACTION_PATH/build/changewrite" publish --tag "v${{ steps.gate.outputs.version }}")"
+        echo "$output"
+
+        # The tag can be permanently reserved (e.g. by a deleted immutable
+        # release), in which case publish exits cleanly with this marker instead
+        # of failing. Flag it so the recovery step bumps past the version.
+        if grep -q 'changewrite::burned-tag' <<< "$output"; then
+          echo "tag_burned=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "release_created=true" >> "$GITHUB_OUTPUT"
+        fi
 
     - name: Run post-publish hook
       if: steps.publish.outputs.release_created == 'true' && inputs.post-publish-hook != ''
@@ -198,7 +216,7 @@ runs:
 
     - name: Prepare release changes
       id: prepare
-      if: inputs.prepare-only == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true')
+      if: inputs.bump-version != 'true' && (inputs.prepare-only == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true'))
       shell: bash
       env:
         BUMP: ${{ inputs.bump }}
@@ -216,27 +234,49 @@ runs:
           echo '__CHANGEWRITE_FILES__'
         } >> "$GITHUB_OUTPUT"
 
+    - name: Bump past an unpublishable version
+      id: bump
+      if: steps.publish.outputs.tag_burned == 'true' || inputs.bump-version == 'true'
+      shell: bash
+      env:
+        # Auto-recovery always advances by a patch to keep things moving; a
+        # manual bump honors the configured component.
+        BUMP: ${{ steps.publish.outputs.tag_burned == 'true' && 'patch' || inputs.bump }}
+      run: |
+        set -euo pipefail
+        result="$("$GITHUB_ACTION_PATH/build/changewrite" bump --bump "$BUMP")"
+        echo "$result"
+        json="$(tail -n1 <<< "$result")"
+
+        echo "version=$(jq -r '.version' <<< "$json")" >> "$GITHUB_OUTPUT"
+        {
+          echo 'changed_files<<__CHANGEWRITE_FILES__'
+          echo 'CHANGELOG.md'
+          jq -r '.changed_files[]' <<< "$json"
+          echo '__CHANGEWRITE_FILES__'
+        } >> "$GITHUB_OUTPUT"
+
     - name: Render release notes preview
       id: notes
-      if: steps.prepare.outputs.version != ''
+      if: steps.prepare.outputs.version != '' || steps.bump.outputs.version != ''
       shell: bash
       run: |
         set -euo pipefail
         {
           echo 'body<<__CHANGEWRITE_NOTES__'
-          "$GITHUB_ACTION_PATH/build/changewrite" notes --version "${{ steps.prepare.outputs.version }}"
+          "$GITHUB_ACTION_PATH/build/changewrite" notes --version "${{ steps.prepare.outputs.version || steps.bump.outputs.version }}"
           echo '__CHANGEWRITE_NOTES__'
         } >> "$GITHUB_OUTPUT"
 
     - name: Render publish PR text
       id: pr
-      if: steps.prepare.outputs.version != ''
+      if: steps.prepare.outputs.version != '' || steps.bump.outputs.version != ''
       shell: bash
       env:
         PR_TITLE_TEMPLATE: ${{ inputs.pr-title }}
         PR_BODY_TEMPLATE: ${{ inputs.pr-body }}
-        VERSION: ${{ steps.prepare.outputs.version }}
-        TAG: v${{ steps.prepare.outputs.version }}
+        VERSION: ${{ steps.prepare.outputs.version || steps.bump.outputs.version }}
+        TAG: v${{ steps.prepare.outputs.version || steps.bump.outputs.version }}
         NOTES: ${{ steps.notes.outputs.body }}
         RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         REPO_URL: ${{ github.server_url }}/${{ github.repository }}
@@ -266,17 +306,17 @@ runs:
         } >> "$GITHUB_OUTPUT"
 
     - name: Create or update publish PR
-      if: steps.prepare.outputs.version != ''
+      if: steps.prepare.outputs.version != '' || steps.bump.outputs.version != ''
       uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ inputs.pr-token || inputs.github-token }}
         base: ${{ inputs.base }}
         branch: ${{ inputs.branch }}
         draft: true
-        commit-message: Publish v${{ steps.prepare.outputs.version }}
+        commit-message: Publish v${{ steps.prepare.outputs.version || steps.bump.outputs.version }}
         title: ${{ steps.pr.outputs.title }}
         add-paths: |
-          ${{ steps.prepare.outputs.changed_files }}
+          ${{ steps.prepare.outputs.changed_files || steps.bump.outputs.changed_files }}
         body: ${{ steps.pr.outputs.body }}
 
     - name: Set action outputs
@@ -285,9 +325,11 @@ runs:
       run: |
         set -euo pipefail
 
-        version="${{ steps.prepare.outputs.version || steps.gate.outputs.version }}"
+        version="${{ steps.prepare.outputs.version || steps.bump.outputs.version || steps.gate.outputs.version }}"
 
-        echo "should_publish=${{ steps.gate.outputs.should_publish }}" >> "$GITHUB_OUTPUT"
+        # A burned tag means nothing was published this run, so report that
+        # honestly even though the gate had cleared the version to publish.
+        echo "should_publish=${{ steps.publish.outputs.tag_burned == 'true' && 'false' || steps.gate.outputs.should_publish }}" >> "$GITHUB_OUTPUT"
         echo "has_changes=${{ steps.gate.outputs.has_changes }}" >> "$GITHUB_OUTPUT"
         echo "version=$version" >> "$GITHUB_OUTPUT"
         echo "tag=v$version" >> "$GITHUB_OUTPUT"

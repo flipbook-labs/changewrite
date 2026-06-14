@@ -2,6 +2,7 @@ local helpText = require("@root/cli/helpText")
 local types = require("@root/cli/types")
 
 local attachCommand = require("@root/cli/commands/attach")
+local bumpCommand = require("@root/cli/commands/bump")
 local draftCommand = require("@root/cli/commands/draft")
 local gateCommand = require("@root/cli/commands/gate")
 local notesCommand = require("@root/cli/commands/notes")
@@ -39,6 +40,10 @@ local function run()
 			{
 				name = "prepare-pr",
 				description = preparePrCommand.summary,
+			},
+			{
+				name = "bump",
+				description = bumpCommand.summary,
 			},
 			{
 				name = "help",
