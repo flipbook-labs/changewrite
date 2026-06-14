@@ -10,6 +10,15 @@ local types = require("@root/cli/types")
 local function runCommand(command: types.Command, args: { string })
 	if command.parser then
 		local ok, err = pcall(command.parser.parse, command.parser, args)
+
+		if command.parser:has("help") then
+			helpText.print(command.parser, {
+				title = command.title,
+				summary = command.summary,
+			})
+			process.exit(0)
+		end
+
 		if not ok then
 			local message = tostring(err):match(":%d+: (.+)$") or tostring(err)
 			print(richterm.red("Error: " .. message))
@@ -19,14 +28,6 @@ local function runCommand(command: types.Command, args: { string })
 				summary = command.summary,
 			})
 			process.exit(1)
-		end
-
-		if command.parser:has("help") then
-			helpText.print(command.parser, {
-				title = command.title,
-				summary = command.summary,
-			})
-			process.exit(0)
 		end
 	end
 

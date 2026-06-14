@@ -2,6 +2,7 @@ local runCommand = require("@self/runCommand")
 local types = require("@self/types")
 
 local attachCommand = require("@self/commands/attach")
+local bumpCommand = require("@self/commands/bump")
 local draftCommand = require("@self/commands/draft")
 local gateCommand = require("@self/commands/gate")
 local helpCommand = require("@self/commands/help")
@@ -34,6 +35,7 @@ local availableCommands: { [string]: types.Command } = {
 	publish = publishCommand,
 	notes = notesCommand,
 	["prepare-pr"] = preparePrCommand,
+	bump = bumpCommand,
 	help = helpCommand,
 }
 

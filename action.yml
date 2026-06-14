@@ -30,6 +30,15 @@ inputs:
     description: Tag and draft the configured version even if it already has a tag.
     required: false
     default: "false"
+  force-version:
+    description: >-
+      Open a publish PR that sets this exact version (e.g. 1.2.3), regardless of
+      release state. Use it to forget the version currently being published and
+      release this one instead, for example to step past a tag that can never be
+      published or to redo a release at a different version. The run skips
+      drafting and publishing when set.
+    required: false
+    default: ""
   base:
     description: Base branch for the generated publish PR.
     required: false
@@ -133,6 +142,7 @@ runs:
         cd "$GITHUB_ACTION_PATH"
         lute run install
         lute run build
+        echo "CHANGEWRITE_BIN=$GITHUB_ACTION_PATH/build/changewrite" >> "$GITHUB_ENV"
 
     - name: Evaluate release gate
       id: gate
@@ -147,7 +157,7 @@ runs:
           args+=(--force-publish)
         fi
 
-        result="$("$GITHUB_ACTION_PATH/build/changewrite" "${args[@]}")"
+        result="$("$CHANGEWRITE_BIN" "${args[@]}")"
         echo "$result"
 
         echo "version=$(jq -r '.version' <<< "$result")" >> "$GITHUB_OUTPUT"
@@ -156,13 +166,13 @@ runs:
 
     - name: Draft release
       id: draft
-      if: steps.gate.outputs.should_publish == 'true' && inputs.prepare-only != 'true'
+      if: steps.gate.outputs.should_publish == 'true' && inputs.prepare-only != 'true' && inputs.force-version == ''
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
       run: |
         set -euo pipefail
-        "$GITHUB_ACTION_PATH/build/changewrite" draft --version "${{ steps.gate.outputs.version }}"
+        "$CHANGEWRITE_BIN" draft --version "${{ steps.gate.outputs.version }}"
         echo "draft_created=true" >> "$GITHUB_OUTPUT"
 
     - name: Run post-draft hook
@@ -177,13 +187,13 @@ runs:
 
     - name: Publish release
       id: publish
-      if: steps.gate.outputs.should_publish == 'true' && inputs.publish-immediately == 'true' && inputs.prepare-only != 'true'
+      if: steps.gate.outputs.should_publish == 'true' && inputs.publish-immediately == 'true' && inputs.prepare-only != 'true' && inputs.force-version == ''
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
       run: |
         set -euo pipefail
-        "$GITHUB_ACTION_PATH/build/changewrite" publish --tag "v${{ steps.gate.outputs.version }}"
+        "$CHANGEWRITE_BIN" publish --tag "v${{ steps.gate.outputs.version }}"
         echo "release_created=true" >> "$GITHUB_OUTPUT"
 
     - name: Run post-publish hook
@@ -198,13 +208,33 @@ runs:
 
     - name: Prepare release changes
       id: prepare
-      if: inputs.prepare-only == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true')
+      if: inputs.force-version == '' && (inputs.prepare-only == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true'))
       shell: bash
       env:
         BUMP: ${{ inputs.bump }}
       run: |
         set -euo pipefail
-        result="$("$GITHUB_ACTION_PATH/build/changewrite" prepare-pr --bump "$BUMP")"
+        result="$("$CHANGEWRITE_BIN" prepare-pr --bump "$BUMP")"
+        echo "$result"
+        json="$(tail -n1 <<< "$result")"
+
+        echo "version=$(jq -r '.version' <<< "$json")" >> "$GITHUB_OUTPUT"
+        {
+          echo 'changed_files<<__CHANGEWRITE_FILES__'
+          echo 'CHANGELOG.md'
+          jq -r '.changed_files[]' <<< "$json"
+          echo '__CHANGEWRITE_FILES__'
+        } >> "$GITHUB_OUTPUT"
+
+    - name: Bump to the forced version
+      id: bump
+      if: inputs.force-version != ''
+      shell: bash
+      env:
+        FORCE_VERSION: ${{ inputs.force-version }}
+      run: |
+        set -euo pipefail
+        result="$("$CHANGEWRITE_BIN" bump "$FORCE_VERSION")"
         echo "$result"
         json="$(tail -n1 <<< "$result")"
 
@@ -218,25 +248,25 @@ runs:
 
     - name: Render release notes preview
       id: notes
-      if: steps.prepare.outputs.version != ''
+      if: steps.prepare.outputs.version != '' || steps.bump.outputs.version != ''
       shell: bash
       run: |
         set -euo pipefail
         {
           echo 'body<<__CHANGEWRITE_NOTES__'
-          "$GITHUB_ACTION_PATH/build/changewrite" notes --version "${{ steps.prepare.outputs.version }}"
+          "$CHANGEWRITE_BIN" notes --version "${{ steps.prepare.outputs.version || steps.bump.outputs.version }}"
           echo '__CHANGEWRITE_NOTES__'
         } >> "$GITHUB_OUTPUT"
 
     - name: Render publish PR text
       id: pr
-      if: steps.prepare.outputs.version != ''
+      if: steps.prepare.outputs.version != '' || steps.bump.outputs.version != ''
       shell: bash
       env:
         PR_TITLE_TEMPLATE: ${{ inputs.pr-title }}
         PR_BODY_TEMPLATE: ${{ inputs.pr-body }}
-        VERSION: ${{ steps.prepare.outputs.version }}
-        TAG: v${{ steps.prepare.outputs.version }}
+        VERSION: ${{ steps.prepare.outputs.version || steps.bump.outputs.version }}
+        TAG: v${{ steps.prepare.outputs.version || steps.bump.outputs.version }}
         NOTES: ${{ steps.notes.outputs.body }}
         RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         REPO_URL: ${{ github.server_url }}/${{ github.repository }}
@@ -266,17 +296,17 @@ runs:
         } >> "$GITHUB_OUTPUT"
 
     - name: Create or update publish PR
-      if: steps.prepare.outputs.version != ''
+      if: steps.prepare.outputs.version != '' || steps.bump.outputs.version != ''
       uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ inputs.pr-token || inputs.github-token }}
         base: ${{ inputs.base }}
         branch: ${{ inputs.branch }}
         draft: true
-        commit-message: Publish v${{ steps.prepare.outputs.version }}
+        commit-message: Publish v${{ steps.prepare.outputs.version || steps.bump.outputs.version }}
         title: ${{ steps.pr.outputs.title }}
         add-paths: |
-          ${{ steps.prepare.outputs.changed_files }}
+          ${{ steps.prepare.outputs.changed_files || steps.bump.outputs.changed_files }}
         body: ${{ steps.pr.outputs.body }}
 
     - name: Set action outputs
@@ -285,7 +315,7 @@ runs:
       run: |
         set -euo pipefail
 
-        version="${{ steps.prepare.outputs.version || steps.gate.outputs.version }}"
+        version="${{ steps.prepare.outputs.version || steps.bump.outputs.version || steps.gate.outputs.version }}"
 
         echo "should_publish=${{ steps.gate.outputs.should_publish }}" >> "$GITHUB_OUTPUT"
         echo "has_changes=${{ steps.gate.outputs.has_changes }}" >> "$GITHUB_OUTPUT"
