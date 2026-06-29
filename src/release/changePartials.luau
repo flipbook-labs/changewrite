@@ -118,6 +118,10 @@ local function read(): { Partial }
 		if entry.type ~= "file" or not entry.name:match("%.md$") then
 			continue
 		end
+		-- A README documents the folder for humans, so it isn't a change entry.
+		if entry.name:lower() == "readme.md" then
+			continue
+		end
 
 		local file = tostring(path.normalize(path.join(dir, entry.name)))
 		local parsed = parsePartial(fs.readFileToString(file))
