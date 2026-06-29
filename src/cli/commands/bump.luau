@@ -1,6 +1,7 @@
 local cli = require("@batteries/cli")
 local json = require("@std/json")
 
+local changePartials = require("@root/release/changePartials")
 local getCurrentVersion = require("@root/release/getCurrentVersion")
 local getNextVersion = require("@root/release/getNextVersion")
 local parseVersion = require("@root/release/parseVersion")
@@ -30,7 +31,10 @@ local function bump()
 		nextVersion = target
 	end
 
-	local changedFiles = prepareReleaseFiles(nextVersion)
+	-- Fold whatever partials are pending into the forced version, the same way
+	-- `prepare-pr` does. There may be none (this is an escape hatch for stepping
+	-- past a burned tag), in which case only the version moves.
+	local changedFiles = prepareReleaseFiles(nextVersion, changePartials.read())
 
 	print(json.serialize({
 		version = nextVersion,

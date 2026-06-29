@@ -18,10 +18,6 @@ inputs:
       trigger other workflows.
     required: false
     default: ""
-  bump:
-    description: Which semver component to bump when preparing the next release PR (major, minor, patch).
-    required: false
-    default: minor
   publish-immediately:
     description: Publish the drafted GitHub release immediately. Set false when downstream jobs attach artifacts first.
     required: false
@@ -219,18 +215,15 @@ runs:
       id: prepare
       if: inputs.force-version == '' && (inputs.prepare-only == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true'))
       shell: bash
-      env:
-        BUMP: ${{ inputs.bump }}
       run: |
         set -euo pipefail
-        result="$("$CHANGEWRITE_BIN" prepare-pr --bump "$BUMP")"
+        result="$("$CHANGEWRITE_BIN" prepare-pr)"
         echo "$result"
         json="$(tail -n1 <<< "$result")"
 
         echo "version=$(jq -r '.version' <<< "$json")" >> "$GITHUB_OUTPUT"
         {
           echo 'changed_files<<__CHANGEWRITE_FILES__'
-          echo 'CHANGELOG.md'
           jq -r '.changed_files[]' <<< "$json"
           echo '__CHANGEWRITE_FILES__'
         } >> "$GITHUB_OUTPUT"
@@ -250,7 +243,6 @@ runs:
         echo "version=$(jq -r '.version' <<< "$json")" >> "$GITHUB_OUTPUT"
         {
           echo 'changed_files<<__CHANGEWRITE_FILES__'
-          echo 'CHANGELOG.md'
           jq -r '.changed_files[]' <<< "$json"
           echo '__CHANGEWRITE_FILES__'
         } >> "$GITHUB_OUTPUT"
