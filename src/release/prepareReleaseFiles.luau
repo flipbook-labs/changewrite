@@ -1,10 +1,11 @@
 local fs = require("@std/fs")
 
-local changePartials = require("@root/release/changePartials")
+local readChangePartials = require("@root/release/readChangePartials")
+local removeChangePartials = require("@root/release/removeChangePartials")
 local renderChangelogSection = require("@root/release/renderChangelogSection")
 local writeVersion = require("@root/release/writeVersion")
 
-type Partial = changePartials.Partial
+type ChangelogEntry = readChangePartials.ChangelogEntry
 
 local CHANGELOG_FILE = "CHANGELOG.md"
 local DEFAULT_HEADER = "# Changelog\n\nAll notable changes to this project will be documented in this file."
@@ -49,8 +50,15 @@ end
 -- the removed partials) so the caller can stage them for the publish PR. Shared
 -- by `prepare-pr` and `bump`, which differ only in how they pick the version and
 -- gather partials.
-local function prepareReleaseFiles(nextVersion: string, partials: { Partial }): { string }
+local function prepareReleaseFiles(nextVersion: string, partials: { ChangelogEntry }): { string }
 	local changedFiles = writeVersion(nextVersion)
+
+	-- With no partials there is nothing to fold into the changelog (the `bump`
+	-- escape hatch can reach this), so only the version moves. Writing an empty
+	-- section here would leave a headless `## v{version}` heading in CHANGELOG.md.
+	if #partials == 0 then
+		return changedFiles
+	end
 
 	local section = renderChangelogSection(nextVersion, partials)
 	local existing = if fs.exists(CHANGELOG_FILE) then fs.readFileToString(CHANGELOG_FILE) else DEFAULT_HEADER
@@ -61,7 +69,7 @@ local function prepareReleaseFiles(nextVersion: string, partials: { Partial }): 
 	for _, partial in partials do
 		table.insert(consumed, partial.file)
 	end
-	changePartials.remove(consumed)
+	removeChangePartials(consumed)
 	for _, file in consumed do
 		table.insert(changedFiles, file)
 	end

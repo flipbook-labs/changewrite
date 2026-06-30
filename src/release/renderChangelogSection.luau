@@ -1,6 +1,6 @@
-local changePartials = require("@root/release/changePartials")
+local readChangePartials = require("@root/release/readChangePartials")
 
-type Partial = changePartials.Partial
+type ChangelogEntry = readChangePartials.ChangelogEntry
 
 -- Render a markdown bullet for one entry, indenting any continuation lines so a
 -- multi-paragraph body stays within the list item.
@@ -24,25 +24,25 @@ end
 -- by the entries grouped under `### {category}` headings. Categories are sorted
 -- alphabetically for deterministic output; entries keep the order they were read
 -- in. Pure — the caller handles reading/writing CHANGELOG.md.
-local function renderChangelogSection(version: string, partials: { Partial }): string
-	local plain = (version:gsub("^v", ""))
+local function renderChangelogSection(version: string, entries: { ChangelogEntry }): string
+	local plain = version:gsub("^v", "")
 
-	local byCategory: { [string]: { Partial } } = {}
+	local byCategory: { [string]: { ChangelogEntry } } = {}
 	local categories: { string } = {}
-	for _, partial in partials do
-		if byCategory[partial.category] == nil then
-			byCategory[partial.category] = {}
-			table.insert(categories, partial.category)
+	for _, entry in entries do
+		if byCategory[entry.category] == nil then
+			byCategory[entry.category] = {}
+			table.insert(categories, entry.category)
 		end
-		table.insert(byCategory[partial.category], partial)
+		table.insert(byCategory[entry.category], entry)
 	end
 	table.sort(categories)
 
 	local blocks: { string } = {}
 	for _, category in categories do
 		local bullets: { string } = {}
-		for _, partial in byCategory[category] do
-			table.insert(bullets, renderBullet(partial.body))
+		for _, entry in byCategory[category] do
+			table.insert(bullets, renderBullet(entry.body))
 		end
 		table.insert(blocks, `### {category}\n\n` .. table.concat(bullets, "\n\n"))
 	end

@@ -1,19 +1,19 @@
 local test = require("@std/test")
 
-local changePartials = require("@root/release/changePartials")
+local readChangePartials = require("@root/release/readChangePartials")
 local renderChangelogSection = require("@root/release/renderChangelogSection")
 
-type Partial = changePartials.Partial
+type ChangelogEntry = readChangePartials.ChangelogEntry
 
-local function partial(bump: "major" | "minor" | "patch", category: string, body: string): Partial
+local function entry(bump: "major" | "minor" | "patch", category: string, body: string): ChangelogEntry
 	return { bump = bump, category = category, body = body, file = body }
 end
 
 test.suite("renderChangelogSection", function(suite)
 	suite:case("groups entries under sorted category headings", function(assert)
 		local section = renderChangelogSection("0.4.0", {
-			partial("minor", "Features", "Add change partials."),
-			partial("patch", "Dependencies", "Upgrade Lute."),
+			entry("minor", "Features", "Add change partials."),
+			entry("patch", "Dependencies", "Upgrade Lute."),
 		})
 
 		assert.eq(
@@ -34,8 +34,8 @@ test.suite("renderChangelogSection", function(suite)
 
 	suite:case("keeps multiple entries in the same category", function(assert)
 		local section = renderChangelogSection("1.0.0", {
-			partial("patch", "Changes", "First."),
-			partial("patch", "Changes", "Second."),
+			entry("patch", "Changes", "First."),
+			entry("patch", "Changes", "Second."),
 		})
 
 		assert.eq(
@@ -54,7 +54,7 @@ test.suite("renderChangelogSection", function(suite)
 
 	suite:case("indents multi-line bodies under the bullet", function(assert)
 		local section = renderChangelogSection("1.0.0", {
-			partial("minor", "Changes", "First paragraph.\n\nSecond paragraph."),
+			entry("minor", "Changes", "First paragraph.\n\nSecond paragraph."),
 		})
 
 		assert.eq(
@@ -73,7 +73,7 @@ test.suite("renderChangelogSection", function(suite)
 
 	suite:case("strips a leading v from the version", function(assert)
 		local section = renderChangelogSection("v2.1.0", {
-			partial("patch", "Changes", "Hi."),
+			entry("patch", "Changes", "Hi."),
 		})
 
 		assert.eq(section:match("^## (%S+)"), "v2.1.0")

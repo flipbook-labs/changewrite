@@ -2,12 +2,12 @@ local cli = require("@batteries/cli")
 local json = require("@std/json")
 local process = require("@std/process")
 
-local changePartials = require("@root/release/changePartials")
 local computeBump = require("@root/release/computeBump")
 local config = require("@root/config")
 local getCurrentVersion = require("@root/release/getCurrentVersion")
 local getNextVersion = require("@root/release/getNextVersion")
 local prepareReleaseFiles = require("@root/release/prepareReleaseFiles")
+local readChangePartials = require("@root/release/readChangePartials")
 local types = require("@root/cli/types")
 
 local title = "prepare-pr"
@@ -23,7 +23,7 @@ local function preparePr()
 
 	-- The partials describe the release: their cumulative bump picks the version,
 	-- and their bodies become the changelog. With none there is nothing to do.
-	local partials = changePartials.read()
+	local partials = readChangePartials()
 	assert(
 		#partials > 0,
 		"No change partials found, so there is nothing to release. "

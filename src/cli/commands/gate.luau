@@ -2,10 +2,10 @@ local cli = require("@batteries/cli")
 local json = require("@std/json")
 local process = require("@std/process")
 
-local changePartials = require("@root/release/changePartials")
 local config = require("@root/config")
 local evaluateReleaseGate = require("@root/release/evaluateReleaseGate")
 local getCurrentVersion = require("@root/release/getCurrentVersion")
+local readChangePartials = require("@root/release/readChangePartials")
 local types = require("@root/cli/types")
 
 local title = "gate"
@@ -31,7 +31,7 @@ local function run()
 		version = current,
 		forcePublish = parser:has("force-publish"),
 		tagExists = tagExists,
-		hasPartials = #changePartials.read() > 0,
+		hasPartials = #readChangePartials() > 0,
 	})
 
 	-- Emit the decision as JSON on stdout so callers (the release workflow, or a

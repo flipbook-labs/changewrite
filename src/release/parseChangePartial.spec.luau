@@ -1,10 +1,10 @@
 local test = require("@std/test")
 
-local changePartials = require("@root/release/changePartials")
+local parseChangePartial = require("@root/release/parseChangePartial")
 
-test.suite("changePartials._parsePartial", function(suite)
+test.suite("parseChangePartial", function(suite)
 	suite:case("parses the bump, category, and body", function(assert)
-		local partial = changePartials._parsePartial([[
+		local partial = parseChangePartial([[
 ---
 bump: minor
 category: Features
@@ -19,7 +19,7 @@ Add support for change partials.
 	end)
 
 	suite:case("defaults the category to Changes", function(assert)
-		local partial = changePartials._parsePartial([[
+		local partial = parseChangePartial([[
 ---
 bump: patch
 ---
@@ -31,7 +31,7 @@ Fix a thing.
 	end)
 
 	suite:case("tolerates quoted frontmatter values", function(assert)
-		local partial = changePartials._parsePartial([[
+		local partial = parseChangePartial([[
 ---
 bump: "major"
 category: 'Breaking'
@@ -45,7 +45,7 @@ Drop the old API.
 	end)
 
 	suite:case("preserves multi-paragraph bodies", function(assert)
-		local partial = changePartials._parsePartial([[
+		local partial = parseChangePartial([[
 ---
 bump: minor
 ---
@@ -60,7 +60,7 @@ Second paragraph.
 
 	suite:case("errors on an invalid bump", function(assert)
 		assert.throws(function()
-			changePartials._parsePartial([[
+			parseChangePartial([[
 ---
 bump: huge
 ---
@@ -72,7 +72,7 @@ Nope.
 
 	suite:case("errors when frontmatter is missing", function(assert)
 		assert.throws(function()
-			changePartials._parsePartial("Just a body, no frontmatter.\n")
+			parseChangePartial("Just a body, no frontmatter.\n")
 		end)
 	end)
 end)

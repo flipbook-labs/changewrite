@@ -6,9 +6,6 @@ in the changelog. At release time [changewrite](https://github.com/flipbook-labs
 combines every entry here into `CHANGELOG.md`, bumps the version, and deletes the
 entries it consumed.
 
-This is the changeset workflow: instead of writing the changelog after the fact,
-you add a small entry alongside the code change in the same pull request.
-
 ## Adding an entry
 
 Create a markdown file in this folder. The filename is up to you — it only exists
@@ -21,15 +18,15 @@ bump: minor
 category: Features
 ---
 
-Add support for change entries so releases are assembled from explicit notes.
+Add support for Foo values so Bar can be Bazzed.
 ```
 
 - **`bump`** (required) — how much to move the version: `major`, `minor`, or
   `patch`.
 - **`category`** (optional) — the heading this entry appears under in the
   changelog, e.g. `Features`, `Fixes`, `Dependencies`. Defaults to `Changes`.
-- **Body** — everything below the frontmatter is the changelog text. It can span
-  multiple paragraphs.
+- **Body** — everything below the frontmatter is the changelog text. Aim for one
+  or two sentences; it can span multiple paragraphs if a change needs it.
 
 ## How the version is chosen
 
