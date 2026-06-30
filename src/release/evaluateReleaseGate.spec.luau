@@ -8,19 +8,19 @@ test.suite("evaluateReleaseGate", function(suite)
 			version = "1.2.3",
 			forcePublish = true,
 			tagExists = true,
-			hasPartials = true,
+			hasUnreleasedChanges = true,
 		})
 		assert.eq(result.shouldPublish, true)
 		assert.eq(result.hasChanges, false)
 		assert.eq(result.version, "1.2.3")
 	end)
 
-	suite:case("prepares a PR when there are pending partials", function(assert)
+	suite:case("prepares a PR when there are pending changes", function(assert)
 		local result = evaluateReleaseGate({
 			version = "1.2.3",
 			forcePublish = false,
 			tagExists = true,
-			hasPartials = true,
+			hasUnreleasedChanges = true,
 		})
 		assert.eq(result.shouldPublish, false)
 		assert.eq(result.hasChanges, true)
@@ -31,29 +31,29 @@ test.suite("evaluateReleaseGate", function(suite)
 			version = "0.1.0",
 			forcePublish = false,
 			tagExists = false,
-			hasPartials = true,
+			hasUnreleasedChanges = true,
 		})
 		assert.eq(result.shouldPublish, false)
 		assert.eq(result.hasChanges, true)
 	end)
 
-	suite:case("publishes a prepared version once its partials are consumed", function(assert)
+	suite:case("publishes a prepared version once its changes are consumed", function(assert)
 		local result = evaluateReleaseGate({
 			version = "1.2.3",
 			forcePublish = false,
 			tagExists = false,
-			hasPartials = false,
+			hasUnreleasedChanges = false,
 		})
 		assert.eq(result.shouldPublish, true)
 		assert.eq(result.hasChanges, false)
 	end)
 
-	suite:case("reports nothing to do for a released version with no partials", function(assert)
+	suite:case("reports nothing to do for a released version with no changes", function(assert)
 		local result = evaluateReleaseGate({
 			version = "1.2.3",
 			forcePublish = false,
 			tagExists = true,
-			hasPartials = false,
+			hasUnreleasedChanges = false,
 		})
 		assert.eq(result.shouldPublish, false)
 		assert.eq(result.hasChanges, false)

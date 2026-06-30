@@ -1,6 +1,6 @@
-local readChangePartials = require("@root/release/readChangePartials")
+local types = require("@root/release/types")
 
-type ChangelogEntry = readChangePartials.ChangelogEntry
+type UnreleasedChange = types.UnreleasedChange
 
 -- Render a markdown bullet for one entry, indenting any continuation lines so a
 -- multi-paragraph body stays within the list item.
@@ -24,10 +24,10 @@ end
 -- by the entries grouped under `### {category}` headings. Categories are sorted
 -- alphabetically for deterministic output; entries keep the order they were read
 -- in. Pure — the caller handles reading/writing CHANGELOG.md.
-local function renderChangelogSection(version: string, entries: { ChangelogEntry }): string
+local function renderChangelogSection(version: string, entries: { UnreleasedChange }): string
 	local plain = version:gsub("^v", "")
 
-	local byCategory: { [string]: { ChangelogEntry } } = {}
+	local byCategory: { [string]: { UnreleasedChange } } = {}
 	local categories: { string } = {}
 	for _, entry in entries do
 		if byCategory[entry.category] == nil then

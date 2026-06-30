@@ -1,8 +1,8 @@
 -- Pure decision logic for the release gate. Given the repo's state (current
--- version, whether it's been tagged, and whether any change partials are pending)
--- it decides whether this run should publish the current version or leave it for
--- a future publish PR. Kept free of IO so it can be unit tested; the `gate`
--- command feeds it real git queries and the partial directory.
+-- version, whether it's been tagged, and whether any unreleased changes are
+-- pending) it decides whether this run should publish the current version or
+-- leave it for a future publish PR. Kept free of IO so it can be unit tested; the
+-- `gate` command feeds it real git queries and the unreleased-changes directory.
 
 export type GateInput = {
 	-- The version currently in the configured source of truth.
@@ -11,15 +11,15 @@ export type GateInput = {
 	forcePublish: boolean,
 	-- Whether a `v{version}` tag already exists.
 	tagExists: boolean,
-	-- Whether any change partials are waiting to be released.
-	hasPartials: boolean,
+	-- Whether any unreleased changes are waiting to be released.
+	hasUnreleasedChanges: boolean,
 }
 
 export type GateResult = {
 	version: string,
 	-- This run should tag + draft a release for the current version.
 	shouldPublish: boolean,
-	-- There are unreleased commits, so a publish PR can be prepared.
+	-- There are pending unreleased changes, so a publish PR can be prepared.
 	hasChanges: boolean,
 }
 
@@ -32,13 +32,13 @@ local function evaluateReleaseGate(input: GateInput): GateResult
 		}
 	end
 
-	-- There are change partials that haven't been rolled into a version yet, so a
-	-- publish PR can be prepared to assemble them. Checked before the untagged
-	-- case so the very first release still gets its partials combined into the
+	-- There are unreleased changes that haven't been rolled into a version yet, so
+	-- a publish PR can be prepared to assemble them. Checked before the untagged
+	-- case so the very first release still gets its changes combined into the
 	-- initial (untagged) version before it publishes. Trade-off: a
-	-- prepared-but-unpublished version can absorb a partial that lands before it
+	-- prepared-but-unpublished version can absorb a change that lands before it
 	-- publishes, but the window is tiny since publishing happens on PR merge.
-	if input.hasPartials then
+	if input.hasUnreleasedChanges then
 		return {
 			version = input.version,
 			shouldPublish = false,
@@ -46,9 +46,9 @@ local function evaluateReleaseGate(input: GateInput): GateResult
 		}
 	end
 
-	-- No pending partials and no matching tag: a publish PR merged (the bump
-	-- landed and its partials were consumed) but nothing has been released yet, so
-	-- publish it.
+	-- No pending changes and no matching tag: a publish PR merged (the bump landed
+	-- and its changes were consumed) but nothing has been released yet, so publish
+	-- it.
 	if not input.tagExists then
 		return {
 			version = input.version,
@@ -57,7 +57,7 @@ local function evaluateReleaseGate(input: GateInput): GateResult
 		}
 	end
 
-	-- The current version is already released and nothing is pending.
+	-- The current version is already released and no changes are pending.
 	return {
 		version = input.version,
 		shouldPublish = false,

@@ -10,11 +10,11 @@ export type Config = {
 	current: string?,
 	source: Target,
 	mirrors: { Target },
-	changePartialsDir: string,
+	unreleasedChangesDir: string,
 }
 
 local CONFIG_FILE = "changewrite.toml"
-local DEFAULT_CHANGE_PARTIALS_DIR = "./.changes/"
+local DEFAULT_UNRELEASED_CHANGES_DIR = "./.changes/"
 
 local DEFAULT_PATTERNS: { [string]: string } = {
 	["changewrite.toml"] = "current%s*=%s*[\"']([^\"']+)[\"']",
@@ -72,7 +72,7 @@ local function parseConfigText(text: string): Config
 	local source: Target? = nil
 	local sourcePattern: string? = nil
 	local mirrors: { Target } = {}
-	local changePartialsDir: string? = nil
+	local unreleasedChangesDir: string? = nil
 
 	for line in text:gmatch("[^\r\n]+") do
 		local cleaned = trim(stripComment(line))
@@ -87,9 +87,9 @@ local function parseConfigText(text: string): Config
 			continue
 		end
 
-		-- `change_partials` is a top-level key, so capture it regardless of which
+		-- `unreleased_changes` is a top-level key, so capture it regardless of which
 		-- section we're in before the version-only logic below skips the line.
-		changePartialsDir = readStringField(cleaned, "change_partials") or changePartialsDir
+		unreleasedChangesDir = readStringField(cleaned, "unreleased_changes") or unreleasedChangesDir
 
 		if not inVersionSection then
 			continue
@@ -138,7 +138,7 @@ local function parseConfigText(text: string): Config
 			pattern = DEFAULT_PATTERNS[CONFIG_FILE],
 		},
 		mirrors = mirrors,
-		changePartialsDir = changePartialsDir or DEFAULT_CHANGE_PARTIALS_DIR,
+		unreleasedChangesDir = unreleasedChangesDir or DEFAULT_UNRELEASED_CHANGES_DIR,
 	}
 end
 
@@ -209,14 +209,14 @@ local function getSourceFile(): string
 	return readConfig().source.file
 end
 
-local function getChangePartialsDir(): string
-	return readConfig().changePartialsDir
+local function getUnreleasedChangesDir(): string
+	return readConfig().unreleasedChangesDir
 end
 
 return {
 	_parseConfigText = parseConfigText,
 	getCurrentVersion = getCurrentVersion,
-	getChangePartialsDir = getChangePartialsDir,
+	getUnreleasedChangesDir = getUnreleasedChangesDir,
 	getSourceFile = getSourceFile,
 	writeVersion = writeVersion,
 }

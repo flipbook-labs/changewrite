@@ -1,11 +1,11 @@
 local fs = require("@std/fs")
 
-local readChangePartials = require("@root/release/readChangePartials")
-local removeChangePartials = require("@root/release/removeChangePartials")
+local removeUnreleasedChanges = require("@root/release/removeUnreleasedChanges")
 local renderChangelogSection = require("@root/release/renderChangelogSection")
+local types = require("@root/release/types")
 local writeVersion = require("@root/release/writeVersion")
 
-type ChangelogEntry = readChangePartials.ChangelogEntry
+type UnreleasedChange = types.UnreleasedChange
 
 local CHANGELOG_FILE = "CHANGELOG.md"
 local DEFAULT_HEADER = "# Changelog\n\nAll notable changes to this project will be documented in this file."
@@ -13,8 +13,8 @@ local DEFAULT_HEADER = "# Changelog\n\nAll notable changes to this project will 
 -- Insert a freshly rendered section directly below the changelog's header block
 -- and above the previous releases, keeping two blank lines between blocks to
 -- match the existing layout. The changelog is prepend-only now: once a release's
--- partials are deleted, history can't be regenerated, so we never rewrite the
--- entries already on disk.
+-- unreleased changes are deleted, history can't be regenerated, so we never
+-- rewrite the entries already on disk.
 local function prependSection(changelog: string, section: string): string
 	local header = changelog
 	local releases = ""
@@ -45,31 +45,31 @@ local function prependSection(changelog: string, section: string): string
 end
 
 -- Write a version across the configured source + mirrors, fold the pending
--- change partials into CHANGELOG.md under that version, and delete the consumed
--- partials. Returns every file that changed (version files, the changelog, and
--- the removed partials) so the caller can stage them for the publish PR. Shared
+-- unreleased changes into CHANGELOG.md under that version, and delete the ones
+-- consumed. Returns every file that changed (version files, the changelog, and
+-- the removed changes) so the caller can stage them for the publish PR. Shared
 -- by `prepare-pr` and `bump`, which differ only in how they pick the version and
--- gather partials.
-local function prepareReleaseFiles(nextVersion: string, partials: { ChangelogEntry }): { string }
+-- gather changes.
+local function prepareReleaseFiles(nextVersion: string, changes: { UnreleasedChange }): { string }
 	local changedFiles = writeVersion(nextVersion)
 
-	-- With no partials there is nothing to fold into the changelog (the `bump`
-	-- escape hatch can reach this), so only the version moves. Writing an empty
-	-- section here would leave a headless `## v{version}` heading in CHANGELOG.md.
-	if #partials == 0 then
+	-- With no pending changes there is nothing to fold into the changelog (the
+	-- `bump` escape hatch can reach this), so only the version moves. Writing an
+	-- empty section here would leave a headless `## v{version}` heading.
+	if #changes == 0 then
 		return changedFiles
 	end
 
-	local section = renderChangelogSection(nextVersion, partials)
+	local section = renderChangelogSection(nextVersion, changes)
 	local existing = if fs.exists(CHANGELOG_FILE) then fs.readFileToString(CHANGELOG_FILE) else DEFAULT_HEADER
 	fs.writeStringToFile(CHANGELOG_FILE, prependSection(existing, section))
 	table.insert(changedFiles, CHANGELOG_FILE)
 
 	local consumed: { string } = {}
-	for _, partial in partials do
-		table.insert(consumed, partial.file)
+	for _, change in changes do
+		table.insert(consumed, change.file)
 	end
-	removeChangePartials(consumed)
+	removeUnreleasedChanges(consumed)
 	for _, file in consumed do
 		table.insert(changedFiles, file)
 	end

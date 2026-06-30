@@ -106,7 +106,7 @@ outputs:
     description: Whether this run drafted a release for the configured version.
     value: ${{ steps.result.outputs.should_publish }}
   has_changes:
-    description: Whether there are unreleased commits since the current version tag.
+    description: Whether there are pending unreleased changes to assemble into the next release.
     value: ${{ steps.result.outputs.has_changes }}
   version:
     description: The release version acted on by this run.

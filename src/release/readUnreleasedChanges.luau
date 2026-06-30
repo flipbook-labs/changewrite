@@ -1,20 +1,19 @@
 local fs = require("@std/fs")
 local path = require("@std/path")
 
-local parseChangePartial = require("@root/release/parseChangePartial")
+local parseUnreleasedChange = require("@root/release/parseUnreleasedChange")
+local types = require("@root/release/types")
 local versionSource = require("@root/release/versionSource")
 
-export type ChangelogEntry = parseChangePartial.ParsedChangePartial & {
-	file: string,
-}
+type UnreleasedChange = types.UnreleasedChange
 
-local function readChangePartials(): { ChangelogEntry }
-	local dir = versionSource.getChangePartialsDir()
+local function readUnreleasedChanges(): { UnreleasedChange }
+	local dir = versionSource.getUnreleasedChangesDir()
 	if not fs.exists(dir) then
 		return {}
 	end
 
-	local entries: { ChangelogEntry } = {}
+	local changes: { UnreleasedChange } = {}
 	for _, entry in fs.listDirectory(dir) do
 		if entry.type ~= "file" or not entry.name:match("%.md$") then
 			continue
@@ -24,8 +23,8 @@ local function readChangePartials(): { ChangelogEntry }
 		end
 
 		local file = tostring(path.normalize(path.join(dir, entry.name)))
-		local parsed = parseChangePartial(fs.readFileToString(file))
-		table.insert(entries, {
+		local parsed = parseUnreleasedChange(fs.readFileToString(file))
+		table.insert(changes, {
 			bump = parsed.bump,
 			category = parsed.category,
 			body = parsed.body,
@@ -33,10 +32,10 @@ local function readChangePartials(): { ChangelogEntry }
 		})
 	end
 
-	table.sort(entries, function(a: ChangelogEntry, b: ChangelogEntry)
+	table.sort(changes, function(a: UnreleasedChange, b: UnreleasedChange)
 		return a.file < b.file
 	end)
-	return entries
+	return changes
 end
 
-return readChangePartials
+return readUnreleasedChanges

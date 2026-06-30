@@ -1,11 +1,11 @@
 local test = require("@std/test")
 
-local readChangePartials = require("@root/release/readChangePartials")
 local renderChangelogSection = require("@root/release/renderChangelogSection")
+local types = require("@root/release/types")
 
-type ChangelogEntry = readChangePartials.ChangelogEntry
+type UnreleasedChange = types.UnreleasedChange
 
-local function entry(bump: "major" | "minor" | "patch", category: string, body: string): ChangelogEntry
+local function entry(bump: "major" | "minor" | "patch", category: string, body: string): UnreleasedChange
 	return { bump = bump, category = category, body = body, file = body }
 end
 

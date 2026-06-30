@@ -7,11 +7,11 @@ local config = require("@root/config")
 local getCurrentVersion = require("@root/release/getCurrentVersion")
 local getNextVersion = require("@root/release/getNextVersion")
 local prepareReleaseFiles = require("@root/release/prepareReleaseFiles")
-local readChangePartials = require("@root/release/readChangePartials")
+local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local types = require("@root/cli/types")
 
 local title = "prepare-pr"
-local summary = "Combine the pending change partials and bump the version for the next release."
+local summary = "Combine the pending unreleased changes and bump the version for the next release."
 
 local parser = cli.parser()
 parser:add("help", "flag", {
@@ -21,18 +21,19 @@ parser:add("help", "flag", {
 local function preparePr()
 	local current = getCurrentVersion()
 
-	-- The partials describe the release: their cumulative bump picks the version,
-	-- and their bodies become the changelog. With none there is nothing to do.
-	local partials = readChangePartials()
+	-- The pending changes describe the release: their cumulative bump picks the
+	-- version, and their bodies become the changelog. With none there is nothing
+	-- to do.
+	local changes = readUnreleasedChanges()
 	assert(
-		#partials > 0,
-		"No change partials found, so there is nothing to release. "
-			.. "Add a markdown entry under the configured change_partials directory."
+		#changes > 0,
+		"No unreleased changes found, so there is nothing to release. "
+			.. "Add a markdown entry under the configured unreleased_changes directory."
 	)
 
 	local bumps = {}
-	for _, partial in partials do
-		table.insert(bumps, partial.bump)
+	for _, change in changes do
+		table.insert(bumps, change.bump)
 	end
 	local bumpKind = computeBump(bumps)
 
@@ -42,11 +43,15 @@ local function preparePr()
 
 	-- If the current version is already tagged, bump to the next one; otherwise
 	-- the version hasn't been released yet (e.g. the first release), so assemble
-	-- the partials into it as-is.
-	local nextVersion = if tagExists then getNextVersion(current, bumpKind) else current
-	local changedFiles = prepareReleaseFiles(nextVersion, partials)
+	-- the changes into it as-is. `bumpKind` is non-nil because `changes` is
+	-- non-empty (asserted above); the `and bumpKind` narrows it for getNextVersion.
+	local nextVersion = current
+	if tagExists and bumpKind then
+		nextVersion = getNextVersion(current, bumpKind)
+	end
+	local changedFiles = prepareReleaseFiles(nextVersion, changes)
 
-	-- The bumped version, regenerated changelog, and deleted partials are left in
+	-- The bumped version, regenerated changelog, and deleted changes are left in
 	-- the working tree; the caller commits them and opens the publish PR (the
 	-- release workflow uses peter-evans/create-pull-request). Emit the next
 	-- version as JSON so the caller can title the PR; deliberately

@@ -40,5 +40,5 @@ say how big each change is.
 - `README.md` (this file) is ignored, so it's safe to keep here.
 - Entries are deleted once they're released; they live in this folder only while
   unreleased.
-- The folder location is configurable via `change_partials` in
+- The folder location is configurable via `unreleased_changes` in
   `changewrite.toml` (it defaults to `./.changes/`).

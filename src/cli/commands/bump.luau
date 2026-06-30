@@ -5,7 +5,7 @@ local getCurrentVersion = require("@root/release/getCurrentVersion")
 local getNextVersion = require("@root/release/getNextVersion")
 local parseVersion = require("@root/release/parseVersion")
 local prepareReleaseFiles = require("@root/release/prepareReleaseFiles")
-local readChangePartials = require("@root/release/readChangePartials")
+local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local types = require("@root/cli/types")
 
 local title = "bump"
@@ -31,10 +31,10 @@ local function bump()
 		nextVersion = target
 	end
 
-	-- Fold whatever partials are pending into the forced version, the same way
+	-- Fold whatever changes are pending into the forced version, the same way
 	-- `prepare-pr` does. There may be none (this is an escape hatch for stepping
 	-- past a burned tag), in which case only the version moves.
-	local changedFiles = prepareReleaseFiles(nextVersion, readChangePartials())
+	local changedFiles = prepareReleaseFiles(nextVersion, readUnreleasedChanges())
 
 	print(json.serialize({
 		version = nextVersion,

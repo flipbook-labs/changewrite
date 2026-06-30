@@ -5,7 +5,7 @@ local process = require("@std/process")
 local config = require("@root/config")
 local evaluateReleaseGate = require("@root/release/evaluateReleaseGate")
 local getCurrentVersion = require("@root/release/getCurrentVersion")
-local readChangePartials = require("@root/release/readChangePartials")
+local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local types = require("@root/cli/types")
 
 local title = "gate"
@@ -31,7 +31,7 @@ local function run()
 		version = current,
 		forcePublish = parser:has("force-publish"),
 		tagExists = tagExists,
-		hasPartials = #readChangePartials() > 0,
+		hasUnreleasedChanges = #readUnreleasedChanges() > 0,
 	})
 
 	-- Emit the decision as JSON on stdout so callers (the release workflow, or a

@@ -1,13 +1,7 @@
-local getNextVersion = require("@root/release/getNextVersion")
 local parseVersionComponent = require("@root/release/parseVersionComponent")
+local types = require("@root/release/types")
 
-type VersionComponent = getNextVersion.VersionComponent
-
-export type ParsedChangePartial = {
-	bump: VersionComponent,
-	category: string,
-	body: string,
-}
+type ParsedUnreleasedChange = types.ParsedUnreleasedChange
 
 local DEFAULT_CATEGORY = "Changes"
 
@@ -37,14 +31,14 @@ local function splitLines(text: string): { string }
 	return lines
 end
 
-local function parseChangePartial(text: string): ParsedChangePartial
+local function parseUnreleasedChange(text: string): ParsedUnreleasedChange
 	local lines = splitLines(text)
 
 	local index = 1
 	while index <= #lines and trim(lines[index]) == "" do
 		index += 1
 	end
-	assert(trim(lines[index] or "") == "---", "Change partial is missing its `---` frontmatter")
+	assert(trim(lines[index] or "") == "---", "Unreleased change is missing its `---` frontmatter")
 	index += 1
 
 	local fields: { [string]: string } = {}
@@ -61,14 +55,14 @@ local function parseChangePartial(text: string): ParsedChangePartial
 			fields[key] = stripQuotes(value)
 		end
 	end
-	assert(closed, "Change partial frontmatter is not closed with `---`")
+	assert(closed, "Unreleased change frontmatter is not closed with `---`")
 
 	local bodyLines = {}
 	for j = index, #lines do
 		table.insert(bodyLines, lines[j])
 	end
 	local body = trim(table.concat(bodyLines, "\n"))
-	assert(body ~= "", "Change partial has no body")
+	assert(body ~= "", "Unreleased change has no body")
 
 	local bump = parseVersionComponent(fields.bump)
 	local category = fields.category
@@ -83,4 +77,4 @@ local function parseChangePartial(text: string): ParsedChangePartial
 	}
 end
 
-return parseChangePartial
+return parseUnreleasedChange

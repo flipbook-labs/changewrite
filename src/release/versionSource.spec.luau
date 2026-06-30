@@ -13,24 +13,24 @@ current = "1.2.3"
 		assert.eq(config.source.file, "changewrite.toml")
 	end)
 
-	suite:case("defaults the change partials directory to ./.changes/", function(assert)
+	suite:case("defaults the unreleased changes directory to ./.changes/", function(assert)
 		local config = versionSource._parseConfigText([[
 [version]
 current = "1.2.3"
 ]])
 
-		assert.eq(config.changePartialsDir, "./.changes/")
+		assert.eq(config.unreleasedChangesDir, "./.changes/")
 	end)
 
-	suite:case("reads an explicit change_partials directory", function(assert)
+	suite:case("reads an explicit unreleased_changes directory", function(assert)
 		local config = versionSource._parseConfigText([[
-change_partials = "changelog.d/"
+unreleased_changes = "changelog.d/"
 
 [version]
 current = "1.2.3"
 ]])
 
-		assert.eq(config.changePartialsDir, "changelog.d/")
+		assert.eq(config.unreleasedChangesDir, "changelog.d/")
 	end)
 
 	suite:case("reads an explicit source file and mirror targets", function(assert)
