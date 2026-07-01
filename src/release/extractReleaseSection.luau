@@ -1,20 +1,11 @@
-local function trim(value: string): string
-	local trimmed = value:gsub("^%s+", ""):gsub("%s+$", "")
-	return trimmed
-end
+local splitLines = require("@root/release/splitLines")
+local trim = require("@root/release/trim")
 
--- Slice a single version's notes out of a rendered CHANGELOG.md: everything
--- under its `## v{version}` heading up to the next `## ` heading (or the end of
--- the file), with the heading itself dropped since the GitHub release already
--- shows the tag as its title. Pure, so it can be unit tested against a literal
--- changelog string.
 local function extractReleaseSection(changelog: string, version: string): string
-	local target = `## v{(version:gsub("^v", ""))}`
+	local plain = version:gsub("^v", "")
+	local target = `## v{plain}`
 
-	local lines: { string } = {}
-	for line in (changelog .. "\n"):gmatch("(.-)\n") do
-		table.insert(lines, (line:gsub("\r$", "")))
-	end
+	local lines = splitLines(changelog)
 
 	local start: number? = nil
 	for index, line in lines do

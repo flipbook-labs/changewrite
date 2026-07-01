@@ -1,29 +1,8 @@
+local renderBullet = require("@root/release/renderBullet")
 local types = require("@root/release/types")
 
 type UnreleasedChange = types.UnreleasedChange
 
--- Render a markdown bullet for one entry, indenting any continuation lines so a
--- multi-paragraph body stays within the list item.
-local function renderBullet(body: string): string
-	local out = {}
-	local first = true
-	for line in (body .. "\n"):gmatch("(.-)\n") do
-		if first then
-			table.insert(out, `- {line}`)
-			first = false
-		elseif line == "" then
-			table.insert(out, "")
-		else
-			table.insert(out, `  {line}`)
-		end
-	end
-	return table.concat(out, "\n")
-end
-
--- Render the changelog section for a release: a `## v{version}` heading followed
--- by the entries grouped under `### {category}` headings. Categories are sorted
--- alphabetically for deterministic output; entries keep the order they were read
--- in. Pure — the caller handles reading/writing CHANGELOG.md.
 local function renderChangelogSection(version: string, entries: { UnreleasedChange }): string
 	local plain = version:gsub("^v", "")
 

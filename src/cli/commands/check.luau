@@ -22,8 +22,7 @@ local function run()
 		process.exit(1)
 	end
 
-	local plural = if #changes == 1 then "" else "s"
-	print(`Found {#changes} pending unreleased change{plural}.`)
+	print(`Found {#changes} pending unreleased changes.`)
 end
 
 local command: types.Command = {

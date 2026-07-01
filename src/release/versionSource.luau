@@ -1,6 +1,8 @@
 local fs = require("@std/fs")
 local path = require("@std/path")
 
+local trim = require("@root/release/trim")
+
 export type Target = {
 	file: string,
 	pattern: string?,
@@ -23,10 +25,6 @@ local DEFAULT_PATTERNS: { [string]: string } = {
 	["rotriever.toml"] = "version%s*=%s*[\"']([^\"']+)[\"']",
 	["package.json"] = "[\"']version[\"']%s*:%s*[\"']([^\"']+)[\"']",
 }
-
-local function trim(value: string): string
-	return (value:gsub("^%s+", ""):gsub("%s+$", ""))
-end
 
 local function stripComment(line: string): string
 	local quote: string? = nil
