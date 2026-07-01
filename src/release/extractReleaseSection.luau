@@ -1,5 +1,5 @@
+local chomp = require("@root/chomp")
 local splitLines = require("@root/release/splitLines")
-local trim = require("@root/release/trim")
 
 local function extractReleaseSection(changelog: string, version: string): string
 	local plain = version:gsub("^v", "")
@@ -9,7 +9,7 @@ local function extractReleaseSection(changelog: string, version: string): string
 
 	local start: number? = nil
 	for index, line in lines do
-		if trim(line) == target then
+		if chomp(line) == target then
 			start = index + 1
 			break
 		end
@@ -24,7 +24,7 @@ local function extractReleaseSection(changelog: string, version: string): string
 		table.insert(body, lines[index])
 	end
 
-	return trim(table.concat(body, "\n"))
+	return chomp(table.concat(body, "\n"))
 end
 
 return extractReleaseSection

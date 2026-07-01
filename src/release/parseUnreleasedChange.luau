@@ -1,7 +1,7 @@
+local chomp = require("@root/chomp")
 local parseVersionComponent = require("@root/release/parseVersionComponent")
 local splitLines = require("@root/release/splitLines")
 local stripQuotes = require("@root/release/stripQuotes")
-local trim = require("@root/release/trim")
 local types = require("@root/release/types")
 
 type ParsedUnreleasedChange = types.ParsedUnreleasedChange
@@ -12,10 +12,10 @@ local function parseUnreleasedChange(text: string): ParsedUnreleasedChange
 	local lines = splitLines(text)
 
 	local index = 1
-	while index <= #lines and trim(lines[index]) == "" do
+	while index <= #lines and chomp(lines[index]) == "" do
 		index += 1
 	end
-	assert(trim(lines[index] or "") == "---", "Unreleased change is missing its `---` frontmatter")
+	assert(chomp(lines[index] or "") == "---", "Unreleased change is missing its `---` frontmatter")
 	index += 1
 
 	local fields: { [string]: string } = {}
@@ -23,7 +23,7 @@ local function parseUnreleasedChange(text: string): ParsedUnreleasedChange
 	while index <= #lines do
 		local line = lines[index]
 		index += 1
-		if trim(line) == "---" then
+		if chomp(line) == "---" then
 			closed = true
 			break
 		end
@@ -38,7 +38,7 @@ local function parseUnreleasedChange(text: string): ParsedUnreleasedChange
 	for j = index, #lines do
 		table.insert(bodyLines, lines[j])
 	end
-	local body = trim(table.concat(bodyLines, "\n"))
+	local body = chomp(table.concat(bodyLines, "\n"))
 	assert(body ~= "", "Unreleased change has no body")
 
 	local bump = parseVersionComponent(fields.bump)
