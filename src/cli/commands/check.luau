@@ -18,7 +18,7 @@ local function run()
 	local changes = readUnreleasedChanges()
 	if #changes == 0 then
 		local dir = versionSource.getUnreleasedChangesDir()
-		print(richterm.red(`No unreleased changes found. Add a markdown entry under {dir} describing this change.`))
+		print(richterm.red(`A changelog entry is required. Add a markdown entry under {dir} describing this change.`))
 		process.exit(1)
 	end
 

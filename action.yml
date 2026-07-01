@@ -78,7 +78,7 @@ inputs:
     description: Prepare the publish PR without drafting or publishing a release.
     required: false
     default: "false"
-  require-changes:
+  require-entry:
     description: >-
       Fail the run when no unreleased changes are pending. Enable it on a pull
       request workflow to enforce that every PR adds a changelog entry under the
@@ -158,7 +158,7 @@ runs:
         echo "CHANGEWRITE_BIN=$GITHUB_ACTION_PATH/build/changewrite" >> "$GITHUB_ENV"
 
     - name: Require an unreleased change entry
-      if: inputs.require-changes == 'true'
+      if: inputs.require-entry == 'true'
       shell: bash
       run: |
         set -euo pipefail
@@ -166,7 +166,7 @@ runs:
 
     - name: Evaluate release gate
       id: gate
-      if: inputs.require-changes != 'true'
+      if: inputs.require-entry != 'true'
       shell: bash
       env:
         FORCE_PUBLISH: ${{ inputs.force-publish }}
@@ -229,7 +229,7 @@ runs:
 
     - name: Prepare release changes
       id: prepare
-      if: inputs.require-changes != 'true' && inputs.force-version == '' && (inputs.prepare-only == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true'))
+      if: inputs.require-entry != 'true' && inputs.force-version == '' && (inputs.prepare-only == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true'))
       shell: bash
       run: |
         set -euo pipefail
@@ -246,7 +246,7 @@ runs:
 
     - name: Bump to the forced version
       id: bump
-      if: inputs.force-version != '' && inputs.require-changes != 'true'
+      if: inputs.force-version != '' && inputs.require-entry != 'true'
       shell: bash
       env:
         FORCE_VERSION: ${{ inputs.force-version }}

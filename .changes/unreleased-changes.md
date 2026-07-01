@@ -14,6 +14,6 @@ The changelog and version bump are now driven by entry files instead of commit m
 2. **Add an entry per change-worthy PR.** Create a markdown file with `bump:` (`major`/`minor`/`patch`) and an optional `category:` in the frontmatter; the body becomes the changelog text. This replaces deriving the changelog from commit messages.
 3. **Drop git-cliff.** Delete `cliff.toml` and remove `git-cliff` from your toolchain manifest (`rokit.toml`/`foreman.toml`) — changewrite no longer shells out to it.
 4. **Remove the `bump` input** from your workflow's changewrite step. The bump is now the largest one across the pending entries; use `force-version` when you need to set an exact version by hand.
-5. **(Optional) enforce entries.** Set `require-changes: true` on a pull request workflow to fail any PR that doesn't add an entry.
+5. **(Optional) enforce entries.** Set `require-entry: true` on a pull request workflow to fail any PR that doesn't add an entry.
 
 </details>
