@@ -1,5 +1,6 @@
 local function trim(value: string): string
-	return (value:gsub("^%s+", ""):gsub("%s+$", ""))
+	local trimmed = value:gsub("^%s+", ""):gsub("%s+$", "")
+	return trimmed
 end
 
 -- Slice a single version's notes out of a rendered CHANGELOG.md: everything
