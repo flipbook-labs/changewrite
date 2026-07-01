@@ -319,7 +319,7 @@ runs:
         token: ${{ inputs.pr-token || inputs.github-token }}
         base: ${{ inputs.base }}
         branch: ${{ inputs.branch }}
-        draft: true
+        draft: false
         commit-message: Publish v${{ steps.prepare.outputs.version || steps.bump.outputs.version }}
         title: ${{ steps.pr.outputs.title }}
         add-paths: |
