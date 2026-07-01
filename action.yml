@@ -158,7 +158,7 @@ runs:
         echo "CHANGEWRITE_BIN=$GITHUB_ACTION_PATH/build/changewrite" >> "$GITHUB_ENV"
 
     - name: Require an unreleased change entry
-      if: inputs.require-entry == 'true'
+      if: inputs.require-entry == 'true' && github.head_ref != inputs.branch
       shell: bash
       run: |
         set -euo pipefail
