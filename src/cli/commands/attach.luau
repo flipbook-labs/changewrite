@@ -1,6 +1,7 @@
 local cli = require("@batteries/cli")
 local process = require("@std/process")
 
+local chomp = require("@root/chomp")
 local config = require("@root/config")
 local types = require("@root/cli/types")
 
@@ -27,7 +28,7 @@ local function run()
 	-- Only ever attach to a draft. Once a release is published we don't want to
 	-- mutate its assets, and a missing release shouldn't be created here.
 	local draft = process.run({ config.ghCmd, "release", "view", tag, "--json", "isDraft", "-q", ".isDraft" })
-	if not draft.ok or draft.stdout:gsub("%s+$", "") ~= "true" then
+	if not draft.ok or chomp(draft.stdout) ~= "true" then
 		print(`No draft release for {tag}, skipping asset upload`)
 		return
 	end

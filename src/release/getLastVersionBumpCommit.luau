@@ -1,5 +1,6 @@
 local process = require("@std/process")
 
+local chomp = require("@root/chomp")
 local config = require("@root/config")
 local versionSource = require("@root/release/versionSource")
 
@@ -17,7 +18,7 @@ local function getLastVersionBumpCommit(version: string): string?
 	})
 	assert(result.ok, result.stderr)
 
-	local sha = result.stdout:gsub("%s+$", "")
+	local sha = chomp(result.stdout)
 	if sha == "" then
 		return nil
 	end
