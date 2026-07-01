@@ -11,9 +11,11 @@ export type Config = {
 	current: string?,
 	source: Target,
 	mirrors: { Target },
+	unreleasedChangesDir: string,
 }
 
 local CONFIG_FILE = "changewrite.toml"
+local DEFAULT_UNRELEASED_CHANGES_DIR = "./.changes/"
 
 local DEFAULT_PATTERNS: { [string]: string } = {
 	["changewrite.toml"] = "current%s*=%s*[\"']([^\"']+)[\"']",
@@ -75,6 +77,7 @@ local function parseConfigText(text: string): Config
 		current = readString(versionConfig.current),
 		source = source,
 		mirrors = mirrors,
+		unreleasedChangesDir = readString(parsed.unreleased_changes) or DEFAULT_UNRELEASED_CHANGES_DIR,
 	}
 end
 
@@ -145,9 +148,14 @@ local function getSourceFile(): string
 	return readConfig().source.file
 end
 
+local function getUnreleasedChangesDir(): string
+	return readConfig().unreleasedChangesDir
+end
+
 return {
 	_parseConfigText = parseConfigText,
 	getCurrentVersion = getCurrentVersion,
+	getUnreleasedChangesDir = getUnreleasedChangesDir,
 	getSourceFile = getSourceFile,
 	writeVersion = writeVersion,
 }
