@@ -1,5 +1,6 @@
 local process = require("@std/process")
 
+local chomp = require("@root/chomp")
 local config = require("@root/config")
 
 -- Render the Markdown notes for a single release: the body that goes on the
@@ -27,7 +28,7 @@ local function renderReleaseNotes(tag: string): string
 	assert(notes.ok, notes.stderr)
 
 	-- Trim trailing whitespace so callers control the surrounding layout.
-	return (notes.stdout:gsub("%s+$", ""))
+	return chomp(notes.stdout)
 end
 
 return renderReleaseNotes

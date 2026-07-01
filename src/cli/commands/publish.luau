@@ -2,6 +2,7 @@ local FlipbookBatteries = require("@pkg/flipbook-batteries@v0.11.1")
 local cli = require("@batteries/cli")
 local process = require("@std/process")
 
+local chomp = require("@root/chomp")
 local config = require("@root/config")
 local getCurrentVersion = require("@root/release/getCurrentVersion")
 local types = require("@root/cli/types")
@@ -28,7 +29,7 @@ local function publish()
 	local view = process.run({ config.ghCmd, "release", "view", tag, "--json", "isDraft", "-q", ".isDraft" })
 	assert(view.ok, `No release found for {tag}; nothing to publish`)
 
-	if view.stdout:gsub("%s+$", "") ~= "true" then
+	if chomp(view.stdout) ~= "true" then
 		print(`Release {tag} is already published`)
 		return
 	end

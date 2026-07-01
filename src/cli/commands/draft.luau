@@ -4,6 +4,7 @@ local fs = require("@std/fs")
 local path = require("@std/path")
 local process = require("@std/process")
 
+local chomp = require("@root/chomp")
 local config = require("@root/config")
 local getCurrentVersion = require("@root/release/getCurrentVersion")
 local getLastVersionBumpCommit = require("@root/release/getLastVersionBumpCommit")
@@ -50,7 +51,7 @@ local function draft()
 	if isFirstRelease then
 		local headResult = process.run({ config.gitCmd, "rev-parse", "HEAD" })
 		assert(headResult.ok, headResult.stderr)
-		sha = headResult.stdout:gsub("%s+$", "")
+		sha = chomp(headResult.stdout)
 	else
 		-- Tag the commit that set this version rather than whichever commit
 		-- happened to trip the gate.
