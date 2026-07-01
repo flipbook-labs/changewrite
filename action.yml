@@ -18,10 +18,6 @@ inputs:
       trigger other workflows.
     required: false
     default: ""
-  bump:
-    description: Which semver component to bump when preparing the next release PR (major, minor, patch).
-    required: false
-    default: minor
   publish-immediately:
     description: Publish the drafted GitHub release immediately. Set false when downstream jobs attach artifacts first.
     required: false
@@ -82,6 +78,14 @@ inputs:
     description: Prepare the publish PR without drafting or publishing a release.
     required: false
     default: "false"
+  require-entry:
+    description: >-
+      Fail the run when no unreleased changes are pending. Enable it on a pull
+      request workflow to enforce that every PR adds a changelog entry under the
+      configured unreleased-changes directory. When enabled the action only runs
+      this check and skips the release flow. Defaults to off (does nothing).
+    required: false
+    default: "false"
   post-draft-hook:
     description: >-
       Bash run after the draft release is created, before it is published. Use it
@@ -110,7 +114,7 @@ outputs:
     description: Whether this run drafted a release for the configured version.
     value: ${{ steps.result.outputs.should_publish }}
   has_changes:
-    description: Whether there are unreleased commits since the current version tag.
+    description: Whether there are pending unreleased changes to assemble into the next release.
     value: ${{ steps.result.outputs.has_changes }}
   version:
     description: The release version acted on by this run.
@@ -153,8 +157,16 @@ runs:
         lute run build
         echo "CHANGEWRITE_BIN=$GITHUB_ACTION_PATH/build/changewrite" >> "$GITHUB_ENV"
 
+    - name: Require an unreleased change entry
+      if: inputs.require-entry == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        "$CHANGEWRITE_BIN" check
+
     - name: Evaluate release gate
       id: gate
+      if: inputs.require-entry != 'true'
       shell: bash
       env:
         FORCE_PUBLISH: ${{ inputs.force-publish }}
@@ -217,27 +229,24 @@ runs:
 
     - name: Prepare release changes
       id: prepare
-      if: inputs.force-version == '' && (inputs.prepare-only == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true'))
+      if: inputs.require-entry != 'true' && inputs.force-version == '' && (inputs.prepare-only == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true'))
       shell: bash
-      env:
-        BUMP: ${{ inputs.bump }}
       run: |
         set -euo pipefail
-        result="$("$CHANGEWRITE_BIN" prepare-pr --bump "$BUMP")"
+        result="$("$CHANGEWRITE_BIN" prepare-pr)"
         echo "$result"
         json="$(tail -n1 <<< "$result")"
 
         echo "version=$(jq -r '.version' <<< "$json")" >> "$GITHUB_OUTPUT"
         {
           echo 'changed_files<<__CHANGEWRITE_FILES__'
-          echo 'CHANGELOG.md'
           jq -r '.changed_files[]' <<< "$json"
           echo '__CHANGEWRITE_FILES__'
         } >> "$GITHUB_OUTPUT"
 
     - name: Bump to the forced version
       id: bump
-      if: inputs.force-version != ''
+      if: inputs.force-version != '' && inputs.require-entry != 'true'
       shell: bash
       env:
         FORCE_VERSION: ${{ inputs.force-version }}
@@ -250,7 +259,6 @@ runs:
         echo "version=$(jq -r '.version' <<< "$json")" >> "$GITHUB_OUTPUT"
         {
           echo 'changed_files<<__CHANGEWRITE_FILES__'
-          echo 'CHANGELOG.md'
           jq -r '.changed_files[]' <<< "$json"
           echo '__CHANGEWRITE_FILES__'
         } >> "$GITHUB_OUTPUT"

@@ -7,5 +7,4 @@
 lute = "luau-lang/lute@1.0.1-nightly.20260612"
 luau-lsp = "JohnnyMorganz/luau-lsp@1.68.0"
 stylua = "JohnnyMorganz/stylua@2.5.2"
-git-cliff = "orhun/git-cliff@2.13.1"
 selene = "Kampfkarren/selene@0.31.0"

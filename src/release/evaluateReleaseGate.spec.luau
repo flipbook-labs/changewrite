@@ -8,41 +8,52 @@ test.suite("evaluateReleaseGate", function(suite)
 			version = "1.2.3",
 			forcePublish = true,
 			tagExists = true,
-			commitsSinceTag = 5,
+			hasUnreleasedChanges = true,
 		})
 		assert.eq(result.shouldPublish, true)
 		assert.eq(result.hasChanges, false)
 		assert.eq(result.version, "1.2.3")
 	end)
 
-	suite:case("publishes when the current version has no tag yet", function(assert)
-		local result = evaluateReleaseGate({
-			version = "1.2.3",
-			forcePublish = false,
-			tagExists = false,
-			commitsSinceTag = 0,
-		})
-		assert.eq(result.shouldPublish, true)
-		assert.eq(result.hasChanges, false)
-	end)
-
-	suite:case("does not publish a released version but flags unreleased commits", function(assert)
+	suite:case("prepares a PR when there are pending changes", function(assert)
 		local result = evaluateReleaseGate({
 			version = "1.2.3",
 			forcePublish = false,
 			tagExists = true,
-			commitsSinceTag = 3,
+			hasUnreleasedChanges = true,
 		})
 		assert.eq(result.shouldPublish, false)
 		assert.eq(result.hasChanges, true)
 	end)
 
-	suite:case("reports no changes when a released version is at its tag", function(assert)
+	suite:case("prepares the first release before it is tagged", function(assert)
+		local result = evaluateReleaseGate({
+			version = "0.1.0",
+			forcePublish = false,
+			tagExists = false,
+			hasUnreleasedChanges = true,
+		})
+		assert.eq(result.shouldPublish, false)
+		assert.eq(result.hasChanges, true)
+	end)
+
+	suite:case("publishes a prepared version once its changes are consumed", function(assert)
+		local result = evaluateReleaseGate({
+			version = "1.2.3",
+			forcePublish = false,
+			tagExists = false,
+			hasUnreleasedChanges = false,
+		})
+		assert.eq(result.shouldPublish, true)
+		assert.eq(result.hasChanges, false)
+	end)
+
+	suite:case("reports nothing to do for a released version with no changes", function(assert)
 		local result = evaluateReleaseGate({
 			version = "1.2.3",
 			forcePublish = false,
 			tagExists = true,
-			commitsSinceTag = 0,
+			hasUnreleasedChanges = false,
 		})
 		assert.eq(result.shouldPublish, false)
 		assert.eq(result.hasChanges, false)

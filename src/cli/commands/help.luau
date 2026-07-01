@@ -3,6 +3,7 @@ local types = require("@root/cli/types")
 
 local attachCommand = require("@root/cli/commands/attach")
 local bumpCommand = require("@root/cli/commands/bump")
+local checkCommand = require("@root/cli/commands/check")
 local draftCommand = require("@root/cli/commands/draft")
 local gateCommand = require("@root/cli/commands/gate")
 local notesCommand = require("@root/cli/commands/notes")
@@ -44,6 +45,10 @@ local function run()
 			{
 				name = "bump",
 				description = bumpCommand.summary,
+			},
+			{
+				name = "check",
+				description = checkCommand.summary,
 			},
 			{
 				name = "help",
