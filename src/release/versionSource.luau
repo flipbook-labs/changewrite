@@ -59,7 +59,10 @@ local function parseConfigText(text: string): Config
 
 	local mirrors: { Target } = {}
 	local mirror = versionConfig.mirror
-	if typeof(mirror) == "table" then
+	local single = parseTarget(mirror)
+	if single then
+		table.insert(mirrors, single)
+	elseif typeof(mirror) == "table" then
 		for _, entry in mirror :: { toml.TomlValue } do
 			local target = parseTarget(entry)
 			if target then
