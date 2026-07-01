@@ -21,9 +21,6 @@ parser:add("help", "flag", {
 local function preparePr()
 	local current = getCurrentVersion()
 
-	-- The pending changes describe the release: their cumulative bump picks the
-	-- version, and their bodies become the changelog. With none there is nothing
-	-- to do.
 	local changes = readUnreleasedChanges()
 	assert(
 		#changes > 0,
@@ -37,25 +34,14 @@ local function preparePr()
 	end
 	local bumpKind = computeBump(bumps)
 
-	-- `rev-parse --verify` exits non-zero when the ref is missing, so its exit
-	-- code answers whether the tag exists; `-q` silences the stderr it would print.
 	local tagExists = process.run({ config.gitCmd, "rev-parse", "-q", "--verify", `refs/tags/v{current}` }).ok
 
-	-- If the current version is already tagged, bump to the next one; otherwise
-	-- the version hasn't been released yet (e.g. the first release), so assemble
-	-- the changes into it as-is. `bumpKind` is non-nil because `changes` is
-	-- non-empty (asserted above); the `and bumpKind` narrows it for getNextVersion.
 	local nextVersion = current
 	if tagExists and bumpKind then
 		nextVersion = getNextVersion(current, bumpKind)
 	end
 	local changedFiles = prepareReleaseFiles(nextVersion, changes)
 
-	-- The bumped version, regenerated changelog, and deleted changes are left in
-	-- the working tree; the caller commits them and opens the publish PR (the
-	-- release workflow uses peter-evans/create-pull-request). Emit the next
-	-- version as JSON so the caller can title the PR; deliberately
-	-- environment-agnostic, like `gate`.
 	print(json.serialize({
 		version = nextVersion,
 		changed_files = changedFiles,

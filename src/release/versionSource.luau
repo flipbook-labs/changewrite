@@ -87,8 +87,6 @@ local function parseConfigText(text: string): Config
 			continue
 		end
 
-		-- `unreleased_changes` is a top-level key, so capture it regardless of which
-		-- section we're in before the version-only logic below skips the line.
 		unreleasedChangesDir = readStringField(cleaned, "unreleased_changes") or unreleasedChangesDir
 
 		if not inVersionSection then
