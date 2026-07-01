@@ -1,26 +1,36 @@
-local FlipbookBatteries = require("@pkg/flipbook-batteries@v0.11.1")
+local fs = require("@std/fs")
 
-local config = require("@root/config")
+local prependSection = require("@root/release/prependSection")
+local removeUnreleasedChanges = require("@root/release/removeUnreleasedChanges")
+local renderChangelogSection = require("@root/release/renderChangelogSection")
+local types = require("@root/release/types")
 local writeVersion = require("@root/release/writeVersion")
 
-local run = FlipbookBatteries.run
+type UnreleasedChange = types.UnreleasedChange
 
--- Write a version across the configured source + mirrors and regenerate the
--- changelog so unreleased commits land under that version's tag. Returns the
--- files whose version string changed (the changelog is always touched too, so
--- callers add it themselves). Shared by `prepare-pr` and `bump`, which differ
--- only in how they pick the next version.
-local function prepareReleaseFiles(nextVersion: string): { string }
+local CHANGELOG_FILE = "CHANGELOG.md"
+local DEFAULT_HEADER = "# Changelog\n\nAll notable changes to this project will be documented in this file."
+
+local function prepareReleaseFiles(nextVersion: string, changes: { UnreleasedChange }): { string }
 	local changedFiles = writeVersion(nextVersion)
 
-	run(config.gitCliffCmd, {
-		"--config",
-		"cliff.toml",
-		"--tag",
-		`v{nextVersion}`,
-		"--output",
-		"CHANGELOG.md",
-	})
+	if #changes == 0 then
+		return changedFiles
+	end
+
+	local section = renderChangelogSection(nextVersion, changes)
+	local existing = if fs.exists(CHANGELOG_FILE) then fs.readFileToString(CHANGELOG_FILE) else DEFAULT_HEADER
+	fs.writeStringToFile(CHANGELOG_FILE, prependSection(existing, section))
+	table.insert(changedFiles, CHANGELOG_FILE)
+
+	local consumed: { string } = {}
+	for _, change in changes do
+		table.insert(consumed, change.file)
+	end
+	removeUnreleasedChanges(consumed)
+	for _, file in consumed do
+		table.insert(changedFiles, file)
+	end
 
 	return changedFiles
 end

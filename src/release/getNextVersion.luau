@@ -1,6 +1,7 @@
 local parseVersion = require("@root/release/parseVersion")
+local types = require("@root/release/types")
 
-export type VersionComponent = "major" | "minor" | "patch"
+type VersionComponent = types.VersionComponent
 
 -- Compute the next version. `major` resets the minor and patch (x.y.z ->
 -- (x+1).0.0); `minor` resets the patch (x.y.z -> x.(y+1).0); `patch` increments
