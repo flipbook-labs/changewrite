@@ -1,5 +1,6 @@
 local fs = require("@std/fs")
 local path = require("@std/path")
+local toml = require("@batteries/toml")
 
 export type Target = {
 	file: string,
@@ -22,114 +23,54 @@ local DEFAULT_PATTERNS: { [string]: string } = {
 	["package.json"] = "[\"']version[\"']%s*:%s*[\"']([^\"']+)[\"']",
 }
 
-local function trim(value: string): string
-	return (value:gsub("^%s+", ""):gsub("%s+$", ""))
+local function readString(value: toml.TomlValue?): string?
+	return if typeof(value) == "string" then value else nil
 end
 
-local function stripComment(line: string): string
-	local quote: string? = nil
-	for i = 1, #line do
-		local char = line:sub(i, i)
-		if quote then
-			if char == quote and line:sub(i - 1, i - 1) ~= "\\" then
-				quote = nil
-			end
-		elseif char == '"' or char == "'" then
-			quote = char
-		elseif char == "#" then
-			return line:sub(1, i - 1)
-		end
+local function parseTarget(value: toml.TomlValue): Target?
+	if typeof(value) ~= "table" then
+		return nil
 	end
-	return line
-end
 
-local function readStringField(text: string, key: string): string?
-	local doubleQuoted = text:match(key .. '%s*=%s*"([^"]*)"')
-	if doubleQuoted then
-		return doubleQuoted
-	end
-	local singleQuoted = text:match(key .. "%s*=%s*'([^']*)'")
-	return singleQuoted
-end
-
-local function parseTarget(text: string): Target?
-	local file = readStringField(text, "file")
+	local target = value :: { [string]: toml.TomlValue }
+	local file = readString(target.file)
 	if not file then
 		return nil
 	end
+
 	return {
 		file = file,
-		pattern = readStringField(text, "pattern"),
+		pattern = readString(target.pattern),
 	}
 end
 
 local function parseConfigText(text: string): Config
-	local inVersionSection = false
-	local inMirrorList = false
-	local current: string? = nil
-	local source: Target? = nil
-	local sourcePattern: string? = nil
+	local parsed = toml.deserialize(text)
+
+	local version = parsed.version
+	local versionConfig: { [string]: toml.TomlValue } = if typeof(version) == "table"
+		then version :: { [string]: toml.TomlValue }
+		else {}
+
+	local file = readString(versionConfig.file)
+	local source: Target = if file
+		then { file = file, pattern = readString(versionConfig.pattern) }
+		else { file = CONFIG_FILE, pattern = DEFAULT_PATTERNS[CONFIG_FILE] }
+
 	local mirrors: { Target } = {}
-
-	for line in text:gmatch("[^\r\n]+") do
-		local cleaned = trim(stripComment(line))
-		if cleaned == "" then
-			continue
-		end
-
-		local section = cleaned:match("^%[([^%]]+)%]$")
-		if section then
-			inVersionSection = section == "version"
-			inMirrorList = false
-			continue
-		end
-
-		if not inVersionSection then
-			continue
-		end
-
-		if inMirrorList then
-			local target = parseTarget(cleaned)
+	local mirror = versionConfig.mirror
+	if typeof(mirror) == "table" then
+		for _, entry in mirror :: { toml.TomlValue } do
+			local target = parseTarget(entry)
 			if target then
 				table.insert(mirrors, target)
 			end
-			if cleaned:find("%]") then
-				inMirrorList = false
-			end
-			continue
 		end
-
-		if cleaned:match("^mirror%s*=") then
-			inMirrorList = true
-			local target = parseTarget(cleaned)
-			if target then
-				table.insert(mirrors, target)
-			end
-			if cleaned:find("%]") then
-				inMirrorList = false
-			end
-			continue
-		end
-
-		current = readStringField(cleaned, "current") or current
-		sourcePattern = readStringField(cleaned, "pattern") or sourcePattern
-
-		local configuredSource = parseTarget(cleaned)
-		if configuredSource then
-			source = configuredSource
-		end
-	end
-
-	if source and not source.pattern then
-		source.pattern = sourcePattern
 	end
 
 	return {
-		current = current,
-		source = source or {
-			file = CONFIG_FILE,
-			pattern = DEFAULT_PATTERNS[CONFIG_FILE],
-		},
+		current = readString(versionConfig.current),
+		source = source,
 		mirrors = mirrors,
 	}
 end
