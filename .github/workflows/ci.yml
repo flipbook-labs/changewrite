@@ -63,7 +63,7 @@ jobs:
   changelog:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: github.event_name == 'pull_request' && !endsWith(github.head_ref, 'publish-next-version')
+    if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v6
 
