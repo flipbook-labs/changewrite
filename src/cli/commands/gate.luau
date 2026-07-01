@@ -5,6 +5,7 @@ local process = require("@std/process")
 local config = require("@root/config")
 local evaluateReleaseGate = require("@root/release/evaluateReleaseGate")
 local getCurrentVersion = require("@root/release/getCurrentVersion")
+local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local types = require("@root/cli/types")
 
 local title = "gate"
@@ -26,19 +27,11 @@ local function run()
 	-- code answers whether the tag exists; `-q` silences the stderr it would print.
 	local tagExists = process.run({ config.gitCmd, "rev-parse", "-q", "--verify", `refs/tags/{tag}` }).ok
 
-	-- Commits between the current version's tag and HEAD; 0 when untagged.
-	local commitsSinceTag = 0
-	if tagExists then
-		local revList = process.run({ config.gitCmd, "rev-list", "--count", `{tag}..HEAD` })
-		assert(revList.ok, revList.stderr)
-		commitsSinceTag = tonumber(revList.stdout) or 0
-	end
-
 	local result = evaluateReleaseGate({
 		version = current,
 		forcePublish = parser:has("force-publish"),
 		tagExists = tagExists,
-		commitsSinceTag = commitsSinceTag,
+		hasUnreleasedChanges = #readUnreleasedChanges() > 0,
 	})
 
 	-- Emit the decision as JSON on stdout so callers (the release workflow, or a

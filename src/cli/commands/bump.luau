@@ -5,6 +5,7 @@ local getCurrentVersion = require("@root/release/getCurrentVersion")
 local getNextVersion = require("@root/release/getNextVersion")
 local parseVersion = require("@root/release/parseVersion")
 local prepareReleaseFiles = require("@root/release/prepareReleaseFiles")
+local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local types = require("@root/cli/types")
 
 local title = "bump"
@@ -30,7 +31,10 @@ local function bump()
 		nextVersion = target
 	end
 
-	local changedFiles = prepareReleaseFiles(nextVersion)
+	-- Fold whatever changes are pending into the forced version, the same way
+	-- `prepare-pr` does. There may be none (this is an escape hatch for stepping
+	-- past a burned tag), in which case only the version moves.
+	local changedFiles = prepareReleaseFiles(nextVersion, readUnreleasedChanges())
 
 	print(json.serialize({
 		version = nextVersion,

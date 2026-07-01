@@ -1,6 +1,8 @@
 local fs = require("@std/fs")
 local path = require("@std/path")
 
+local trim = require("@root/release/trim")
+
 export type Target = {
 	file: string,
 	pattern: string?,
@@ -10,9 +12,11 @@ export type Config = {
 	current: string?,
 	source: Target,
 	mirrors: { Target },
+	unreleasedChangesDir: string,
 }
 
 local CONFIG_FILE = "changewrite.toml"
+local DEFAULT_UNRELEASED_CHANGES_DIR = "./.changes/"
 
 local DEFAULT_PATTERNS: { [string]: string } = {
 	["changewrite.toml"] = "current%s*=%s*[\"']([^\"']+)[\"']",
@@ -21,10 +25,6 @@ local DEFAULT_PATTERNS: { [string]: string } = {
 	["rotriever.toml"] = "version%s*=%s*[\"']([^\"']+)[\"']",
 	["package.json"] = "[\"']version[\"']%s*:%s*[\"']([^\"']+)[\"']",
 }
-
-local function trim(value: string): string
-	return (value:gsub("^%s+", ""):gsub("%s+$", ""))
-end
 
 local function stripComment(line: string): string
 	local quote: string? = nil
@@ -70,6 +70,7 @@ local function parseConfigText(text: string): Config
 	local source: Target? = nil
 	local sourcePattern: string? = nil
 	local mirrors: { Target } = {}
+	local unreleasedChangesDir: string? = nil
 
 	for line in text:gmatch("[^\r\n]+") do
 		local cleaned = trim(stripComment(line))
@@ -83,6 +84,8 @@ local function parseConfigText(text: string): Config
 			inMirrorList = false
 			continue
 		end
+
+		unreleasedChangesDir = readStringField(cleaned, "unreleased_changes") or unreleasedChangesDir
 
 		if not inVersionSection then
 			continue
@@ -131,6 +134,7 @@ local function parseConfigText(text: string): Config
 			pattern = DEFAULT_PATTERNS[CONFIG_FILE],
 		},
 		mirrors = mirrors,
+		unreleasedChangesDir = unreleasedChangesDir or DEFAULT_UNRELEASED_CHANGES_DIR,
 	}
 end
 
@@ -201,9 +205,14 @@ local function getSourceFile(): string
 	return readConfig().source.file
 end
 
+local function getUnreleasedChangesDir(): string
+	return readConfig().unreleasedChangesDir
+end
+
 return {
 	_parseConfigText = parseConfigText,
 	getCurrentVersion = getCurrentVersion,
+	getUnreleasedChangesDir = getUnreleasedChangesDir,
 	getSourceFile = getSourceFile,
 	writeVersion = writeVersion,
 }
