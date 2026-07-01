@@ -3,6 +3,7 @@ local types = require("@self/types")
 
 local attachCommand = require("@self/commands/attach")
 local bumpCommand = require("@self/commands/bump")
+local checkCommand = require("@self/commands/check")
 local draftCommand = require("@self/commands/draft")
 local gateCommand = require("@self/commands/gate")
 local helpCommand = require("@self/commands/help")
@@ -36,6 +37,7 @@ local availableCommands: { [string]: types.Command } = {
 	notes = notesCommand,
 	["prepare-pr"] = preparePrCommand,
 	bump = bumpCommand,
+	check = checkCommand,
 	help = helpCommand,
 }
 

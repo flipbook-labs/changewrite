@@ -78,6 +78,14 @@ inputs:
     description: Prepare the publish PR without drafting or publishing a release.
     required: false
     default: "false"
+  require-changes:
+    description: >-
+      Fail the run when no unreleased changes are pending. Enable it on a pull
+      request workflow to enforce that every PR adds a changelog entry under the
+      configured unreleased-changes directory. When enabled the action only runs
+      this check and skips the release flow. Defaults to off (does nothing).
+    required: false
+    default: "false"
   post-draft-hook:
     description: >-
       Bash run after the draft release is created, before it is published. Use it
@@ -149,8 +157,16 @@ runs:
         lute run build
         echo "CHANGEWRITE_BIN=$GITHUB_ACTION_PATH/build/changewrite" >> "$GITHUB_ENV"
 
+    - name: Require an unreleased change entry
+      if: inputs.require-changes == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        "$CHANGEWRITE_BIN" check
+
     - name: Evaluate release gate
       id: gate
+      if: inputs.require-changes != 'true'
       shell: bash
       env:
         FORCE_PUBLISH: ${{ inputs.force-publish }}
@@ -213,7 +229,7 @@ runs:
 
     - name: Prepare release changes
       id: prepare
-      if: inputs.force-version == '' && (inputs.prepare-only == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true'))
+      if: inputs.require-changes != 'true' && inputs.force-version == '' && (inputs.prepare-only == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true'))
       shell: bash
       run: |
         set -euo pipefail
@@ -230,7 +246,7 @@ runs:
 
     - name: Bump to the forced version
       id: bump
-      if: inputs.force-version != ''
+      if: inputs.force-version != '' && inputs.require-changes != 'true'
       shell: bash
       env:
         FORCE_VERSION: ${{ inputs.force-version }}
