@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.5.0
+
+### Changes
+
+- Download the pre-built binary from the GitHub release instead of compiling from source on every action run. Removes the `rokit-version` input, which was only used internally to drive the build.
+
+### Features
+
+- Enhance the `check` command's error message to include a ready-to-adapt changelog entry template and guidance on the entry format, so users can write correct entries without leaving the terminal.
+
+### Fixes
+
+- Fall back to the latest release when the binary for the version in `changewrite.toml` isn't published yet. The publish PR bumps the version before its release exists, so pinning the download to that version left every publish PR's CI failing with "release not found".
+
+
 ## v0.4.0
 
 ### Changes
