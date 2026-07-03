@@ -3,6 +3,10 @@ description: Create release PRs, draft/publish GitHub releases, and expose relea
 author: flipbook-labs
 
 inputs:
+  rokit-version:
+    description: Version of Rokit to install.
+    required: false
+    default: v1.2.0
   github-token:
     description: Token used for GitHub API calls (release creation, publishing). Defaults to the built-in GITHUB_TOKEN.
     required: false
@@ -128,36 +132,30 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Download changewrite binary
+    - name: Save and clear rokit auth
       shell: bash
-      env:
-        GH_TOKEN: ${{ inputs.github-token }}
       run: |
         set -euo pipefail
-
-        version="$(sed -n 's/^current = "\(.*\)"/\1/p' "$GITHUB_ACTION_PATH/changewrite.toml")"
-        if [[ -z "$version" ]]; then
-          echo "Failed to parse version from changewrite.toml"
-          exit 1
+        if [ -f "$HOME/.rokit/auth.toml" ]; then
+          cp "$HOME/.rokit/auth.toml" "$HOME/.rokit/auth.toml.changewrite-bak"
+          rokit authenticate github --remove 2>/dev/null || true
         fi
 
-        case "${RUNNER_OS}/${RUNNER_ARCH}" in
-          Linux/X64)   zip="changewrite-linux-x86_64.zip"  ; bin="changewrite" ;;
-          macOS/ARM64) zip="changewrite-macos-arm64.zip"   ; bin="changewrite" ;;
-          Windows/X64) zip="changewrite-windows-x86_64.zip"; bin="changewrite.exe" ;;
-          *) echo "Unsupported platform: ${RUNNER_OS}/${RUNNER_ARCH}"; exit 1 ;;
-        esac
+    - name: Install Rokit
+      uses: CompeyDev/setup-rokit@v0.2.1
+      with:
+        version: ${{ inputs.rokit-version }}
+        token: ${{ inputs.github-token }}
+        path: ${{ github.action_path }}
 
-        tmp="$(mktemp -d)"
-        gh release download "v${version}" \
-          --repo flipbook-labs/changewrite \
-          --pattern "$zip" \
-          --dir "$tmp"
-
-        unzip -q "$tmp/$zip" "$bin" -d "$tmp"
-        [[ "$RUNNER_OS" != "Windows" ]] && chmod +x "$tmp/$bin"
-
-        echo "CHANGEWRITE_BIN=$tmp/$bin" >> "$GITHUB_ENV"
+    - name: Build changewrite CLI
+      shell: bash
+      run: |
+        set -euo pipefail
+        cd "$GITHUB_ACTION_PATH"
+        lute run install
+        lute run build
+        echo "CHANGEWRITE_BIN=$GITHUB_ACTION_PATH/build/changewrite" >> "$GITHUB_ENV"
 
     - name: Require an unreleased change entry
       if: inputs.require-entry == 'true' && github.head_ref != inputs.branch
@@ -205,6 +203,7 @@ runs:
         GH_TOKEN: ${{ inputs.github-token }}
         CHANGEWRITE_VERSION: ${{ steps.gate.outputs.version }}
         CHANGEWRITE_TAG: v${{ steps.gate.outputs.version }}
+        CHANGEWRITE_BIN: ${{ github.action_path }}/build/changewrite
       run: ${{ inputs.post-draft-hook }}
 
     - name: Publish release
@@ -225,6 +224,7 @@ runs:
         GH_TOKEN: ${{ inputs.github-token }}
         CHANGEWRITE_VERSION: ${{ steps.gate.outputs.version }}
         CHANGEWRITE_TAG: v${{ steps.gate.outputs.version }}
+        CHANGEWRITE_BIN: ${{ github.action_path }}/build/changewrite
       run: ${{ inputs.post-publish-hook }}
 
     - name: Prepare release changes
@@ -325,6 +325,17 @@ runs:
         add-paths: |
           ${{ steps.prepare.outputs.changed_files || steps.bump.outputs.changed_files }}
         body: ${{ steps.pr.outputs.body }}
+
+    - name: Restore rokit auth
+      if: always()
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [ -f "$HOME/.rokit/auth.toml.changewrite-bak" ]; then
+          mv "$HOME/.rokit/auth.toml.changewrite-bak" "$HOME/.rokit/auth.toml"
+        else
+          rm -f "$HOME/.rokit/auth.toml"
+        fi
 
     - name: Set action outputs
       id: result
