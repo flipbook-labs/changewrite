@@ -149,10 +149,16 @@ runs:
         esac
 
         tmp="$(mktemp -d)"
-        gh release download "v${version}" \
+        if ! gh release download "v${version}" \
           --repo flipbook-labs/changewrite \
           --pattern "$zip" \
-          --dir "$tmp"
+          --dir "$tmp"; then
+          echo "::warning::Could not download the binary for v${version}; falling back to the latest release. This is expected on the publish PR, which bumps the version before its release exists. Otherwise, check that the version in changewrite.toml has a published release."
+          gh release download \
+            --repo flipbook-labs/changewrite \
+            --pattern "$zip" \
+            --dir "$tmp"
+        fi
 
         unzip -q "$tmp/$zip" "$bin" -d "$tmp"
         [[ "$RUNNER_OS" != "Windows" ]] && chmod +x "$tmp/$bin"
