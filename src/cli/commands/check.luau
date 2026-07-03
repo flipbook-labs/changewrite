@@ -1,4 +1,5 @@
 local cli = require("@batteries/cli")
+local path = require("@std/path")
 local process = require("@std/process")
 local richterm = require("@batteries/richterm")
 
@@ -41,7 +42,7 @@ local function printNoChangesError()
 	print("  • filename: name after the change (e.g., fix-release-permissions.md)")
 	print("  • body: changelog text, one or two sentences")
 	print("")
-	print(`See {dir}README.md for details.`)
+	print(`See {path.join(dir, "README.md")} for details.`)
 end
 
 local function run()
