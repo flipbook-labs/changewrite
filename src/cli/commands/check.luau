@@ -1,4 +1,5 @@
 local cli = require("@batteries/cli")
+local path = require("@std/path")
 local process = require("@std/process")
 local richterm = require("@batteries/richterm")
 
@@ -14,11 +15,40 @@ parser:add("help", "flag", {
 	help = "Show this help message",
 })
 
+local function formatChangelogTemplate(): string
+	return table.concat({
+		"---",
+		"bump: patch",
+		"category: Fixes",
+		"---",
+		"",
+		"One or two sentences describing the change, written for the changelog.",
+	}, "\n")
+end
+
+local function printNoChangesError()
+	local dir = versionSource.getUnreleasedChangesDir()
+
+	print(richterm.red("A changelog entry is required."))
+	print("")
+	print(`Add a markdown entry under {richterm.bold(dir)} describing this change:`)
+	print("")
+	print(richterm.bold("Template:"))
+	print(formatChangelogTemplate())
+	print("")
+	print(richterm.bold("Guide:"))
+	print("  • bump (required): major, minor, or patch")
+	print("  • category (optional): Features, Fixes, Dependencies, Changes (default)")
+	print("  • filename: name after the change (e.g., fix-release-permissions.md)")
+	print("  • body: changelog text, one or two sentences")
+	print("")
+	print(`See {path.join(dir, "README.md")} for details.`)
+end
+
 local function run()
 	local changes = readUnreleasedChanges()
 	if #changes == 0 then
-		local dir = versionSource.getUnreleasedChangesDir()
-		print(richterm.red(`A changelog entry is required. Add a markdown entry under {dir} describing this change.`))
+		printNoChangesError()
 		process.exit(1)
 	end
 
