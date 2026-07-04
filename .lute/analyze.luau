@@ -1,4 +1,4 @@
-local FlipbookBatteries = require("@pkg/flipbook-batteries@v0.11.1")
+local FlipbookBatteries = require("@pkg/flipbook-batteries@v0.12.0")
 
 local run = FlipbookBatteries.run
 
