@@ -66,6 +66,10 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v6
+        with:
+          # `require-entry` diffs against the PR base branch, so a merge-base must
+          # exist. Full history guarantees it (the default depth-1 checkout does not).
+          fetch-depth: 0
 
       - uses: ./
         with:

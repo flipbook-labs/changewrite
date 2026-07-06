@@ -76,9 +76,12 @@ inputs:
     default: "false"
   require-entry:
     description: >-
-      Fail the run when no unreleased changes are pending. Enable it on a pull
-      request workflow to enforce that every PR adds a changelog entry under the
-      configured unreleased-changes directory. When enabled the action only runs
+      Fail the run unless the pull request adds a NEW changelog entry under the
+      configured unreleased-changes directory, compared to its base branch.
+      Enable it on a pull request workflow to enforce a changelog entry per PR.
+      The check diffs against the PR base branch (github.base_ref), so the
+      consuming workflow must check the repo out with full history
+      (actions/checkout with fetch-depth: 0). When enabled the action only runs
       this check and skips the release flow. Defaults to off (does nothing).
     required: false
     default: "false"
@@ -168,8 +171,24 @@ runs:
     - name: Require an unreleased change entry
       if: inputs.require-entry == 'true' && github.head_ref != inputs.branch
       shell: bash
+      env:
+        BASE_REF: ${{ github.base_ref }}
       run: |
         set -euo pipefail
+
+        # `check` confirms THIS branch adds an entry by diffing against the PR's
+        # base branch. On pull_request events GitHub exposes the base branch name
+        # in github.base_ref; fetch it so `origin/<base>` resolves locally, then
+        # point the CLI at it. The consuming workflow must check the repo out with
+        # enough history for a merge-base to exist (actions/checkout with
+        # fetch-depth: 0); otherwise `check` fails with a message explaining how
+        # to fix it. When BASE_REF is empty (non-PR runs) the CLI falls back to
+        # origin/main.
+        if [[ -n "${BASE_REF:-}" ]]; then
+          git fetch --no-tags origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          export CHANGEWRITE_BASE_REF="origin/${BASE_REF}"
+        fi
+
         "$CHANGEWRITE_BIN" check
 
     - name: Evaluate release gate
