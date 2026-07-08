@@ -49,6 +49,14 @@ test.suite("detectAddedEntries", function(suite)
 		assert.eq(entries[2], ".changes/fix-bug.md")
 	end)
 
+	suite:case("ignores entries nested below the directory's top level", function(assert)
+		-- `readUnreleasedChanges` lists the directory non-recursively, so a nested
+		-- entry would pass `check` but be dropped at release time.
+		local entries = detectAddedEntries({ ".changes/subdir/fix.md" }, DIR)
+
+		assert.eq(#entries, 0)
+	end)
+
 	suite:case("normalizes ./ prefixes on both the file and the directory", function(assert)
 		local entries = detectAddedEntries({ "./.changes/fix-thing.md" }, "./.changes/")
 
