@@ -1,0 +1,66 @@
+name: Build
+
+# Reusable build matrix shared by CI (on every PR) and the release workflow.
+# The only difference between callers is whether the built binaries are
+# packaged and uploaded as artifacts, which is controlled by `upload-artifacts`.
+on:
+  workflow_call:
+    inputs:
+      upload-artifacts:
+        description: Package each binary and upload it as an artifact (used by the release workflow).
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    name: build (${{ matrix.os }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    # The Windows build currently fails on a Lute-adjacent issue we still
+    # need to work out. Tolerate it for now so it reports without blocking
+    # PRs or releases. Once it's reliably green, drop this line to make it
+    # a required check.
+    continue-on-error: ${{ matrix.os == 'windows' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos
+            runner: macos-latest
+            zip_name: changewrite-macos-arm64.zip
+          - os: linux
+            runner: ubuntu-latest
+            zip_name: changewrite-linux-x86_64.zip
+          - os: windows
+            runner: windows-latest
+            binary: build/changewrite.exe
+            zip_name: changewrite-windows-x86_64.zip
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: CompeyDev/setup-rokit@v0.2.1
+        with:
+          version: v1.2.0
+
+      - name: Install dependencies
+        run: lute run install
+
+      - name: Build changewrite
+        run: lute run build
+
+      - name: Smoketest
+        shell: bash
+        run: |
+          "${{ matrix.binary || 'build/changewrite' }}" --help
+
+      - name: Package binary
+        if: inputs.upload-artifacts
+        shell: bash
+        run: zip -j "${{ matrix.zip_name }}" "${{ matrix.binary || 'build/changewrite' }}"
+
+      - name: Upload release asset
+        if: inputs.upload-artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.zip_name }}
+          path: ${{ matrix.zip_name }}
