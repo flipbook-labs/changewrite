@@ -24,7 +24,7 @@ local lock = require("@repo/loom.lock")
 -- can read them, but they carry no Luau the binary needs, so they are excluded
 -- from the packages/ copy that feeds the bundle.
 local devPackageIds: { [string]: boolean } = {}
-for alias in config.package.dev_dependencies do
+for alias in config.package.dev_dependencies or {} do
 	local packageId = lock.dependencies[alias]
 	if packageId then
 		devPackageIds[packageId] = true
