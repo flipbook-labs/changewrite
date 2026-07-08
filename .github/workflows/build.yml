@@ -1,9 +1,9 @@
 name: Build
 
 # Reusable build matrix shared by CI (on every PR) and the release workflow.
-# Both callers package and upload the binaries as artifacts: PRs so the built
-# binaries can be inspected from the run summary, and the release so it ships
-# its own copies. Building them in both places is deliberate redundancy.
+# Both callers upload the binaries as artifacts on purpose: PR runs give
+# downloadable binaries to inspect, and the release keeps its own copies as a
+# redundant set to check against. Keep the upload in both callers.
 on:
   workflow_call:
 
