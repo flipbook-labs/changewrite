@@ -22,7 +22,17 @@ local DEFAULT_PATTERNS: { [string]: string } = {
 	["loom.config.luau"] = "version%s*=%s*[\"']([^\"']+)[\"']",
 	["wally.toml"] = "version%s*=%s*[\"']([^\"']+)[\"']",
 	["rotriever.toml"] = "version%s*=%s*[\"']([^\"']+)[\"']",
+	["Cargo.toml"] = "version%s*=%s*[\"']([^\"']+)[\"']",
 	["package.json"] = "[\"']version[\"']%s*:%s*[\"']([^\"']+)[\"']",
+}
+
+-- Manifests `init` scans to wire up mirrors, ordered for stable output.
+local MIRROR_MANIFESTS: { string } = {
+	"loom.config.luau",
+	"wally.toml",
+	"Cargo.toml",
+	"rotriever.toml",
+	"package.json",
 }
 
 local function readString(value: toml.TomlValue?): string?
@@ -152,10 +162,25 @@ local function getUnreleasedChangesDir(): string
 	return readConfig().unreleasedChangesDir
 end
 
+-- Read the version from a known manifest, or nil when the file is absent or
+-- carries no recognizable version. Used by `init` to inherit an existing pin.
+local function readOptionalVersion(file: string): string?
+	local resolved = path.resolve(file)
+	local pattern = DEFAULT_PATTERNS[file]
+	if not pattern or not fs.exists(resolved) then
+		return nil
+	end
+	local version = fs.readFileToString(resolved):match(pattern)
+	return version
+end
+
 return {
 	_parseConfigText = parseConfigText,
+	CONFIG_FILE = CONFIG_FILE,
+	MIRROR_MANIFESTS = MIRROR_MANIFESTS,
 	getCurrentVersion = getCurrentVersion,
 	getUnreleasedChangesDir = getUnreleasedChangesDir,
 	getSourceFile = getSourceFile,
+	readOptionalVersion = readOptionalVersion,
 	writeVersion = writeVersion,
 }

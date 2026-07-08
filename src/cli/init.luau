@@ -7,6 +7,7 @@ local checkCommand = require("@self/commands/check")
 local draftCommand = require("@self/commands/draft")
 local gateCommand = require("@self/commands/gate")
 local helpCommand = require("@self/commands/help")
+local initCommand = require("@self/commands/initProject")
 local notesCommand = require("@self/commands/notes")
 local preparePrCommand = require("@self/commands/preparePr")
 local publishCommand = require("@self/commands/publish")
@@ -30,6 +31,7 @@ local function findSubcommand(args: { string }): (string?, number?)
 end
 
 local availableCommands: { [string]: types.Command } = {
+	init = initCommand,
 	gate = gateCommand,
 	draft = draftCommand,
 	attach = attachCommand,
