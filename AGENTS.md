@@ -50,15 +50,15 @@ this repo on its next `rev` bump.
 
 ## Repo specifics
 
-- Toolchain is managed with [Rokit](https://github.com/rojo-rbx/rokit); run
+- Toolchain is managed with [Rokit](https://github.com/rojo-rbx/rokit). Run
   `rokit install` once to get `lute`, `luau-lsp`, `stylua`, and `selene` on PATH.
 - `lute run --list` shows the available scripts: `install` (set up dependencies),
   `analyze` (stylua and luau-lsp checks), and `build` (compile the `changewrite`
   binary into `build/`).
-- Tests are `*.spec.luau` files alongside the code they cover; run the suite with
+- Tests are `*.spec.luau` files alongside the code they cover. Run the suite with
   `lute test`.
 - The GitHub Action is defined in [`action.yml`](action.yml). The CLI entry point
-  is [`cli.luau`](cli.luau), which dispatches into [`src/cli/`](src/cli); the
+  is [`cli.luau`](cli.luau), which dispatches into [`src/cli/`](src/cli). The
   release logic it drives lives in [`src/release/`](src/release).
 - Changewrite manages its own changelog the way it manages others': unreleased
   entries live as partials in [`.changes/`](.changes) and are assembled into
