@@ -2,29 +2,42 @@
 
 Changewrite is a CLI tool and GitHub Action for release automation: it creates release PRs, drafts and publishes GitHub releases, and exposes release state for downstream jobs. It is written in Luau, runs on Lute, and compiles to a native binary. This file is the entry point for any agent working in the repo. It routes you to the shared skills library and the repo's own setup.
 
-## First: install dependencies
+## Mandatory first steps
 
-Before doing anything else in a fresh checkout, run:
+Complete every step below before you write any code, tests, changelog entries, or PR prose. This is a gate, and it does not depend on how you classify your task.
 
-```sh
-rokit install
-lute run install
-```
+1. Install the toolchain and dependencies:
 
-`rokit install` puts the toolchain (`lute`, `luau-lsp`, `stylua`, `selene`) on PATH. `lute run install` fetches the Loom (Lute) dependencies into `~/.loom/store` and vendors them into `packages/` so they can be bundled into the compiled binary. The shared skills library is a dev dependency, so it installs into `~/.loom/store` for you to read but is not bundled into the binary. Without this step the skills below are not on disk and analysis will not resolve.
+   ```sh
+   rokit install && lute run install
+   ```
 
-## Shared skills: flipbook-labs/agent-skills
+   `rokit install` puts `lute`, `luau-lsp`, `stylua`, and `selene` on PATH. `lute run install` fetches the Loom dependencies into `~/.loom/store` and vendors them into `packages/`. The shared skills library is a dev dependency, so it lands in `~/.loom/store` for you to read but is not bundled into the binary. Without this step the skills are not on disk.
 
-Cross-cutting doctrine (test discipline, code comments, changelog entries, writing style) does not live in this repo. It lives in the org's shared, versioned [AgentSkills](https://github.com/flipbook-labs/agent-skills) library, pinned as a dev dependency in [`loom.config.luau`](loom.config.luau) and installed by `lute run install` into `~/.loom/store/AgentSkills@<version>/`.
+2. Resolve the concrete skills path (do not guess the version):
 
-That `<version>` is the `rev` pinned for `AgentSkills` in `loom.config.luau`, which is the single source of truth. When you bump the pin, the store folder is renamed to match, so the pin is the only place the version is written by hand.
+   ```sh
+   ls -d ~/.loom/store/AgentSkills@*
+   ```
 
-Routing is manual and on demand, the same as the library's own convention:
+   That prints the one installed copy, `~/.loom/store/AgentSkills@v<version>`, where `<version>` is the `rev` pinned for `AgentSkills` in [`loom.config.luau`](loom.config.luau). Use the printed path wherever `<skills>` appears below.
 
-1. Read the library's routing index at `~/.loom/store/AgentSkills@<version>/AGENTS.md`. Its **Project Skills** section lists every skill with a trigger-rich one-liner.
-2. When a task matches a trigger, read that skill's `~/.loom/store/AgentSkills@<version>/src/<scope>/<name>/SKILL.md` before you start the work it covers.
+3. Read the routing index at `<skills>/AGENTS.md` in full. Its **Project Skills** section lists every skill with a trigger-rich one-liner, so you know what exists before you start. This read is unconditional.
 
-Skills are living documents. If your work in this repo contradicts a skill (a renamed symbol, a changed value, a fixed bug it still calls known), fix it in the agent-skills repo and add a `.changes/` entry there in the same PR. The fix reaches this repo on its next `rev` bump.
+Deep reads of individual `<skills>/src/<scope>/<name>/SKILL.md` files stay on demand: when a task matches a trigger from the index, read that skill before doing the work it covers. Reading the index up front is what lets those triggers fire.
+
+## Forward this file to subagents
+
+The Task tool spawns subagents in a fresh context that does not include this guide, so they never see the gate unless you hand it to them. Whenever you delegate to a subagent, you MUST include in its prompt:
+
+1. The mandatory first steps above (the bootstrap command and the index read).
+2. The concrete resolved path(s) to the specific `SKILL.md` files relevant to its task.
+
+Never assume a subagent will discover the skills on its own.
+
+## Keeping skills current
+
+Skills are living documents. If your work here contradicts a skill (a renamed symbol, a changed value, a fixed bug it still calls known), fix it in the agent-skills repo and add a `.changes/` entry there in the same PR. The fix reaches this repo on its next `rev` bump.
 
 ## Repo specifics
 
