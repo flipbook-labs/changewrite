@@ -3,6 +3,11 @@ return {
 		name = "changewrite",
 		version = "0.5.0",
 		dependencies = {
+			["AgentSkills"] = {
+				rev = "v0.2.0",
+				sourceKind = "github",
+				source = "https://github.com/flipbook-labs/agent-skills",
+			},
 			["flipbook-batteries"] = {
 				rev = "v0.12.0",
 				sourceKind = "github",
