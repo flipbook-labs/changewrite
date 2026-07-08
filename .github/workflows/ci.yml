@@ -7,31 +7,19 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: CompeyDev/setup-rokit@v0.2.1
-        with:
-          version: v1.2.0
-
-      - name: Install dependencies
-        run: lute run install
-
-      - name: Build changewrite
-        run: lute run build
-
-      - name: Smoketest
-        run: ./build/changewrite --help
+    # Build every supported platform on PRs. On pushes to `main` the release
+    # workflow already runs this same matrix, so we scope this to PRs to avoid
+    # duplicating the matrix build.
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/build.yml
 
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - uses: CompeyDev/setup-rokit@v0.2.1
+      - uses: CompeyDev/setup-rokit@1d9390883f7ebce19d48f5b8d006e11d387c92ab # v0.2.1
         with:
           version: v1.2.0
 
@@ -43,11 +31,11 @@ jobs:
 
   analyze:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - uses: CompeyDev/setup-rokit@v0.2.1
+      - uses: CompeyDev/setup-rokit@1d9390883f7ebce19d48f5b8d006e11d387c92ab # v0.2.1
         with:
           version: v1.2.0
 
@@ -62,10 +50,10 @@ jobs:
 
   changelog:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     if: github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # `require-entry` diffs against the PR base branch, so a merge-base must
           # exist. Full history guarantees it (the default depth-1 checkout does not).
