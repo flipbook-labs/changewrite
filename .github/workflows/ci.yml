@@ -54,6 +54,25 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v7
+        with:
+          # `require-entry` diffs against the PR base branch, so a merge-base must
+          # exist. Full history guarantees it (the default depth-1 checkout does not).
+          fetch-depth: 0
+
+      - uses: CompeyDev/setup-rokit@1d9390883f7ebce19d48f5b8d006e11d387c92ab # v0.2.1
+        with:
+          version: v1.2.0
+
+      - name: Install dependencies
+        run: lute run install
+
+      - name: Build changewrite
+        run: lute run build
+
+      # Dogfood this branch's binary rather than the last release, so the check
+      # runs the code under review. The action skips its download when this is set.
+      - name: Use the freshly built binary
+        run: echo "CHANGEWRITE_BIN=$PWD/build/changewrite" >> "$GITHUB_ENV"
 
       - uses: ./
         with:

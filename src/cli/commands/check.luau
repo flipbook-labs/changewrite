@@ -3,17 +3,40 @@ local path = require("@std/path")
 local process = require("@std/process")
 local richterm = require("@batteries/richterm")
 
-local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
+local chomp = require("@root/chomp")
+local config = require("@root/config")
+local detectAddedEntries = require("@root/release/detectAddedEntries")
+local splitLines = require("@root/release/splitLines")
 local types = require("@root/cli/types")
 local versionSource = require("@root/release/versionSource")
 
 local title = "check"
-local summary = "Fail when no unreleased changes are pending, to enforce a changelog entry per PR."
+local summary = "Validate the unreleased changelog entries for the current branch."
 
 local parser = cli.parser()
+parser:add("base", "option", {
+	help = "Base ref to diff against when detecting a newly added entry. Defaults to the remote's default branch.",
+})
 parser:add("help", "flag", {
 	help = "Show this help message",
 })
+
+-- git records the remote's default branch as `refs/remotes/origin/HEAD` on
+-- clone, so read it rather than assuming `origin/main`.
+local function detectDefaultBaseRef(): string?
+	local result = process.run({
+		config.gitCmd,
+		"symbolic-ref",
+		"--short",
+		"refs/remotes/origin/HEAD",
+	})
+	if not result.ok then
+		return nil
+	end
+
+	local ref = chomp(result.stdout)
+	return if ref ~= "" then ref else nil
+end
 
 local function formatChangelogTemplate(): string
 	return table.concat({
@@ -45,14 +68,69 @@ local function printNoChangesError()
 	print(`See {path.join(dir, "README.md")} for details.`)
 end
 
+local function printNoBaseRefError()
+	print(richterm.red("Could not determine a base ref to compare against."))
+	print("")
+	print(richterm.bold("To fix:"))
+	print("  • Pass the base branch with --base <ref>.")
+	print("  • Or set the remote's default branch (git remote set-head origin --auto).")
+end
+
+-- The diff needs both the base ref and a common ancestor with HEAD. On CI this
+-- usually fails because the checkout is shallow, so point at the concrete fix
+-- rather than surfacing git's raw error.
+local function printBaseRefError(baseRef: string, stderr: string)
+	print(richterm.red(`Could not compare against base ref "{baseRef}".`))
+	print("")
+	print("This usually means the base ref is missing or the checkout has too little history.")
+	print("")
+	print(richterm.bold("To fix:"))
+	print("  • Check out with full history (actions/checkout: fetch-depth: 0).")
+	print(`  • Ensure "{baseRef}" is fetched, or pass a different ref with --base <ref>.`)
+
+	local trimmed = chomp(stderr)
+	if trimmed ~= "" then
+		print("")
+		print(richterm.bold("git said:"))
+		print(trimmed)
+	end
+end
+
 local function run()
-	local changes = readUnreleasedChanges()
-	if #changes == 0 then
+	local dir = versionSource.getUnreleasedChangesDir()
+	local baseRef = parser:get("base") or detectDefaultBaseRef()
+	if not baseRef then
+		printNoBaseRefError()
+		process.exit(1)
+	end
+	assert(baseRef)
+
+	-- Added files between the merge-base of the base ref and HEAD, limited to
+	-- the unreleased-changes directory. The three-dot range reports what this
+	-- branch added, not what differs from the current base tip.
+	local diff = process.run({
+		config.gitCmd,
+		"diff",
+		"--name-only",
+		"--diff-filter=A",
+		`{baseRef}...HEAD`,
+		"--",
+		dir,
+	})
+
+	if not diff.ok then
+		printBaseRefError(baseRef, diff.stderr)
+		process.exit(1)
+	end
+
+	local addedEntries = detectAddedEntries(splitLines(diff.stdout), dir)
+	if #addedEntries == 0 then
 		printNoChangesError()
 		process.exit(1)
 	end
 
-	print(`Found {#changes} pending unreleased changes.`)
+	local noun = if #addedEntries == 1 then "entry" else "entries"
+	print(`Found {#addedEntries} new unreleased change {noun} on this branch.`)
 end
 
 local command: types.Command = {
