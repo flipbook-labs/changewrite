@@ -48,6 +48,28 @@ test.suite("evaluateReleaseGate", function(suite)
 		assert.eq(result.hasChanges, false)
 	end)
 
+	suite:case("never publishes the 0.0.0 placeholder", function(assert)
+		local result = evaluateReleaseGate({
+			version = "0.0.0",
+			forcePublish = false,
+			tagExists = false,
+			hasUnreleasedChanges = false,
+		})
+		assert.eq(result.shouldPublish, false)
+		assert.eq(result.hasChanges, false)
+	end)
+
+	suite:case("still prepares a PR from the placeholder when changes are pending", function(assert)
+		local result = evaluateReleaseGate({
+			version = "0.0.0",
+			forcePublish = false,
+			tagExists = false,
+			hasUnreleasedChanges = true,
+		})
+		assert.eq(result.shouldPublish, false)
+		assert.eq(result.hasChanges, true)
+	end)
+
 	suite:case("reports nothing to do for a released version with no changes", function(assert)
 		local result = evaluateReleaseGate({
 			version = "1.2.3",

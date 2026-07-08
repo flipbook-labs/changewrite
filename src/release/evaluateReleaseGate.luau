@@ -1,3 +1,5 @@
+local placeholderVersion = require("@root/release/placeholderVersion")
+
 export type GateInput = {
 	-- The version currently in the configured source of truth.
 	version: string,
@@ -34,7 +36,10 @@ local function evaluateReleaseGate(input: GateInput): GateResult
 		}
 	end
 
-	if not input.tagExists then
+	-- The 0.0.0 placeholder means nothing has been released yet; publishing it
+	-- would mint a meaningless v0.0.0 release, so wait for a change entry to
+	-- bump it instead.
+	if not input.tagExists and input.version ~= placeholderVersion then
 		return {
 			version = input.version,
 			shouldPublish = true,
