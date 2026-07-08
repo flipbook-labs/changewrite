@@ -48,10 +48,18 @@ jobs:
         run: |
           "${{ matrix.binary || 'build/changewrite' }}" --help
 
+      # Windows runners have no `zip` in their Git Bash, so package per-OS:
+      # `zip -j` and `Compress-Archive` both store the binary at the archive
+      # root, keeping the layout identical across platforms.
       - name: Package binary
-        if: inputs.upload-artifacts
+        if: inputs.upload-artifacts && matrix.os != 'windows'
         shell: bash
         run: zip -j "${{ matrix.zip_name }}" "${{ matrix.binary || 'build/changewrite' }}"
+
+      - name: Package binary (Windows)
+        if: inputs.upload-artifacts && matrix.os == 'windows'
+        shell: pwsh
+        run: Compress-Archive -Path "${{ matrix.binary }}" -DestinationPath "${{ matrix.zip_name }}"
 
       - name: Upload release asset
         if: inputs.upload-artifacts
