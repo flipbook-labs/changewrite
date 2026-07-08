@@ -5,9 +5,9 @@ local process = require("@std/process")
 local computeBump = require("@root/release/computeBump")
 local config = require("@root/config")
 local getCurrentVersion = require("@root/release/getCurrentVersion")
-local getNextVersion = require("@root/release/getNextVersion")
 local prepareReleaseFiles = require("@root/release/prepareReleaseFiles")
 local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
+local resolveNextVersion = require("@root/release/resolveNextVersion")
 local types = require("@root/cli/types")
 
 local title = "prepare-pr"
@@ -36,10 +36,7 @@ local function preparePr()
 
 	local tagExists = process.run({ config.gitCmd, "rev-parse", "-q", "--verify", `refs/tags/v{current}` }).ok
 
-	local nextVersion = current
-	if tagExists and bumpKind then
-		nextVersion = getNextVersion(current, bumpKind)
-	end
+	local nextVersion = resolveNextVersion(current, tagExists, bumpKind)
 	local changedFiles = prepareReleaseFiles(nextVersion, changes)
 
 	print(json.serialize({
