@@ -50,7 +50,7 @@ jobs:
         shell: bash
         run: zip -j "${{ matrix.zip_name }}" "${{ matrix.binary || 'build/changewrite' }}"
 
-      - name: Upload release asset
+      - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.zip_name }}
