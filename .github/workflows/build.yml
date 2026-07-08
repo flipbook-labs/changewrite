@@ -1,15 +1,7 @@
 name: Build
 
-# Reusable build matrix shared by CI (on every PR) and the release workflow.
-# The only difference between callers is whether the built binaries are
-# packaged and uploaded as artifacts, which is controlled by `upload-artifacts`.
 on:
   workflow_call:
-    inputs:
-      upload-artifacts:
-        description: Package each binary and upload it as an artifact (used by the release workflow).
-        type: boolean
-        default: false
 
 jobs:
   build:
@@ -48,13 +40,15 @@ jobs:
         run: |
           "${{ matrix.binary || 'build/changewrite' }}" --help
 
+      - name: Install zip (Windows)
+        if: matrix.os == 'windows'
+        run: choco install zip --yes --no-progress
+
       - name: Package binary
-        if: inputs.upload-artifacts
         shell: bash
         run: zip -j "${{ matrix.zip_name }}" "${{ matrix.binary || 'build/changewrite' }}"
 
-      - name: Upload release asset
-        if: inputs.upload-artifacts
+      - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.zip_name }}
