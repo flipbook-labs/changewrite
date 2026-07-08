@@ -1,15 +1,11 @@
 name: Build
 
 # Reusable build matrix shared by CI (on every PR) and the release workflow.
-# The only difference between callers is whether the built binaries are
-# packaged and uploaded as artifacts, which is controlled by `upload-artifacts`.
+# Both callers package and upload the binaries as artifacts: PRs so the built
+# binaries can be inspected from the run summary, and the release so it ships
+# its own copies. Building them in both places is deliberate redundancy.
 on:
   workflow_call:
-    inputs:
-      upload-artifacts:
-        description: Package each binary and upload it as an artifact (used by the release workflow).
-        type: boolean
-        default: false
 
 jobs:
   build:
@@ -52,17 +48,16 @@ jobs:
       # `zip -j` and `Compress-Archive` both store the binary at the archive
       # root, keeping the layout identical across platforms.
       - name: Package binary
-        if: inputs.upload-artifacts && matrix.os != 'windows'
+        if: matrix.os != 'windows'
         shell: bash
         run: zip -j "${{ matrix.zip_name }}" "${{ matrix.binary || 'build/changewrite' }}"
 
       - name: Package binary (Windows)
-        if: inputs.upload-artifacts && matrix.os == 'windows'
+        if: matrix.os == 'windows'
         shell: pwsh
         run: Compress-Archive -Path "${{ matrix.binary }}" -DestinationPath "${{ matrix.zip_name }}"
 
       - name: Upload release asset
-        if: inputs.upload-artifacts
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.zip_name }}
