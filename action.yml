@@ -135,6 +135,14 @@ runs:
       run: |
         set -euo pipefail
 
+        # A caller can pre-set CHANGEWRITE_BIN to run its own binary rather than a
+        # release download. Changewrite's own CI uses this to dogfood the branch
+        # build; consumers leave it unset and get the release below.
+        if [[ -n "${CHANGEWRITE_BIN:-}" ]]; then
+          echo "Using preset changewrite binary: $CHANGEWRITE_BIN"
+          exit 0
+        fi
+
         version="$(sed -n 's/^current = "\(.*\)"/\1/p' "$GITHUB_ACTION_PATH/changewrite.toml")"
         if [[ -z "$version" ]]; then
           echo "Failed to parse version from changewrite.toml"
