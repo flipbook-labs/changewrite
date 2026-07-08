@@ -20,15 +20,15 @@ Complete every step below before you write any code, tests, changelog entries, o
    ls -d ~/.loom/store/AgentSkills@*
    ```
 
-   That prints the one installed copy, for example `~/.loom/store/AgentSkills@v0.2.0`. Use the printed path wherever `<skills>` appears below. The version tracks the `rev` pinned for `AgentSkills` in [`loom.config.luau`](loom.config.luau).
+   That prints the one installed copy, `~/.loom/store/AgentSkills@v<version>`, where `<version>` is the `rev` pinned for `AgentSkills` in [`loom.config.luau`](loom.config.luau). Use the printed path wherever `<skills>` appears below.
 
 3. Read the routing index at `<skills>/AGENTS.md` in full. Its **Project Skills** section lists every skill with a trigger-rich one-liner, so you know what exists before you start. This read is unconditional.
 
 Deep reads of individual `<skills>/src/<scope>/<name>/SKILL.md` files stay on demand: when a task matches a trigger from the index, read that skill before doing the work it covers. Reading the index up front is what lets those triggers fire.
 
-## Subagents do not inherit this file
+## Forward this file to subagents
 
-The Task tool spawns subagents in a fresh context that does not include this guide. Whenever you delegate to a subagent, you MUST include in its prompt:
+The Task tool spawns subagents in a fresh context that does not include this guide, so they never see the gate unless you hand it to them. Whenever you delegate to a subagent, you MUST include in its prompt:
 
 1. The mandatory first steps above (the bootstrap command and the index read).
 2. The concrete resolved path(s) to the specific `SKILL.md` files relevant to its task.
