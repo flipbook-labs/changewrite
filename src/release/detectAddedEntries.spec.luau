@@ -18,6 +18,13 @@ test.suite("detectAddedEntries", function(suite)
 		assert.eq(#entries, 0)
 	end)
 
+	suite:case("ignores empty paths from a trailing newline in the diff", function(assert)
+		local entries = detectAddedEntries({ ".changes/fix-thing.md", "" }, DIR)
+
+		assert.eq(#entries, 1)
+		assert.eq(entries[1], ".changes/fix-thing.md")
+	end)
+
 	suite:case("ignores changes that were not added under the directory", function(assert)
 		local entries = detectAddedEntries({ "src/main.luau", "README.md" }, DIR)
 

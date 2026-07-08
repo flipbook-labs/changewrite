@@ -3,8 +3,10 @@ local path = require("@std/path")
 local process = require("@std/process")
 local richterm = require("@batteries/richterm")
 
+local chomp = require("@root/chomp")
 local config = require("@root/config")
 local detectAddedEntries = require("@root/release/detectAddedEntries")
+local splitLines = require("@root/release/splitLines")
 local types = require("@root/cli/types")
 local versionSource = require("@root/release/versionSource")
 
@@ -32,12 +34,8 @@ local function detectDefaultBaseRef(): string?
 		return nil
 	end
 
-	local ref = result.stdout:gsub("%s+$", "")
+	local ref = chomp(result.stdout)
 	return if ref ~= "" then ref else nil
-end
-
-local function resolveBaseRef(): string?
-	return parser:get("base") or detectDefaultBaseRef()
 end
 
 local function formatChangelogTemplate(): string
@@ -90,7 +88,7 @@ local function printBaseRefError(baseRef: string, stderr: string)
 	print("  • Check out with full history (actions/checkout: fetch-depth: 0).")
 	print(`  • Ensure "{baseRef}" is fetched, or pass a different ref with --base <ref>.`)
 
-	local trimmed = stderr:gsub("%s+$", "")
+	local trimmed = chomp(stderr)
 	if trimmed ~= "" then
 		print("")
 		print(richterm.bold("git said:"))
@@ -100,7 +98,7 @@ end
 
 local function run()
 	local dir = versionSource.getUnreleasedChangesDir()
-	local baseRef = resolveBaseRef()
+	local baseRef = parser:get("base") or detectDefaultBaseRef()
 	if not baseRef then
 		printNoBaseRefError()
 		process.exit(1)
@@ -125,12 +123,7 @@ local function run()
 		process.exit(1)
 	end
 
-	local addedFiles: { string } = {}
-	for line in diff.stdout:gmatch("[^\r\n]+") do
-		table.insert(addedFiles, line)
-	end
-
-	local addedEntries = detectAddedEntries(addedFiles, dir)
+	local addedEntries = detectAddedEntries(splitLines(diff.stdout), dir)
 	if #addedEntries == 0 then
 		printNoChangesError()
 		process.exit(1)
