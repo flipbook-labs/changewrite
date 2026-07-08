@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.6.0
+
+### Changes
+
+- `check` requires the current branch to add its own changelog entry. Workflows using `require-entry` must check out with full history (`fetch-depth: 0`).
+
+### Dependencies
+
+- Upgrade AgentSkills `v0.2.0` → `v0.3.0`.
+
+- Upgrade FlipbookBatteries `v0.11.1` → `v0.12.0` and Lute `v1.0.1-nightly.20260612` → `v1.0.1-nightly.20260701`.
+
+### Fixes
+
+- `gate` publishes an untagged version only after `prepare-pr` records it as a `## v<version>` section in `CHANGELOG.md`, and the first release uses the `changewrite.toml` version verbatim without bumping.
+
+### Internal
+
+- Build and verify the macOS, Linux, and Windows binaries on every pull request.
+
+- `AGENTS.md` now gates work behind mandatory first steps: bootstrap the toolchain, resolve the shared skills path, and read the skills index in full before writing anything. It also requires passing that bootstrap and the relevant `SKILL.md` paths to any subagent, since subagents do not inherit the guide.
+
+- Upload the built macOS, Linux, and Windows binaries as artifacts on every pull request and release, so any run's binaries can be downloaded and checked.
+
+
 ## v0.5.0
 
 ### Changes
