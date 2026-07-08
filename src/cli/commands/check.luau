@@ -9,11 +9,10 @@ local types = require("@root/cli/types")
 local versionSource = require("@root/release/versionSource")
 
 local title = "check"
-local summary = "Fail unless this branch adds a new unreleased change entry, to enforce a changelog entry per PR."
+local summary = "Validate that the current branch adds an unreleased changelog entry."
 
--- Where to look for the base ref when `--base` isn't passed. The action sets
--- this to the PR's base branch; falling back to `origin/main` keeps the command
--- useful when run by hand.
+-- The action sets this to the PR's base branch. The origin/main default keeps
+-- the command usable when run by hand without --base.
 local BASE_REF_ENV = "CHANGEWRITE_BASE_REF"
 local DEFAULT_BASE_REF = "origin/main"
 
@@ -83,9 +82,9 @@ local function run()
 	local dir = versionSource.getUnreleasedChangesDir()
 	local baseRef = resolveBaseRef()
 
-	-- `A`dded files between the merge-base of the base ref and HEAD, limited to
-	-- the unreleased-changes directory. The three-dot range makes this "what did
-	-- this branch add" rather than "what differs from the base tip".
+	-- Added files between the merge-base of the base ref and HEAD, limited to
+	-- the unreleased-changes directory. The three-dot range reports what this
+	-- branch added, not what differs from the current base tip.
 	local diff = process.run({
 		config.gitCmd,
 		"diff",

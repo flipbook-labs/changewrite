@@ -3,4 +3,4 @@ bump: minor
 category: Changes
 ---
 
-`check` (used by the `require-entry` action input) fails unless the current branch adds a new changelog entry under the unreleased-changes directory, enforcing a changelog entry per PR. It compares against a base ref (`--base`, `$CHANGEWRITE_BASE_REF`, defaulting to `origin/main`), so consumers enabling `require-entry` must check out with full history (`fetch-depth: 0`).
+`check` requires the current branch to add its own changelog entry, so `require-entry` enforces a changelog entry per PR. Workflows enabling it must check out with full history (`fetch-depth: 0`) so the check can compare against the base branch.

@@ -1,12 +1,10 @@
 --[[
-	Given the list of files git reports as added between a base ref and HEAD,
-	return just the ones that are unreleased change entries under `dir`.
+	Filter the files git reports as added between a base ref and HEAD down to the
+	ones that count as unreleased change entries under `dir`.
 
-	Kept as a pure function (mirroring `evaluateReleaseGate`) so the decision
-	logic behind `check` is testable without shelling out to git. It applies the
-	same "what counts as an entry" rules as `readUnreleasedChanges`: a markdown
-	file directly inside the unreleased-changes directory (not a subdirectory),
-	excluding the directory's `README.md`.
+	What counts as an entry matches what `readUnreleasedChanges` consumes at
+	release time: a markdown file directly inside the unreleased-changes
+	directory, excluding the directory's `README.md`.
 ]]
 
 local function normalizePath(value: string): string

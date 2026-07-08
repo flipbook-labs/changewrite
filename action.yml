@@ -76,13 +76,11 @@ inputs:
     default: "false"
   require-entry:
     description: >-
-      Fail the run unless the pull request adds a NEW changelog entry under the
-      configured unreleased-changes directory, compared to its base branch.
-      Enable it on a pull request workflow to enforce a changelog entry per PR.
-      The check diffs against the PR base branch (github.base_ref), so the
-      consuming workflow must check the repo out with full history
-      (actions/checkout with fetch-depth: 0). When enabled the action only runs
-      this check and skips the release flow. Defaults to off (does nothing).
+      Require the pull request to add its own changelog entry under the
+      unreleased-changes directory, enforcing a changelog entry per PR. The
+      check compares against the base branch, so the consuming workflow must
+      check out with full history (actions/checkout with fetch-depth: 0). When
+      enabled the action runs only this check and skips the release flow.
     required: false
     default: "false"
   post-draft-hook:
@@ -176,14 +174,9 @@ runs:
       run: |
         set -euo pipefail
 
-        # `check` confirms THIS branch adds an entry by diffing against the PR's
-        # base branch. On pull_request events GitHub exposes the base branch name
-        # in github.base_ref; fetch it so `origin/<base>` resolves locally, then
-        # point the CLI at it. The consuming workflow must check the repo out with
-        # enough history for a merge-base to exist (actions/checkout with
-        # fetch-depth: 0); otherwise `check` fails with a message explaining how
-        # to fix it. When BASE_REF is empty (non-PR runs) the CLI falls back to
-        # origin/main.
+        # github.base_ref names the PR base branch but isn't fetched by default,
+        # so fetch it before check diffs against origin/<base>. When empty (non-PR
+        # runs) the CLI falls back to its default base ref.
         if [[ -n "${BASE_REF:-}" ]]; then
           git fetch --no-tags origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
           export CHANGEWRITE_BASE_REF="origin/${BASE_REF}"
