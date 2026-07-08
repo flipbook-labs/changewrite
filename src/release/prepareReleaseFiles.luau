@@ -1,5 +1,6 @@
 local fs = require("@std/fs")
 
+local constants = require("@root/release/constants")
 local prependSection = require("@root/release/prependSection")
 local removeUnreleasedChanges = require("@root/release/removeUnreleasedChanges")
 local renderChangelogSection = require("@root/release/renderChangelogSection")
@@ -8,7 +9,7 @@ local writeVersion = require("@root/release/writeVersion")
 
 type UnreleasedChange = types.UnreleasedChange
 
-local CHANGELOG_FILE = "CHANGELOG.md"
+local CHANGELOG_FILE = constants.CHANGELOG_FILE
 local DEFAULT_HEADER = "# Changelog\n\nAll notable changes to this project will be documented in this file."
 
 local function prepareReleaseFiles(nextVersion: string, changes: { UnreleasedChange }): { string }
