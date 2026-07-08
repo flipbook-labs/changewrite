@@ -1,9 +1,5 @@
 name: Build
 
-# Reusable build matrix shared by CI (on every PR) and the release workflow.
-# Both callers upload the binaries as artifacts on purpose: PR runs give
-# downloadable binaries to inspect, and the release keeps its own copies as a
-# redundant set to check against. Keep the upload in both callers.
 on:
   workflow_call:
 
@@ -44,18 +40,15 @@ jobs:
         run: |
           "${{ matrix.binary || 'build/changewrite' }}" --help
 
-      # Windows runners have no `zip` in their Git Bash, so package per-OS:
-      # `zip -j` and `Compress-Archive` both store the binary at the archive
-      # root, keeping the layout identical across platforms.
+      # Windows runners don't ship `zip`, so install it to keep one packaging
+      # command across every platform.
+      - name: Install zip (Windows)
+        if: matrix.os == 'windows'
+        run: choco install zip --yes --no-progress
+
       - name: Package binary
-        if: matrix.os != 'windows'
         shell: bash
         run: zip -j "${{ matrix.zip_name }}" "${{ matrix.binary || 'build/changewrite' }}"
-
-      - name: Package binary (Windows)
-        if: matrix.os == 'windows'
-        shell: pwsh
-        run: Compress-Archive -Path "${{ matrix.binary }}" -DestinationPath "${{ matrix.zip_name }}"
 
       - name: Upload release asset
         uses: actions/upload-artifact@v7
