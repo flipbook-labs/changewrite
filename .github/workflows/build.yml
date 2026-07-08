@@ -40,8 +40,6 @@ jobs:
         run: |
           "${{ matrix.binary || 'build/changewrite' }}" --help
 
-      # Windows runners don't ship `zip`, so install it to keep one packaging
-      # command across every platform.
       - name: Install zip (Windows)
         if: matrix.os == 'windows'
         run: choco install zip --yes --no-progress
