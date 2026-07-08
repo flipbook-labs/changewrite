@@ -15,12 +15,7 @@ jobs:
   build:
     name: build (${{ matrix.os }})
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 10
-    # The Windows build currently fails on a Lute-adjacent issue we still
-    # need to work out. Tolerate it for now so it reports without blocking
-    # PRs or releases. Once it's reliably green, drop this line to make it
-    # a required check.
-    continue-on-error: ${{ matrix.os == 'windows' }}
+    timeout-minutes: 5
     strategy:
       fail-fast: false
       matrix:
@@ -38,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: CompeyDev/setup-rokit@v0.2.1
+      - uses: CompeyDev/setup-rokit@1d9390883f7ebce19d48f5b8d006e11d387c92ab # v0.2.1
         with:
           version: v1.2.0
 
