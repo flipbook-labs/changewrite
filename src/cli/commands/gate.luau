@@ -1,12 +1,16 @@
 local cli = require("@batteries/cli")
+local fs = require("@std/fs")
 local json = require("@std/json")
 local process = require("@std/process")
 
+local changelogHasVersion = require("@root/release/changelogHasVersion")
 local config = require("@root/config")
 local evaluateReleaseGate = require("@root/release/evaluateReleaseGate")
 local getCurrentVersion = require("@root/release/getCurrentVersion")
 local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local types = require("@root/cli/types")
+
+local CHANGELOG_FILE = "CHANGELOG.md"
 
 local title = "gate"
 local summary = "Decide whether to publish the current version or prepare the next one."
@@ -27,11 +31,18 @@ local function run()
 	-- code answers whether the tag exists; `-q` silences the stderr it would print.
 	local tagExists = process.run({ config.gitCmd, "rev-parse", "-q", "--verify", `refs/tags/{tag}` }).ok
 
+	-- A release was prepared for this version if `prepare-pr` already folded it
+	-- into the changelog. Without that fingerprint an untagged version is just a
+	-- pristine repo, not a release waiting to be published.
+	local changelog = if fs.exists(CHANGELOG_FILE) then fs.readFileToString(CHANGELOG_FILE) else ""
+	local releasePrepared = changelogHasVersion(changelog, current)
+
 	local result = evaluateReleaseGate({
 		version = current,
 		forcePublish = parser:has("force-publish"),
 		tagExists = tagExists,
 		hasUnreleasedChanges = #readUnreleasedChanges() > 0,
+		releasePrepared = releasePrepared,
 	})
 
 	-- Emit the decision as JSON on stdout so callers (the release workflow, or a
