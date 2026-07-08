@@ -1,6 +1,6 @@
 ---
-bump: patch
-category: Internal
+bump: minor
+category: Features
 ---
 
-Guard the publish PR with a `publish-lock` commit status that fails while a release run is regenerating it, so it cannot be merged mid-update.
+Add `merge-lock`, on by default: while a release run regenerates the publish PR, a `publish-lock` commit status fails so the PR cannot be merged out of date.

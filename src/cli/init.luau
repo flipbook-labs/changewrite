@@ -7,6 +7,7 @@ local checkCommand = require("@self/commands/check")
 local draftCommand = require("@self/commands/draft")
 local gateCommand = require("@self/commands/gate")
 local helpCommand = require("@self/commands/help")
+local lockCommand = require("@self/commands/lock")
 local notesCommand = require("@self/commands/notes")
 local preparePrCommand = require("@self/commands/preparePr")
 local publishCommand = require("@self/commands/publish")
@@ -38,6 +39,7 @@ local availableCommands: { [string]: types.Command } = {
 	["prepare-pr"] = preparePrCommand,
 	bump = bumpCommand,
 	check = checkCommand,
+	lock = lockCommand,
 	help = helpCommand,
 }
 

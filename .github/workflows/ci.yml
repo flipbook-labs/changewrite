@@ -52,6 +52,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     if: github.event_name == 'pull_request'
+    permissions:
+      # The action's merge-lock reports the `publish-lock` status satisfied for
+      # PRs that are not the publish PR.
+      statuses: write
     steps:
       - uses: actions/checkout@v7
         with:

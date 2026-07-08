@@ -6,6 +6,7 @@ local bumpCommand = require("@root/cli/commands/bump")
 local checkCommand = require("@root/cli/commands/check")
 local draftCommand = require("@root/cli/commands/draft")
 local gateCommand = require("@root/cli/commands/gate")
+local lockCommand = require("@root/cli/commands/lock")
 local notesCommand = require("@root/cli/commands/notes")
 local preparePrCommand = require("@root/cli/commands/preparePr")
 local publishCommand = require("@root/cli/commands/publish")
@@ -49,6 +50,10 @@ local function run()
 			{
 				name = "check",
 				description = checkCommand.summary,
+			},
+			{
+				name = "lock",
+				description = lockCommand.summary,
 			},
 			{
 				name = "help",

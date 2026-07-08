@@ -82,6 +82,18 @@ inputs:
       only this check and skips the release flow.
     required: false
     default: "false"
+  merge-lock:
+    description: >-
+      Guard the publish PR with a `publish-lock` commit status while a release
+      run regenerates it, so it cannot be merged out of date. On a push the run
+      fails the status up front and clears it once the PR is refreshed, leaving
+      it locked if the run fails. On a pull request that is not the publish
+      branch the status is reported satisfied, so requiring it does not block
+      ordinary PRs. Make `publish-lock` a required status check on the base
+      branch for this to block a merge, and grant the job `statuses: write`. Set
+      false to disable.
+    required: false
+    default: "true"
   post-draft-hook:
     description: >-
       Bash run after the draft release is created, before it is published. Use it
@@ -172,6 +184,36 @@ runs:
         [[ "$RUNNER_OS" != "Windows" ]] && chmod +x "$tmp/$bin"
 
         echo "CHANGEWRITE_BIN=$tmp/$bin" >> "$GITHUB_ENV"
+
+    - name: Lock the publish PR
+      # A push to the base branch starts this run, which regenerates the publish
+      # PR. Fail its lock now so it cannot be merged out of date in the window
+      # before the refresh lands; the final step clears it once the run succeeds.
+      if: inputs.merge-lock == 'true' && github.event_name == 'push'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        BRANCH: ${{ inputs.branch }}
+        REPO: ${{ github.repository }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      run: |
+        set -euo pipefail
+        "$CHANGEWRITE_BIN" lock --state failure --branch "$BRANCH" --repo "$REPO" --url "$RUN_URL"
+
+    - name: Report the publish lock satisfied
+      # Every PR into the base branch must report `publish-lock` or a required
+      # check would wait on it forever. This PR is not the publish PR, so mark it
+      # satisfied at once. A few-second no-op that runs alongside the real CI.
+      if: inputs.merge-lock == 'true' && github.event_name == 'pull_request' && github.head_ref != inputs.branch
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        REPO: ${{ github.repository }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      run: |
+        set -euo pipefail
+        "$CHANGEWRITE_BIN" lock --state success --sha "$HEAD_SHA" --repo "$REPO" --url "$RUN_URL"
 
     - name: Require an unreleased change entry
       if: inputs.require-entry == 'true' && github.head_ref != inputs.branch
@@ -365,3 +407,18 @@ runs:
         echo "tag=v$version" >> "$GITHUB_OUTPUT"
         echo "draft_created=${{ steps.draft.outputs.draft_created || 'false' }}" >> "$GITHUB_OUTPUT"
         echo "release_created=${{ steps.publish.outputs.release_created || 'false' }}" >> "$GITHUB_OUTPUT"
+
+    - name: Unlock the publish PR
+      # Runs last, so it is reached only when every step above succeeded. The
+      # regenerated PR now matches the base branch, so clear its lock. A failed
+      # run skips this step, leaving the PR locked.
+      if: inputs.merge-lock == 'true' && github.event_name == 'push'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        BRANCH: ${{ inputs.branch }}
+        REPO: ${{ github.repository }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      run: |
+        set -euo pipefail
+        "$CHANGEWRITE_BIN" lock --state success --branch "$BRANCH" --repo "$REPO" --url "$RUN_URL"
