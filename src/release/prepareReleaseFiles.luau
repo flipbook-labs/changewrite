@@ -9,7 +9,6 @@ local writeVersion = require("@root/release/writeVersion")
 
 type UnreleasedChange = types.UnreleasedChange
 
-local CHANGELOG_FILE = constants.CHANGELOG_FILE
 local DEFAULT_HEADER = "# Changelog\n\nAll notable changes to this project will be documented in this file."
 
 local function prepareReleaseFiles(nextVersion: string, changes: { UnreleasedChange }): { string }
@@ -20,9 +19,11 @@ local function prepareReleaseFiles(nextVersion: string, changes: { UnreleasedCha
 	end
 
 	local section = renderChangelogSection(nextVersion, changes)
-	local existing = if fs.exists(CHANGELOG_FILE) then fs.readFileToString(CHANGELOG_FILE) else DEFAULT_HEADER
-	fs.writeStringToFile(CHANGELOG_FILE, prependSection(existing, section))
-	table.insert(changedFiles, CHANGELOG_FILE)
+	local existing = if fs.exists(constants.CHANGELOG_FILE)
+		then fs.readFileToString(constants.CHANGELOG_FILE)
+		else DEFAULT_HEADER
+	fs.writeStringToFile(constants.CHANGELOG_FILE, prependSection(existing, section))
+	table.insert(changedFiles, constants.CHANGELOG_FILE)
 
 	local consumed: { string } = {}
 	for _, change in changes do

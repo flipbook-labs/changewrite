@@ -11,8 +11,6 @@ local getCurrentVersion = require("@root/release/getCurrentVersion")
 local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local types = require("@root/cli/types")
 
-local CHANGELOG_FILE = constants.CHANGELOG_FILE
-
 local title = "gate"
 local summary = "Decide whether to publish the current version or prepare the next one."
 
@@ -35,7 +33,7 @@ local function run()
 	-- A release was prepared for this version if `prepare-pr` already folded it
 	-- into the changelog. Without that fingerprint an untagged version is just a
 	-- pristine repo, not a release waiting to be published.
-	local changelog = if fs.exists(CHANGELOG_FILE) then fs.readFileToString(CHANGELOG_FILE) else nil
+	local changelog = if fs.exists(constants.CHANGELOG_FILE) then fs.readFileToString(constants.CHANGELOG_FILE) else nil
 	local releasePrepared = if changelog then changelogHasVersion(changelog, current) else false
 
 	local result = evaluateReleaseGate({
