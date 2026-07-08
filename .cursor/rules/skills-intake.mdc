@@ -1,0 +1,8 @@
+---
+description: Bootstrap and skill-priming gate for the changewrite repo
+alwaysApply: true
+---
+
+Before writing any code, tests, changelog entries, or PR prose, complete the "Mandatory first steps" gate in [AGENTS.md](mdc:AGENTS.md): run `rokit install && lute run install`, resolve the skills path with `ls -d ~/.loom/store/AgentSkills@*`, and read that copy's `AGENTS.md` "Project Skills" index in full.
+
+When you delegate to a subagent, pass it the same bootstrap requirement plus the concrete resolved path(s) to the `SKILL.md` files relevant to its task. Subagents do not inherit this rule.
