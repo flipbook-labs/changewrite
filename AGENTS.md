@@ -17,31 +17,31 @@ lute run install
 
 `rokit install` puts the toolchain (`lute`, `luau-lsp`, `stylua`, `selene`) on
 PATH. `lute run install` fetches the Loom (Lute) dependencies into `~/.loom/store`
-and vendors them into `packages/` so they can be bundled into the compiled binary.
-Without it the shared skills below are not on disk and analysis will not resolve.
+and vendors the runtime ones into `packages/` so they can be bundled into the
+compiled binary. The shared skills library is a dev dependency: it lands in
+`~/.loom/store` for you to read but is not bundled. Without this step the skills
+below are not on disk and analysis will not resolve.
 
 ## Shared skills: flipbook-labs/agent-skills
 
 Cross-cutting doctrine (test discipline, code comments, changelog entries, writing
 style) does not live in this repo. It lives in the org's shared, versioned
-[AgentSkills](https://github.com/flipbook-labs/agent-skills) library, pinned in
-[`loom.config.luau`](loom.config.luau) and installed by `lute run install` into:
+[AgentSkills](https://github.com/flipbook-labs/agent-skills) library, pinned as a
+dev dependency in [`loom.config.luau`](loom.config.luau) and installed by
+`lute run install` into `~/.loom/store/AgentSkills@<version>/`.
 
-```
-~/.loom/store/AgentSkills@v0.2.0/
-```
-
-The version in that path tracks the `rev` pinned for `AgentSkills` in
-`loom.config.luau`. When you bump the pin, the folder name changes to match.
+That `<version>` is the `rev` pinned for `AgentSkills` in `loom.config.luau`, which
+is the single source of truth. When you bump the pin, the store folder is renamed
+to match, so the pin is the only place the version is written by hand.
 
 Routing is manual and on demand, the same as the library's own convention:
 
 1. Read the library's routing index at
-   `~/.loom/store/AgentSkills@v0.2.0/AGENTS.md`. Its **Project Skills** section
+   `~/.loom/store/AgentSkills@<version>/AGENTS.md`. Its **Project Skills** section
    lists every skill with a trigger-rich one-liner.
 2. When a task matches a trigger, read that skill's
-   `~/.loom/store/AgentSkills@v0.2.0/src/<scope>/<name>/SKILL.md` before you start
-   the work it covers.
+   `~/.loom/store/AgentSkills@<version>/src/<scope>/<name>/SKILL.md` before you
+   start the work it covers.
 
 Skills are living documents. If your work in this repo contradicts a skill (a
 renamed symbol, a changed value, a fixed bug it still calls known), fix it in the
