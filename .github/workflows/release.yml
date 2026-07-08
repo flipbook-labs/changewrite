@@ -27,8 +27,6 @@ jobs:
   build:
     if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'debug:release-pr')
     uses: ./.github/workflows/build.yml
-    with:
-      upload-artifacts: true
 
   release:
     needs: build
