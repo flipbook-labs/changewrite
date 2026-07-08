@@ -76,11 +76,10 @@ inputs:
     default: "false"
   require-entry:
     description: >-
-      Require the pull request to add its own changelog entry under the
-      unreleased-changes directory, enforcing a changelog entry per PR. The
-      check compares against the base branch, so the consuming workflow must
-      check out with full history (actions/checkout with fetch-depth: 0). When
-      enabled the action runs only this check and skips the release flow.
+      Require the current branch to add its own changelog entry before merging.
+      Needs a full-history checkout (actions/checkout with fetch-depth: 0) so the
+      check can compare against the base branch. When enabled, the action runs
+      only this check and skips the release flow.
     required: false
     default: "false"
   post-draft-hook:
@@ -175,14 +174,14 @@ runs:
         set -euo pipefail
 
         # github.base_ref names the PR base branch but isn't fetched by default,
-        # so fetch it before check diffs against origin/<base>. When empty (non-PR
-        # runs) the CLI falls back to its default base ref.
+        # so fetch it and pass it to check. Non-PR runs leave it empty, where the
+        # CLI falls back to the remote's default branch.
         if [[ -n "${BASE_REF:-}" ]]; then
           git fetch --no-tags origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
-          export CHANGEWRITE_BASE_REF="origin/${BASE_REF}"
+          "$CHANGEWRITE_BIN" check --base "origin/${BASE_REF}"
+        else
+          "$CHANGEWRITE_BIN" check
         fi
-
-        "$CHANGEWRITE_BIN" check
 
     - name: Evaluate release gate
       id: gate

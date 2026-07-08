@@ -9,23 +9,35 @@ local types = require("@root/cli/types")
 local versionSource = require("@root/release/versionSource")
 
 local title = "check"
-local summary = "Validate that the current branch adds an unreleased changelog entry."
-
--- The action sets this to the PR's base branch. The origin/main default keeps
--- the command usable when run by hand without --base.
-local BASE_REF_ENV = "CHANGEWRITE_BASE_REF"
-local DEFAULT_BASE_REF = "origin/main"
+local summary = "Validate the unreleased changelog entries for the current branch."
 
 local parser = cli.parser()
 parser:add("base", "option", {
-	help = `Base ref to diff against when detecting a newly added entry. Defaults to ${BASE_REF_ENV} or {DEFAULT_BASE_REF}.`,
+	help = "Base ref to diff against when detecting a newly added entry. Defaults to the remote's default branch.",
 })
 parser:add("help", "flag", {
 	help = "Show this help message",
 })
 
-local function resolveBaseRef(): string
-	return parser:get("base") or process.env[BASE_REF_ENV] or DEFAULT_BASE_REF
+-- git records the remote's default branch as `refs/remotes/origin/HEAD` on
+-- clone, so read it rather than assuming `origin/main`.
+local function detectDefaultBaseRef(): string?
+	local result = process.run({
+		config.gitCmd,
+		"symbolic-ref",
+		"--short",
+		"refs/remotes/origin/HEAD",
+	})
+	if not result.ok then
+		return nil
+	end
+
+	local ref = result.stdout:gsub("%s+$", "")
+	return if ref ~= "" then ref else nil
+end
+
+local function resolveBaseRef(): string?
+	return parser:get("base") or detectDefaultBaseRef()
 end
 
 local function formatChangelogTemplate(): string
@@ -58,6 +70,14 @@ local function printNoChangesError()
 	print(`See {path.join(dir, "README.md")} for details.`)
 end
 
+local function printNoBaseRefError()
+	print(richterm.red("Could not determine a base ref to compare against."))
+	print("")
+	print(richterm.bold("To fix:"))
+	print("  • Pass the base branch with --base <ref>.")
+	print("  • Or set the remote's default branch (git remote set-head origin --auto).")
+end
+
 -- The diff needs both the base ref and a common ancestor with HEAD. On CI this
 -- usually fails because the checkout is shallow, so point at the concrete fix
 -- rather than surfacing git's raw error.
@@ -81,6 +101,11 @@ end
 local function run()
 	local dir = versionSource.getUnreleasedChangesDir()
 	local baseRef = resolveBaseRef()
+	if not baseRef then
+		printNoBaseRefError()
+		process.exit(1)
+	end
+	assert(baseRef)
 
 	-- Added files between the merge-base of the base ref and HEAD, limited to
 	-- the unreleased-changes directory. The three-dot range reports what this

@@ -7,45 +7,25 @@
 	directory, excluding the directory's `README.md`.
 ]]
 
-local function normalizePath(value: string): string
-	-- git reports POSIX-style, repo-relative paths. Strip a leading `./` and any
-	-- trailing slashes so the directory config (e.g. `./.changes/`) and the diff
-	-- output compare cleanly.
-	local normalized = value:gsub("^%./", "")
-	normalized = normalized:gsub("/+$", "")
-	return normalized
-end
+local path = require("@std/path")
 
 local function isEntryFile(file: string, dir: string): boolean
-	local normalizedFile = normalizePath(file)
-	local normalizedDir = normalizePath(dir)
+	local relative = path.relative(path.normalize(dir), path.normalize(file))
 
-	local name = normalizedFile
-	if normalizedDir ~= "" then
-		local prefix = normalizedDir .. "/"
-		if normalizedFile:sub(1, #prefix) ~= prefix then
-			return false
-		end
-		name = normalizedFile:sub(#prefix + 1)
-	end
-
-	-- `readUnreleasedChanges` lists the directory non-recursively, so only a file
-	-- sitting directly in it is ever consumed. A nested path like
-	-- `.changes/subdir/fix.md` would pass a plain prefix check here but be
-	-- silently skipped at release time, so reject anything below the top level.
-	if name == "" or name:find("/") then
+	-- `readUnreleasedChanges` lists the directory non-recursively, so only a
+	-- direct child is ever consumed. A single path component is a direct child;
+	-- more components (or a leading `..`) means the file is nested or outside the
+	-- directory and would be silently dropped at release time.
+	if #relative.parts ~= 1 then
 		return false
 	end
 
-	if not name:match("%.md$") then
+	local name = relative.parts[1]
+	if path.extname(name) ~= ".md" then
 		return false
 	end
 
-	if name:lower() == "readme.md" then
-		return false
-	end
-
-	return true
+	return name:lower() ~= "readme.md"
 end
 
 local function detectAddedEntries(addedFiles: { string }, dir: string): { string }
