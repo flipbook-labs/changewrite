@@ -68,6 +68,21 @@ jobs:
           path: assets
           merge-multiple: true
 
+      # Run the binary this run just built rather than the last published release.
+      # The action skips its own download when CHANGEWRITE_BIN is set, so the whole
+      # release (including the attach hook) dogfoods HEAD. This means a new CLI
+      # feature takes effect on the release that introduces it, with no one-release
+      # lag. Only the real release path builds assets; debug PR runs fall through to
+      # the action's published download.
+      - name: Use the freshly built binary
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -o -j assets/changewrite-linux-x86_64.zip changewrite -d "$RUNNER_TEMP"
+          chmod +x "$RUNNER_TEMP/changewrite"
+          echo "CHANGEWRITE_BIN=$RUNNER_TEMP/changewrite" >> "$GITHUB_ENV"
+
       - id: changewrite
         uses: ./
         with:
