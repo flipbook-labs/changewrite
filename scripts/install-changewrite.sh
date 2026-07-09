@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
 # Put the changewrite binary on disk and export CHANGEWRITE_BIN for later steps.
-# Shared by the composite actions (root and publish-lock) so the bootstrap lives
-# in one place. Locates changewrite.toml relative to itself, not via
-# $GITHUB_ACTION_PATH, so it works from any action's subdirectory.
+# Locates changewrite.toml relative to itself, not via $GITHUB_ACTION_PATH, so
+# it works from any action's subdirectory.
 set -euo pipefail
 
 # A caller can pre-set CHANGEWRITE_BIN to run their own binary rather than a
@@ -45,7 +44,7 @@ if ! gh release download "v${version}" \
 	--repo flipbook-labs/changewrite \
 	--pattern "$zip" \
 	--dir "$tmp"; then
-	echo "::warning::Could not download the binary for v${version}; falling back to the latest release. This is expected on the publish PR, which bumps the version before its release exists. Otherwise, check that the version in changewrite.toml has a published release."
+	echo "::warning::Could not download the binary for v${version}. Falling back to the latest release. This is expected on the publish PR, which bumps the version before its release exists. Otherwise, check that the version in changewrite.toml has a published release."
 	gh release download \
 		--repo flipbook-labs/changewrite \
 		--pattern "$zip" \

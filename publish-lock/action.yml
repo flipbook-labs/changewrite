@@ -1,7 +1,8 @@
 name: Changewrite Publish Lock
 description: >-
-  Sets the publish PR's `publish-lock` commit status, blocking merges while a
-  release run regenerates the PR and allowing them once it is up to date.
+  Locks or unlocks the publish PR through its `publish-lock` commit status.
+  Locking fails the check so the PR cannot merge while a release run regenerates
+  it. Unlocking passes the check so it can merge again.
 author: flipbook-labs
 
 inputs:
@@ -11,10 +12,11 @@ inputs:
       permission.
     required: false
     default: ${{ github.token }}
-  state:
+  locked:
     description: >-
-      `locked` to block merging the publish PR (fails its `publish-lock` status),
-      or `unlocked` to allow it again (passes the status).
+      Whether the publish PR should be locked. When true, its `publish-lock`
+      status fails so the PR cannot be merged. When false, the status passes and
+      merging is allowed.
     required: true
   branch:
     description: >-
@@ -48,7 +50,7 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
-        STATE: ${{ inputs.state }}
+        LOCKED: ${{ inputs.locked }}
         BRANCH: ${{ inputs.branch }}
         SHA: ${{ inputs.sha }}
         REPO: ${{ inputs.repo }}
@@ -56,16 +58,13 @@ runs:
       run: |
         set -euo pipefail
 
-        case "$STATE" in
-          locked) command=lock ;;
-          unlocked) command=unlock ;;
-          *)
-            echo "state must be 'locked' or 'unlocked', got '$STATE'"
-            exit 1
-            ;;
-        esac
+        if [[ "$LOCKED" == "true" ]]; then
+          command=lock
+        else
+          command=unlock
+        fi
 
-        # The CLI treats empty flags as unset (--sha wins over --branch), so
-        # forward them all and let it sort out precedence and defaults.
+        # The CLI treats empty flags as unset, so forward them all and let it
+        # resolve precedence (--sha over --branch) and defaults.
         "$CHANGEWRITE_BIN" "$command" \
           --branch "$BRANCH" --sha "$SHA" --repo "$REPO" --url "$URL"

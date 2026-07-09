@@ -83,6 +83,6 @@ jobs:
       - uses: ./publish-lock
         if: github.head_ref != 'publish-next-version'
         with:
-          state: unlocked
+          locked: false
           sha: ${{ github.event.pull_request.head.sha }}
           url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
