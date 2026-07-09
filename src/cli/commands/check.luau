@@ -102,7 +102,8 @@ end
 local function collectWorkingTreeAdditions(dir: string): { string }
 	local paths: { string } = {}
 
-	-- Staged or unstaged additions to tracked files, relative to HEAD.
+	-- New files staged against HEAD but not yet committed. A brand-new file only
+	-- shows here once it is tracked; while still untracked it is caught below.
 	local tracked = process.run({
 		config.gitCmd,
 		"diff",
