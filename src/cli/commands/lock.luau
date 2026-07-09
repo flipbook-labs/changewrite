@@ -65,8 +65,11 @@ local function resolveSha(): string?
 		".object.sha",
 	})
 	if not ref.ok then
-		print(`No {branch} branch to mark; skipping.`)
-		return nil
+		if mergeLockStatus.isMissingRefError(ref.stderr) then
+			print(`No {branch} branch to mark; skipping.`)
+			return nil
+		end
+		error(`Could not resolve the {branch} head: {ref.stderr}`)
 	end
 
 	return chomp(ref.stdout)

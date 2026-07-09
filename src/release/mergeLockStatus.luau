@@ -34,6 +34,14 @@ local function describe(state: State): string
 	return "The publish PR is up to date with its base branch"
 end
 
+-- `gh api` exits non-zero for any non-2xx response, so the `lock` command needs
+-- to tell "the branch does not exist yet" (no publish PR has been opened, a
+-- no-op) apart from a real failure like a network error or a GitHub 5xx, which
+-- must fail loudly rather than leave the lock unset. A missing ref answers 404.
+local function isMissingRefError(stderr: string): boolean
+	return string.find(stderr, "HTTP 404", 1, true) ~= nil
+end
+
 -- The `gh api` argument list that posts `request` as a commit status.
 local function buildStatusArgs(request: StatusRequest): { string }
 	local args = {
@@ -61,4 +69,5 @@ return {
 	DEFAULT_CONTEXT = DEFAULT_CONTEXT,
 	describe = describe,
 	buildStatusArgs = buildStatusArgs,
+	isMissingRefError = isMissingRefError,
 }

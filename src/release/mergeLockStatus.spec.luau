@@ -36,4 +36,13 @@ test.suite("mergeLockStatus", function(suite)
 	suite:case("uses a distinct message for each state", function(assert)
 		assert.eq(mergeLockStatus.describe("failure") == mergeLockStatus.describe("success"), false)
 	end)
+
+	suite:case("reads a 404 from gh as a missing ref", function(assert)
+		assert.eq(mergeLockStatus.isMissingRefError("gh: Not Found (HTTP 404)"), true)
+	end)
+
+	suite:case("does not read other gh failures as a missing ref", function(assert)
+		assert.eq(mergeLockStatus.isMissingRefError("gh: Internal Server Error (HTTP 500)"), false)
+		assert.eq(mergeLockStatus.isMissingRefError("dial tcp: lookup api.github.com: no such host"), false)
+	end)
 end)
