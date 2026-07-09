@@ -3,6 +3,7 @@ local fs = require("@std/fs")
 local path = require("@std/path")
 local richterm = require("@batteries/richterm")
 
+local parseVersion = require("@root/release/parseVersion")
 local pickHighestVersion = require("@root/release/pickHighestVersion")
 local renderInitConfig = require("@root/release/renderInitConfig")
 local types = require("@root/cli/types")
@@ -30,9 +31,14 @@ local function run()
 	for _, manifest in versionSource.MIRROR_MANIFESTS do
 		if fs.exists(path.resolve(manifest)) then
 			table.insert(mirrors, manifest)
+			-- changewrite tracks plain X.Y.Z versions, so parseVersion rejects a
+			-- prerelease or build suffix a manifest might carry. Mirror the file
+			-- regardless and skip its version so init falls back instead of crashing.
 			local version = versionSource.readOptionalVersion(manifest)
-			if version then
+			if version and pcall(parseVersion, version) then
 				table.insert(versions, version)
+			elseif version then
+				print(`Ignoring unsupported version {richterm.bold(version)} in {manifest}.`)
 			end
 		end
 	end
