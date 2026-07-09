@@ -1,0 +1,75 @@
+name: Changewrite Merge Lock
+description: >-
+  Set the publish PR's merge lock. Lock it while a release run regenerates it so
+  it cannot be merged out of date, and unlock it once it is up to date again.
+author: flipbook-labs
+
+inputs:
+  github-token:
+    description: >-
+      Token used to post the commit status. Needs the `statuses: write`
+      permission.
+    required: false
+    default: ${{ github.token }}
+  state:
+    description: >-
+      `locked` to block merging the publish PR (fails its `publish-lock` status),
+      or `unlocked` to allow it again (passes the status).
+    required: true
+  branch:
+    description: >-
+      Branch whose head commit the status is posted to. Ignored when `sha` is
+      set. Defaults to the publish branch.
+    required: false
+    default: publish-next-version
+  sha:
+    description: Exact commit the status is posted to. Takes precedence over `branch`.
+    required: false
+    default: ""
+  repo:
+    description: Repository as owner/name the status belongs to.
+    required: false
+    default: ${{ github.repository }}
+  url:
+    description: URL the status badge links to in the GitHub UI, e.g. the release run.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Install changewrite
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+      run: bash "$GITHUB_ACTION_PATH/../scripts/install-changewrite.sh"
+
+    - name: Set the merge lock
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        STATE: ${{ inputs.state }}
+        BRANCH: ${{ inputs.branch }}
+        SHA: ${{ inputs.sha }}
+        REPO: ${{ inputs.repo }}
+        URL: ${{ inputs.url }}
+      run: |
+        set -euo pipefail
+
+        case "$STATE" in
+          locked) command=lock ;;
+          unlocked) command=unlock ;;
+          *) echo "state must be 'locked' or 'unlocked', got '$STATE'"; exit 1 ;;
+        esac
+
+        args=("$CHANGEWRITE_BIN" "$command")
+        # --sha wins over --branch in the CLI, so pass one or the other.
+        if [[ -n "$SHA" ]]; then
+          args+=(--sha "$SHA")
+        elif [[ -n "$BRANCH" ]]; then
+          args+=(--branch "$BRANCH")
+        fi
+        [[ -n "$REPO" ]] && args+=(--repo "$REPO")
+        [[ -n "$URL" ]] && args+=(--url "$URL")
+
+        "${args[@]}"
