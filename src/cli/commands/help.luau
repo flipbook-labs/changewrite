@@ -7,9 +7,11 @@ local checkCommand = require("@root/cli/commands/check")
 local draftCommand = require("@root/cli/commands/draft")
 local gateCommand = require("@root/cli/commands/gate")
 local initCommand = require("@root/cli/commands/initProject")
+local lockCommand = require("@root/cli/commands/lock")
 local notesCommand = require("@root/cli/commands/notes")
 local preparePrCommand = require("@root/cli/commands/preparePr")
 local publishCommand = require("@root/cli/commands/publish")
+local unlockCommand = require("@root/cli/commands/unlock")
 
 local title = "help"
 local summary = "Show this help message"
@@ -54,6 +56,14 @@ local function run()
 			{
 				name = "check",
 				description = checkCommand.summary,
+			},
+			{
+				name = "lock",
+				description = lockCommand.summary,
+			},
+			{
+				name = "unlock",
+				description = unlockCommand.summary,
 			},
 			{
 				name = "help",

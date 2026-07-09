@@ -1,0 +1,70 @@
+name: Changewrite Publish Lock
+description: >-
+  Locks or unlocks the publish PR through its `publish-lock` commit status.
+  Locking fails the check so the PR cannot merge while a release run regenerates
+  it. Unlocking passes the check so it can merge again.
+author: flipbook-labs
+
+inputs:
+  github-token:
+    description: >-
+      Token used to post the commit status. Needs the `statuses: write`
+      permission.
+    required: false
+    default: ${{ github.token }}
+  locked:
+    description: >-
+      Whether the publish PR should be locked. When true, its `publish-lock`
+      status fails so the PR cannot be merged. When false, the status passes and
+      merging is allowed.
+    required: true
+  branch:
+    description: >-
+      Branch whose head commit the status is posted to. Ignored when `sha` is
+      set. Defaults to the publish branch.
+    required: false
+    default: publish-next-version
+  sha:
+    description: Exact commit the status is posted to. Takes precedence over `branch`.
+    required: false
+    default: ""
+  repo:
+    description: Repository as owner/name the status belongs to.
+    required: false
+    default: ${{ github.repository }}
+  url:
+    description: URL the status badge links to in the GitHub UI, e.g. the release run.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Download changewrite binary
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+      run: bash "$GITHUB_ACTION_PATH/../scripts/install-changewrite.sh"
+
+    - name: Set the publish lock
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        LOCKED: ${{ inputs.locked }}
+        BRANCH: ${{ inputs.branch }}
+        SHA: ${{ inputs.sha }}
+        REPO: ${{ inputs.repo }}
+        URL: ${{ inputs.url }}
+      run: |
+        set -euo pipefail
+
+        if [[ "$LOCKED" == "true" ]]; then
+          command=lock
+        else
+          command=unlock
+        fi
+
+        # The CLI treats empty flags as unset, so forward them all and let it
+        # resolve precedence (--sha over --branch) and defaults.
+        "$CHANGEWRITE_BIN" "$command" \
+          --branch "$BRANCH" --sha "$SHA" --repo "$REPO" --url "$URL"

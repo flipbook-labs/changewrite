@@ -8,9 +8,11 @@ local draftCommand = require("@self/commands/draft")
 local gateCommand = require("@self/commands/gate")
 local helpCommand = require("@self/commands/help")
 local initCommand = require("@self/commands/initProject")
+local lockCommand = require("@self/commands/lock")
 local notesCommand = require("@self/commands/notes")
 local preparePrCommand = require("@self/commands/preparePr")
 local publishCommand = require("@self/commands/publish")
+local unlockCommand = require("@self/commands/unlock")
 
 -- Find the command word in `args` and its index. Flags (leading `-`) are
 -- skipped; the first non-flag token is the command. Index 1 is the program
@@ -40,6 +42,8 @@ local availableCommands: { [string]: types.Command } = {
 	["prepare-pr"] = preparePrCommand,
 	bump = bumpCommand,
 	check = checkCommand,
+	lock = lockCommand,
+	unlock = unlockCommand,
 	help = helpCommand,
 }
 
