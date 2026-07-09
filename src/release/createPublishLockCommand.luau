@@ -56,7 +56,7 @@ local function createPublishLockCommand(options: {
 		})
 		if not ref.ok then
 			if publishLockStatus.isMissingRefError(ref.stderr) then
-				print(`No {branch} branch to mark; skipping.`)
+				print(`No {branch} branch to mark, skipping.`)
 				return nil
 			end
 			error(`Could not resolve the {branch} head: {ref.stderr}`)
