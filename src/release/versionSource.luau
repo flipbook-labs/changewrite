@@ -26,7 +26,9 @@ local DEFAULT_PATTERNS: { [string]: string } = {
 	["package.json"] = "[\"']version[\"']%s*:%s*[\"']([^\"']+)[\"']",
 }
 
--- Manifests `init` scans to wire up mirrors, ordered for stable output.
+-- `init` emits mirrors in this order. DEFAULT_PATTERNS is keyed by file, so it
+-- has no stable iteration order; this fixed list keeps generated configs
+-- deterministic.
 local MIRROR_MANIFESTS: { string } = {
 	"loom.config.luau",
 	"wally.toml",
