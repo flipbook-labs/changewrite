@@ -68,6 +68,15 @@ jobs:
           path: assets
           merge-multiple: true
 
+      - name: Use the freshly built binary
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -o -j assets/changewrite-linux-x86_64.zip changewrite -d "$RUNNER_TEMP"
+          chmod +x "$RUNNER_TEMP/changewrite"
+          echo "CHANGEWRITE_BIN=$RUNNER_TEMP/changewrite" >> "$GITHUB_ENV"
+
       - id: changewrite
         uses: ./
         with:
