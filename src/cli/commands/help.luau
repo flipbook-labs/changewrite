@@ -6,6 +6,7 @@ local bumpCommand = require("@root/cli/commands/bump")
 local checkCommand = require("@root/cli/commands/check")
 local draftCommand = require("@root/cli/commands/draft")
 local gateCommand = require("@root/cli/commands/gate")
+local initCommand = require("@root/cli/commands/initProject")
 local lockCommand = require("@root/cli/commands/lock")
 local notesCommand = require("@root/cli/commands/notes")
 local preparePrCommand = require("@root/cli/commands/preparePr")
@@ -20,6 +21,10 @@ local function run()
 		title = "changewrite",
 		summary = "Manage release readiness, changelogs, tags, and GitHub releases.",
 		commands = {
+			{
+				name = "init",
+				description = initCommand.summary,
+			},
 			{
 				name = "gate",
 				description = gateCommand.summary,

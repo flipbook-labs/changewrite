@@ -56,6 +56,16 @@ test.suite("detectAddedEntries", function(suite)
 		assert.eq(entries[2], ".changes/fix-bug.md")
 	end)
 
+	suite:case("drops duplicate paths from unioned git listings", function(assert)
+		local entries = detectAddedEntries({
+			".changes/add-feature.md",
+			".changes/add-feature.md",
+		}, DIR)
+
+		assert.eq(#entries, 1)
+		assert.eq(entries[1], ".changes/add-feature.md")
+	end)
+
 	suite:case("ignores entries nested below the directory's top level", function(assert)
 		-- `readUnreleasedChanges` lists the directory non-recursively, so a nested
 		-- entry would pass `check` but be dropped at release time.

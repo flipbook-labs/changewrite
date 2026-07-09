@@ -96,6 +96,47 @@ local function printBaseRefError(baseRef: string, stderr: string)
 	end
 end
 
+-- Entry files that exist only in the working tree, so a local run can confirm a
+-- just-created entry before it is committed. On CI the checkout is clean, so
+-- these listings come back empty and the committed diff alone decides the run.
+local function collectWorkingTreeAdditions(dir: string): { string }
+	local paths: { string } = {}
+
+	-- New files staged against HEAD but not yet committed. A brand-new file only
+	-- shows here once it is tracked; while still untracked it is caught below.
+	local tracked = process.run({
+		config.gitCmd,
+		"diff",
+		"--name-only",
+		"--diff-filter=A",
+		"HEAD",
+		"--",
+		dir,
+	})
+	if tracked.ok then
+		for _, line in splitLines(tracked.stdout) do
+			table.insert(paths, line)
+		end
+	end
+
+	-- New files that have not been staged yet, minus anything gitignored.
+	local untracked = process.run({
+		config.gitCmd,
+		"ls-files",
+		"--others",
+		"--exclude-standard",
+		"--",
+		dir,
+	})
+	if untracked.ok then
+		for _, line in splitLines(untracked.stdout) do
+			table.insert(paths, line)
+		end
+	end
+
+	return paths
+end
+
 local function run()
 	local dir = versionSource.getUnreleasedChangesDir()
 	local baseRef = parser:get("base") or detectDefaultBaseRef()
@@ -123,7 +164,14 @@ local function run()
 		process.exit(1)
 	end
 
-	local addedEntries = detectAddedEntries(splitLines(diff.stdout), dir)
+	-- Count entries added on the branch and entries that only exist in the
+	-- working tree, so `check` passes locally before the entry is committed.
+	local candidates = splitLines(diff.stdout)
+	for _, line in collectWorkingTreeAdditions(dir) do
+		table.insert(candidates, line)
+	end
+
+	local addedEntries = detectAddedEntries(candidates, dir)
 	if #addedEntries == 0 then
 		printNoChangesError()
 		process.exit(1)
