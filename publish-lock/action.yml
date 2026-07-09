@@ -62,14 +62,7 @@ runs:
           *) echo "state must be 'locked' or 'unlocked', got '$STATE'"; exit 1 ;;
         esac
 
-        args=("$CHANGEWRITE_BIN" "$command")
-        # --sha wins over --branch in the CLI, so pass one or the other.
-        if [[ -n "$SHA" ]]; then
-          args+=(--sha "$SHA")
-        elif [[ -n "$BRANCH" ]]; then
-          args+=(--branch "$BRANCH")
-        fi
-        [[ -n "$REPO" ]] && args+=(--repo "$REPO")
-        [[ -n "$URL" ]] && args+=(--url "$URL")
-
-        "${args[@]}"
+        # The CLI treats empty flags as unset (--sha wins over --branch), so
+        # forward them all and let it sort out precedence and defaults.
+        "$CHANGEWRITE_BIN" "$command" \
+          --branch "$BRANCH" --sha "$SHA" --repo "$REPO" --url "$URL"
