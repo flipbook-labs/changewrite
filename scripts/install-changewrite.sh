@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
+
 # Put the changewrite binary on disk and export CHANGEWRITE_BIN for later steps.
 # Shared by the composite actions (root and publish-lock) so the bootstrap lives
 # in one place. Locates changewrite.toml relative to itself, not via
 # $GITHUB_ACTION_PATH, so it works from any action's subdirectory.
 set -euo pipefail
 
-# A caller can pre-set CHANGEWRITE_BIN to run its own binary rather than a
-# release download. Changewrite's own CI uses this to dogfood the branch build;
-# consumers leave it unset and get the release below.
+# A caller can pre-set CHANGEWRITE_BIN to run their own binary rather than a
+# release download. Changewrite's own CI uses this to dogfood the branch build.
+# Consumers leave it unset and get the release below.
 if [[ -n "${CHANGEWRITE_BIN:-}" ]]; then
 	echo "Using preset changewrite binary: $CHANGEWRITE_BIN"
 	exit 0
@@ -21,10 +22,22 @@ if [[ -z "$version" ]]; then
 fi
 
 case "${RUNNER_OS}/${RUNNER_ARCH}" in
-	Linux/X64)   zip="changewrite-linux-x86_64.zip"  ; bin="changewrite" ;;
-	macOS/ARM64) zip="changewrite-macos-arm64.zip"   ; bin="changewrite" ;;
-	Windows/X64) zip="changewrite-windows-x86_64.zip"; bin="changewrite.exe" ;;
-	*) echo "Unsupported platform: ${RUNNER_OS}/${RUNNER_ARCH}"; exit 1 ;;
+	Linux/X64)
+		zip="changewrite-linux-x86_64.zip"
+		bin="changewrite"
+		;;
+	macOS/ARM64)
+		zip="changewrite-macos-arm64.zip"
+		bin="changewrite"
+		;;
+	Windows/X64)
+		zip="changewrite-windows-x86_64.zip"
+		bin="changewrite.exe"
+		;;
+	*)
+		echo "Unsupported platform: ${RUNNER_OS}/${RUNNER_ARCH}"
+		exit 1
+		;;
 esac
 
 tmp="$(mktemp -d)"

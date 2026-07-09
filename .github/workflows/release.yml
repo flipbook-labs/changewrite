@@ -27,7 +27,7 @@ jobs:
   lock:
     # Lock the publish PR the instant a merge lands, without waiting on the
     # build matrix the release job needs. The release job's unlock step clears
-    # it once the PR is regenerated; a failed run leaves it locked.
+    # it once the PR is regenerated. A failed run leaves it locked.
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 5

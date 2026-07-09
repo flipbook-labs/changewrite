@@ -53,8 +53,6 @@ jobs:
     timeout-minutes: 5
     if: github.event_name == 'pull_request'
     permissions:
-      # The publish-lock action reports the `publish-lock` status satisfied for
-      # PRs that are not the publish PR.
       statuses: write
     steps:
       - uses: actions/checkout@v7
@@ -84,8 +82,8 @@ jobs:
 
       # This PR is not the publish PR, so its `publish-lock` is trivially
       # satisfied. Mark it so requiring the check doesn't block ordinary PRs.
-      - if: github.head_ref != 'publish-next-version'
-        uses: ./publish-lock
+      - uses: ./publish-lock
+        if: github.head_ref != 'publish-next-version'
         with:
           state: unlocked
           sha: ${{ github.event.pull_request.head.sha }}

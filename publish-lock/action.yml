@@ -1,7 +1,7 @@
 name: Changewrite Publish Lock
 description: >-
-  Set the publish PR's lock. Lock it while a release run regenerates it so it
-  cannot be merged out of date, and unlock it once it is up to date again.
+  Sets the publish PR's `publish-lock` commit status, blocking merges while a
+  release run regenerates the PR and allowing them once it is up to date.
 author: flipbook-labs
 
 inputs:
@@ -59,7 +59,10 @@ runs:
         case "$STATE" in
           locked) command=lock ;;
           unlocked) command=unlock ;;
-          *) echo "state must be 'locked' or 'unlocked', got '$STATE'"; exit 1 ;;
+          *)
+            echo "state must be 'locked' or 'unlocked', got '$STATE'"
+            exit 1
+            ;;
         esac
 
         # The CLI treats empty flags as unset (--sha wins over --branch), so
