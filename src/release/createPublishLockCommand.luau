@@ -1,16 +1,24 @@
 local cli = require("@batteries/cli")
 local process = require("@std/process")
 
+local buildStatusArgs = require("@root/release/buildStatusArgs")
 local chomp = require("@root/chomp")
 local config = require("@root/config")
 local constants = require("@root/release/constants")
-local publishLockStatus = require("@root/release/publishLockStatus")
 local types = require("@root/cli/types")
+
+local function describe(state: buildStatusArgs.State): string
+	if state == "failure" then
+		return "A release run is updating the publish PR, so it is out of date"
+	end
+
+	return "The publish PR is up to date with its base branch"
+end
 
 local function createPublishLockCommand(options: {
 	title: string,
 	summary: string,
-	state: publishLockStatus.State,
+	state: buildStatusArgs.State,
 }): types.Command
 	local parser = cli.parser()
 	parser:add("branch", "option", {
@@ -55,7 +63,10 @@ local function createPublishLockCommand(options: {
 			".object.sha",
 		})
 		if not ref.ok then
-			if publishLockStatus.isMissingRefError(ref.stderr) then
+			-- gh exits non-zero for any non-2xx response, so tell a missing branch
+			-- (no publish PR opened yet, a no-op) apart from a real failure like a
+			-- network error or a 5xx, which must fail loudly. A missing ref is a 404.
+			if string.find(ref.stderr, "HTTP 404", 1, true) then
 				print(`No {branch} branch to mark, skipping.`)
 				return nil
 			end
@@ -72,12 +83,12 @@ local function createPublishLockCommand(options: {
 		end
 
 		local command = { config.ghCmd }
-		local args = publishLockStatus.buildStatusArgs({
+		local args = buildStatusArgs({
 			repo = repoPath(),
 			sha = sha,
 			state = options.state,
 			context = constants.PUBLISH_LOCK_CONTEXT,
-			description = publishLockStatus.describe(options.state),
+			description = describe(options.state),
 			url = parser:get("url"),
 		})
 		table.move(args, 1, #args, #command + 1, command)
