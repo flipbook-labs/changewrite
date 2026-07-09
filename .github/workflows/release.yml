@@ -24,6 +24,25 @@ on:
         default: ""
 
 jobs:
+  # Lock the publish PR the instant a merge lands, without waiting on the build
+  # matrix the release job needs. The release job clears the lock when it
+  # finishes regenerating the PR.
+  lock:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      statuses: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          merge-lock-only: true
+          base: main
+          branch: publish-next-version
+
   build:
     if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'debug:release-pr')
     uses: ./.github/workflows/build.yml

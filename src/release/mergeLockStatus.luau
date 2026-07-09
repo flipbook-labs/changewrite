@@ -26,6 +26,10 @@ export type StatusRequest = {
 -- the base branch for the lock to actually block a merge.
 local DEFAULT_CONTEXT = "publish-lock"
 
+-- The branch the release run regenerates the publish PR on, and so the branch
+-- `lock`/`unlock` mark by default. Mirrors the action's `branch` input default.
+local DEFAULT_PUBLISH_BRANCH = "publish-next-version"
+
 local function describe(state: State): string
 	if state == "failure" then
 		return "A release run is updating the publish PR, so it is out of date"
@@ -67,6 +71,7 @@ end
 
 return {
 	DEFAULT_CONTEXT = DEFAULT_CONTEXT,
+	DEFAULT_PUBLISH_BRANCH = DEFAULT_PUBLISH_BRANCH,
 	describe = describe,
 	buildStatusArgs = buildStatusArgs,
 	isMissingRefError = isMissingRefError,

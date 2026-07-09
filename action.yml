@@ -94,6 +94,15 @@ inputs:
       false to disable.
     required: false
     default: "true"
+  merge-lock-only:
+    description: >-
+      Apply the merge lock and exit, skipping the release flow. Run this in a
+      dedicated job that has no build dependency so the publish PR locks the
+      moment a push lands, rather than after the release job's prerequisites
+      finish. The main release run (with this off) clears the lock when it
+      succeeds. Has no effect unless merge-lock is also on.
+    required: false
+    default: "false"
   post-draft-hook:
     description: >-
       Bash run after the draft release is created, before it is published. Use it
@@ -188,7 +197,9 @@ runs:
     - name: Lock the publish PR
       # A push to the base branch starts this run, which regenerates the publish
       # PR. Fail its lock now so it cannot be merged out of date in the window
-      # before the refresh lands; the final step clears it once the run succeeds.
+      # before the refresh lands; the final unlock step clears it once the run
+      # succeeds. A merge-lock-only run stops after this step, so its lock stands
+      # until the main release run's unlock.
       if: inputs.merge-lock == 'true' && github.event_name == 'push'
       shell: bash
       env:
@@ -198,7 +209,7 @@ runs:
         RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       run: |
         set -euo pipefail
-        "$CHANGEWRITE_BIN" lock --state failure --branch "$BRANCH" --repo "$REPO" --url "$RUN_URL"
+        "$CHANGEWRITE_BIN" lock --branch "$BRANCH" --repo "$REPO" --url "$RUN_URL"
 
     - name: Report the publish lock satisfied
       # Every PR into the base branch must report `publish-lock` or a required
@@ -213,10 +224,10 @@ runs:
         RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       run: |
         set -euo pipefail
-        "$CHANGEWRITE_BIN" lock --state success --sha "$HEAD_SHA" --repo "$REPO" --url "$RUN_URL"
+        "$CHANGEWRITE_BIN" unlock --sha "$HEAD_SHA" --repo "$REPO" --url "$RUN_URL"
 
     - name: Require an unreleased change entry
-      if: inputs.require-entry == 'true' && github.head_ref != inputs.branch
+      if: inputs.require-entry == 'true' && github.head_ref != inputs.branch && inputs.merge-lock-only != 'true'
       shell: bash
       env:
         BASE_REF: ${{ github.base_ref }}
@@ -235,7 +246,10 @@ runs:
 
     - name: Evaluate release gate
       id: gate
-      if: inputs.require-entry != 'true'
+      # Guarding the two flow entry points (this and require-entry above) leaves
+      # merge-lock-only running only the download and lock steps: every step
+      # below keys off this gate or a require-entry check, so they all self-skip.
+      if: inputs.require-entry != 'true' && inputs.merge-lock-only != 'true'
       shell: bash
       env:
         FORCE_PUBLISH: ${{ inputs.force-publish }}
@@ -395,6 +409,7 @@ runs:
 
     - name: Set action outputs
       id: result
+      if: inputs.merge-lock-only != 'true'
       shell: bash
       run: |
         set -euo pipefail
@@ -411,8 +426,9 @@ runs:
     - name: Unlock the publish PR
       # Runs last, so it is reached only when every step above succeeded. The
       # regenerated PR now matches the base branch, so clear its lock. A failed
-      # run skips this step, leaving the PR locked.
-      if: inputs.merge-lock == 'true' && github.event_name == 'push'
+      # run skips this step, leaving the PR locked. The lock-only job never
+      # reaches here, so it locks without immediately clearing.
+      if: inputs.merge-lock == 'true' && github.event_name == 'push' && inputs.merge-lock-only != 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
@@ -421,4 +437,4 @@ runs:
         RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       run: |
         set -euo pipefail
-        "$CHANGEWRITE_BIN" lock --state success --branch "$BRANCH" --repo "$REPO" --url "$RUN_URL"
+        "$CHANGEWRITE_BIN" unlock --branch "$BRANCH" --repo "$REPO" --url "$RUN_URL"
