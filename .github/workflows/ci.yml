@@ -80,8 +80,6 @@ jobs:
         with:
           require-entry: 'true'
 
-      # This PR is not the publish PR, so its `publish-lock` is trivially
-      # satisfied. Mark it so requiring the check doesn't block ordinary PRs.
       - uses: ./publish-lock
         if: github.head_ref != 'publish-next-version'
         with:
