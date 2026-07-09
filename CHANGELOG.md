@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.7.0
+
+### Changes
+
+- `check` also counts an entry that exists only in the working tree, so it passes locally before the entry is committed.
+
+### Dependencies
+
+- Upgrade AgentSkills `v0.3.0` → `v0.4.0`.
+
+### Features
+
+- Add a `changewrite init` command that scaffolds a `changewrite.toml` from the version manifests it detects.
+
+- Add a dedicated `flipbook-labs/changewrite/publish-lock` action (and `lock`/`unlock` CLI commands) that prevents the publish PR from being merged until the main branch settles.
+
+### Internal
+
+- Point the agent guide at the `org/review-pass` skill and fix how it resolves the pinned AgentSkills version.
+
+- The release job now runs the binary it just built instead of downloading the last published release, so a new CLI feature takes effect on the release that introduces it rather than the one after.
+
+
 ## v0.6.0
 
 ### Changes
