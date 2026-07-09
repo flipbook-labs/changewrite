@@ -39,7 +39,7 @@ local function createPublishLockCommand(options: {
 
 	-- gh substitutes {owner}/{repo} from the repository it infers when no
 	-- explicit owner/name is given, so this doubles as the default.
-	local function repoPath(): string
+	local function resolveRepo(): string
 		local repo = parser:get("repo")
 		return if repo and repo ~= "" then repo else "{owner}/{repo}"
 	end
@@ -58,7 +58,7 @@ local function createPublishLockCommand(options: {
 		local ref = process.run({
 			config.ghCmd,
 			"api",
-			`repos/{repoPath()}/git/ref/heads/{branch}`,
+			`repos/{resolveRepo()}/git/ref/heads/{branch}`,
 			"--jq",
 			".object.sha",
 		})
@@ -66,7 +66,7 @@ local function createPublishLockCommand(options: {
 			-- gh exits non-zero for any non-2xx response, so tell a missing branch
 			-- (no publish PR opened yet, a no-op) apart from a real failure like a
 			-- network error or a 5xx, which must fail loudly. A missing ref is a 404.
-			if string.find(ref.stderr, "HTTP 404", 1, true) then
+			if ref.stderr:find("HTTP 404", 1, true) then
 				print(`No {branch} branch to mark, skipping.`)
 				return nil
 			end
@@ -84,7 +84,7 @@ local function createPublishLockCommand(options: {
 
 		local command = { config.ghCmd }
 		local args = buildStatusArgs({
-			repo = repoPath(),
+			repo = resolveRepo(),
 			sha = sha,
 			state = options.state,
 			context = constants.PUBLISH_LOCK_CONTEXT,
