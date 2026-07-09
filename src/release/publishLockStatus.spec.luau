@@ -1,10 +1,10 @@
 local test = require("@std/test")
 
-local mergeLockStatus = require("@root/release/mergeLockStatus")
+local publishLockStatus = require("@root/release/publishLockStatus")
 
-test.suite("mergeLockStatus", function(suite)
+test.suite("publishLockStatus", function(suite)
 	suite:case("builds the gh api call that posts the status", function(assert)
-		local args = mergeLockStatus.buildStatusArgs({
+		local args = publishLockStatus.buildStatusArgs({
 			repo = "octocat/hello",
 			sha = "abc123",
 			state = "failure",
@@ -20,7 +20,7 @@ test.suite("mergeLockStatus", function(suite)
 	end)
 
 	suite:case("appends target_url only when a url is given", function(assert)
-		local args = mergeLockStatus.buildStatusArgs({
+		local args = publishLockStatus.buildStatusArgs({
 			repo = "octocat/hello",
 			sha = "abc123",
 			state = "success",
@@ -34,15 +34,15 @@ test.suite("mergeLockStatus", function(suite)
 	end)
 
 	suite:case("uses a distinct message for each state", function(assert)
-		assert.eq(mergeLockStatus.describe("failure") == mergeLockStatus.describe("success"), false)
+		assert.eq(publishLockStatus.describe("failure") == publishLockStatus.describe("success"), false)
 	end)
 
 	suite:case("reads a 404 from gh as a missing ref", function(assert)
-		assert.eq(mergeLockStatus.isMissingRefError("gh: Not Found (HTTP 404)"), true)
+		assert.eq(publishLockStatus.isMissingRefError("gh: Not Found (HTTP 404)"), true)
 	end)
 
 	suite:case("does not read other gh failures as a missing ref", function(assert)
-		assert.eq(mergeLockStatus.isMissingRefError("gh: Internal Server Error (HTTP 500)"), false)
-		assert.eq(mergeLockStatus.isMissingRefError("dial tcp: lookup api.github.com: no such host"), false)
+		assert.eq(publishLockStatus.isMissingRefError("gh: Internal Server Error (HTTP 500)"), false)
+		assert.eq(publishLockStatus.isMissingRefError("dial tcp: lookup api.github.com: no such host"), false)
 	end)
 end)

@@ -53,7 +53,7 @@ jobs:
     timeout-minutes: 5
     if: github.event_name == 'pull_request'
     permissions:
-      # The merge-lock action reports the `publish-lock` status satisfied for
+      # The publish-lock action reports the `publish-lock` status satisfied for
       # PRs that are not the publish PR.
       statuses: write
     steps:
@@ -85,7 +85,7 @@ jobs:
       # This PR is not the publish PR, so its `publish-lock` is trivially
       # satisfied. Mark it so requiring the check doesn't block ordinary PRs.
       - if: github.head_ref != 'publish-next-version'
-        uses: ./merge-lock
+        uses: ./publish-lock
         with:
           state: unlocked
           sha: ${{ github.event.pull_request.head.sha }}

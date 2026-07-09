@@ -1,6 +1,6 @@
-local createMergeLockCommand = require("@root/release/createMergeLockCommand")
+local createPublishLockCommand = require("@root/release/createPublishLockCommand")
 
-return createMergeLockCommand({
+return createPublishLockCommand({
 	title = "unlock",
 	summary = "Unlock the publish PR to reenable merging.",
 	state = "success",

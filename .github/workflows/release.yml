@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: ./merge-lock
+      - uses: ./publish-lock
         with:
           state: locked
           branch: publish-next-version
@@ -138,7 +138,7 @@ jobs:
         # Reached only when every step above succeeded, so a failed run leaves
         # the PR locked. The regenerated PR now matches main, so clear its lock.
         if: github.event_name == 'push'
-        uses: ./merge-lock
+        uses: ./publish-lock
         with:
           state: unlocked
           branch: publish-next-version

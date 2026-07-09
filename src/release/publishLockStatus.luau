@@ -1,6 +1,6 @@
 --[[
-	The publish PR's merge lock is a commit status posted to the publish branch's
-	head. A release run fails it while it regenerates the PR and clears it once
+	The publish lock is a commit status posted to the publish branch's head. A
+	release run fails it while it regenerates the PR and clears it once
 	the PR matches its base again, so the PR cannot be merged while it is out of
 	date. These are the pure pieces: the status message per state and the `gh api`
 	argument list. The I/O (resolving a branch head, invoking gh) lives in the

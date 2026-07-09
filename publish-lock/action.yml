@@ -1,7 +1,7 @@
-name: Changewrite Merge Lock
+name: Changewrite Publish Lock
 description: >-
-  Set the publish PR's merge lock. Lock it while a release run regenerates it so
-  it cannot be merged out of date, and unlock it once it is up to date again.
+  Set the publish PR's lock. Lock it while a release run regenerates it so it
+  cannot be merged out of date, and unlock it once it is up to date again.
 author: flipbook-labs
 
 inputs:
@@ -44,7 +44,7 @@ runs:
         GH_TOKEN: ${{ inputs.github-token }}
       run: bash "$GITHUB_ACTION_PATH/../scripts/install-changewrite.sh"
 
-    - name: Set the merge lock
+    - name: Set the publish lock
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}

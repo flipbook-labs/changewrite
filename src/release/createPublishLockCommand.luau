@@ -3,21 +3,21 @@ local process = require("@std/process")
 
 local chomp = require("@root/chomp")
 local config = require("@root/config")
-local mergeLockStatus = require("@root/release/mergeLockStatus")
+local publishLockStatus = require("@root/release/publishLockStatus")
 local types = require("@root/cli/types")
 
 -- `lock` and `unlock` are the same operation with opposite states: both post the
 -- `publish-lock` commit status to a commit, differing only in success/failure.
 -- This factory builds either command so the shared plumbing (locating the
 -- commit, calling gh) lives in one place.
-local function createMergeLockCommand(options: {
+local function createPublishLockCommand(options: {
 	title: string,
 	summary: string,
-	state: mergeLockStatus.State,
+	state: publishLockStatus.State,
 }): types.Command
 	local parser = cli.parser()
 	parser:add("branch", "option", {
-		help = `Post the status to this branch's head commit. Defaults to the publish branch ({mergeLockStatus.DEFAULT_PUBLISH_BRANCH}).`,
+		help = `Post the status to this branch's head commit. Defaults to the publish branch ({publishLockStatus.DEFAULT_PUBLISH_BRANCH}).`,
 	})
 	parser:add("sha", "option", {
 		help = "Post the status to this exact commit instead of a branch head. Takes precedence over --branch.",
@@ -50,7 +50,7 @@ local function createMergeLockCommand(options: {
 
 		local branch = parser:get("branch")
 		if not branch or branch == "" then
-			branch = mergeLockStatus.DEFAULT_PUBLISH_BRANCH
+			branch = publishLockStatus.DEFAULT_PUBLISH_BRANCH
 		end
 
 		local ref = process.run({
@@ -61,7 +61,7 @@ local function createMergeLockCommand(options: {
 			".object.sha",
 		})
 		if not ref.ok then
-			if mergeLockStatus.isMissingRefError(ref.stderr) then
+			if publishLockStatus.isMissingRefError(ref.stderr) then
 				print(`No {branch} branch to mark; skipping.`)
 				return nil
 			end
@@ -78,12 +78,12 @@ local function createMergeLockCommand(options: {
 		end
 
 		local command = { config.ghCmd }
-		local args = mergeLockStatus.buildStatusArgs({
+		local args = publishLockStatus.buildStatusArgs({
 			repo = repoPath(),
 			sha = sha,
 			state = options.state,
-			context = mergeLockStatus.DEFAULT_CONTEXT,
-			description = mergeLockStatus.describe(options.state),
+			context = publishLockStatus.DEFAULT_CONTEXT,
+			description = publishLockStatus.describe(options.state),
 			url = parser:get("url"),
 		})
 		table.move(args, 1, #args, #command + 1, command)
@@ -91,7 +91,7 @@ local function createMergeLockCommand(options: {
 		local posted = process.run(command, { stdio = "inherit" })
 		assert(posted.ok, posted.stderr)
 
-		print(`Set {mergeLockStatus.DEFAULT_CONTEXT} = {options.state} on {sha}`)
+		print(`Set {publishLockStatus.DEFAULT_CONTEXT} = {options.state} on {sha}`)
 	end
 
 	return {
@@ -102,4 +102,4 @@ local function createMergeLockCommand(options: {
 	}
 end
 
-return createMergeLockCommand
+return createPublishLockCommand

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Put the changewrite binary on disk and export CHANGEWRITE_BIN for later steps.
-# Shared by the composite actions (root and merge-lock) so the bootstrap lives
+# Shared by the composite actions (root and publish-lock) so the bootstrap lives
 # in one place. Locates changewrite.toml relative to itself, not via
 # $GITHUB_ACTION_PATH, so it works from any action's subdirectory.
 set -euo pipefail
