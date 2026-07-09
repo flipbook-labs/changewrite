@@ -10,7 +10,7 @@ local types = require("@root/cli/types")
 -- `publish-lock` commit status to a commit, differing only in success/failure.
 -- This factory builds either command so the shared plumbing (locating the
 -- commit, calling gh) lives in one place.
-local function makeCommand(options: {
+local function createMergeLockCommand(options: {
 	title: string,
 	summary: string,
 	state: mergeLockStatus.State,
@@ -102,4 +102,4 @@ local function makeCommand(options: {
 	}
 end
 
-return makeCommand
+return createMergeLockCommand

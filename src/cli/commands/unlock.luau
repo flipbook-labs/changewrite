@@ -1,7 +1,7 @@
-local makeMergeLockCommand = require("@root/cli/commands/mergeLock")
+local createMergeLockCommand = require("@root/release/createMergeLockCommand")
 
-return makeMergeLockCommand({
+return createMergeLockCommand({
 	title = "unlock",
-	summary = "Unlock the publish PR by passing its merge-lock commit status.",
+	summary = "Unlock the publish PR to reenable merging.",
 	state = "success",
 })

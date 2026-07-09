@@ -24,9 +24,6 @@ on:
         default: ""
 
 jobs:
-  # Lock the publish PR the instant a merge lands, without waiting on the build
-  # matrix the release job needs. The release job clears the lock when it
-  # finishes regenerating the PR.
   lock:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -55,8 +52,6 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      # The action's merge-lock posts a `publish-lock` commit status on the
-      # publish PR.
       statuses: write
     outputs:
       has_changes: ${{ steps.changewrite.outputs.has_changes }}

@@ -1,7 +1,7 @@
-local makeMergeLockCommand = require("@root/cli/commands/mergeLock")
+local createMergeLockCommand = require("@root/release/createMergeLockCommand")
 
-return makeMergeLockCommand({
+return createMergeLockCommand({
 	title = "lock",
-	summary = "Lock the publish PR by failing its merge-lock commit status.",
+	summary = "Lock the publish PR to prevent accidental merges while changes are in flight.",
 	state = "failure",
 })
