@@ -30,8 +30,12 @@ end
 
 local function detectAddedEntries(addedFiles: { string }, dir: string): { string }
 	local entries: { string } = {}
+	-- Callers union several git listings (committed, staged, untracked), so the
+	-- same path can arrive more than once. Keep the first and drop repeats.
+	local seen: { [string]: true } = {}
 	for _, file in addedFiles do
-		if isEntryFile(file, dir) then
+		if isEntryFile(file, dir) and not seen[file] then
+			seen[file] = true
 			table.insert(entries, file)
 		end
 	end
