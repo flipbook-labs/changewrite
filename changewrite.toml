@@ -1,3 +1,5 @@
+categories = ["Features", "Fixes", "Changes", "Dependencies"]
+
 [version]
 current = "0.7.0"
 mirror = [

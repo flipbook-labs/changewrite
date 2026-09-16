@@ -1,7 +1,12 @@
 -- Render a starter `changewrite.toml` making it the version authority and
 -- mirroring the detected manifests.
 local function renderInitConfig(version: string, mirrors: { string }): string
-	local lines = { "[version]", `current = "{version}"` }
+	local lines = {
+		'categories = ["Features", "Fixes", "Changes", "Dependencies"]',
+		"",
+		"[version]",
+		`current = "{version}"`,
+	}
 
 	if #mirrors > 0 then
 		table.insert(lines, "mirror = [")

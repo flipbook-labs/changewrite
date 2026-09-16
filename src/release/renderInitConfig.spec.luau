@@ -7,6 +7,8 @@ test.suite("renderInitConfig", function(suite)
 		assert.eq(
 			renderInitConfig("0.3.0", { "wally.toml", "Cargo.toml" }),
 			table.concat({
+				'categories = ["Features", "Fixes", "Changes", "Dependencies"]',
+				"",
 				"[version]",
 				'current = "0.3.0"',
 				"mirror = [",
@@ -22,6 +24,8 @@ test.suite("renderInitConfig", function(suite)
 		assert.eq(
 			renderInitConfig("0.1.0", {}),
 			table.concat({
+				'categories = ["Features", "Fixes", "Changes", "Dependencies"]',
+				"",
 				"[version]",
 				'current = "0.1.0"',
 				"",

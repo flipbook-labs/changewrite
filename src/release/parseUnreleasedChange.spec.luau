@@ -44,6 +44,53 @@ Drop the old API.
 		assert.eq(change.category, "Breaking")
 	end)
 
+	suite:case("accepts a configured category", function(assert)
+		local change = parseUnreleasedChange(
+			[[
+---
+bump: minor
+category: Features
+---
+
+Add category validation.
+]],
+			{ "Features", "Fixes" }
+		)
+
+		assert.eq(change.category, "Features")
+	end)
+
+	suite:case("errors on a category outside the configured list", function(assert)
+		assert.throws(function()
+			parseUnreleasedChange(
+				[[
+---
+bump: patch
+category: Internal
+---
+
+Use an invalid category.
+]],
+				{ "Features", "Fixes" }
+			)
+		end)
+	end)
+
+	suite:case("validates the default category against the configured list", function(assert)
+		assert.throws(function()
+			parseUnreleasedChange(
+				[[
+---
+bump: patch
+---
+
+Use the default category.
+]],
+				{ "Features", "Fixes" }
+			)
+		end)
+	end)
+
 	suite:case("preserves multi-paragraph bodies", function(assert)
 		local change = parseUnreleasedChange([[
 ---

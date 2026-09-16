@@ -8,6 +8,7 @@ export type Target = {
 }
 
 export type Config = {
+	categories: { string }?,
 	current: string?,
 	source: Target,
 	mirrors: { Target },
@@ -39,6 +40,24 @@ local MIRROR_MANIFESTS: { string } = {
 
 local function readString(value: toml.TomlValue?): string?
 	return if typeof(value) == "string" then value else nil
+end
+
+local function readCategories(value: toml.TomlValue?): { string }?
+	if value == nil then
+		return nil
+	end
+	assert(typeof(value) == "table", "`categories` must be a non-empty array of strings")
+
+	local categories = {}
+	local seen = {}
+	for _, category in value :: { toml.TomlValue } do
+		assert(typeof(category) == "string" and category ~= "", "`categories` must be a non-empty array of strings")
+		assert(not seen[category], `Duplicate changelog category "{category}"`)
+		seen[category] = true
+		table.insert(categories, category)
+	end
+	assert(#categories > 0, "`categories` must be a non-empty array of strings")
+	return categories
 end
 
 local function parseTarget(value: toml.TomlValue): Target?
@@ -86,6 +105,7 @@ local function parseConfigText(text: string): Config
 	end
 
 	return {
+		categories = readCategories(parsed.categories),
 		current = readString(versionConfig.current),
 		source = source,
 		mirrors = mirrors,
@@ -143,6 +163,10 @@ local function getCurrentVersion(): string
 	return readTargetVersion(config.source)
 end
 
+local function getCategories(): { string }?
+	return readConfig().categories
+end
+
 local function writeVersion(nextVersion: string): { string }
 	local config = readConfig()
 	local changedFiles = { config.source.file }
@@ -180,6 +204,7 @@ return {
 	_parseConfigText = parseConfigText,
 	CONFIG_FILE = CONFIG_FILE,
 	MIRROR_MANIFESTS = MIRROR_MANIFESTS,
+	getCategories = getCategories,
 	getCurrentVersion = getCurrentVersion,
 	getUnreleasedChangesDir = getUnreleasedChangesDir,
 	getSourceFile = getSourceFile,

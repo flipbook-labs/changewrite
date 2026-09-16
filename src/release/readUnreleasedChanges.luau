@@ -9,6 +9,7 @@ type UnreleasedChange = types.UnreleasedChange
 
 local function readUnreleasedChanges(): { UnreleasedChange }
 	local dir = versionSource.getUnreleasedChangesDir()
+	local categories = versionSource.getCategories()
 	if not fs.exists(dir) then
 		return {}
 	end
@@ -23,7 +24,8 @@ local function readUnreleasedChanges(): { UnreleasedChange }
 		end
 
 		local file = tostring(path.normalize(path.join(dir, entry.name)))
-		local parsed = parseUnreleasedChange(fs.readFileToString(file))
+		local success, parsed = pcall(parseUnreleasedChange, fs.readFileToString(file), categories)
+		assert(success, `{file}: {parsed}`)
 		table.insert(changes, {
 			bump = parsed.bump,
 			category = parsed.category,
