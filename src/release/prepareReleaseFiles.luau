@@ -5,6 +5,7 @@ local prependSection = require("@root/release/prependSection")
 local removeUnreleasedChanges = require("@root/release/removeUnreleasedChanges")
 local renderChangelogSection = require("@root/release/renderChangelogSection")
 local types = require("@root/release/types")
+local versionSource = require("@root/release/versionSource")
 local writeVersion = require("@root/release/writeVersion")
 
 type UnreleasedChange = types.UnreleasedChange
@@ -18,7 +19,7 @@ local function prepareReleaseFiles(nextVersion: string, changes: { UnreleasedCha
 		return changedFiles
 	end
 
-	local section = renderChangelogSection(nextVersion, changes)
+	local section = renderChangelogSection(nextVersion, changes, versionSource.getCategories())
 	local existing = if fs.exists(constants.CHANGELOG_FILE)
 		then fs.readFileToString(constants.CHANGELOG_FILE)
 		else DEFAULT_HEADER

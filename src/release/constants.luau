@@ -1,5 +1,11 @@
 return {
 	CHANGELOG_FILE = "CHANGELOG.md",
+	DEFAULT_CATEGORIES = {
+		"Features",
+		"Fixes",
+		"Changes",
+		"Dependencies",
+	},
 
 	-- The commit-status context the publish lock posts under. Make this a
 	-- required status check on the base branch for the lock to block a merge.

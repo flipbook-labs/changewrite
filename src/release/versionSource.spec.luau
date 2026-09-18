@@ -33,6 +33,37 @@ current = "1.2.3"
 		assert.eq(config.unreleasedChangesDir, "changelog.d/")
 	end)
 
+	suite:case("reads configured changelog categories", function(assert)
+		local config = versionSource._parseConfigText([[
+categories = ["Features", "Fixes", "Changes"]
+
+[version]
+current = "1.2.3"
+]])
+
+		assert.eq(config.categories, { "Features", "Fixes", "Changes" })
+	end)
+
+	suite:case("rejects a category map", function(assert)
+		assert.throws(function()
+			versionSource._parseConfigText([[
+categories = { intended = "Features" }
+
+[version]
+current = "1.2.3"
+]])
+		end)
+	end)
+
+	suite:case("omits changelog categories when they are not configured", function(assert)
+		local config = versionSource._parseConfigText([[
+[version]
+current = "1.2.3"
+]])
+
+		assert.eq(config.categories, nil)
+	end)
+
 	suite:case("reads an explicit source file and mirror targets", function(assert)
 		local config = versionSource._parseConfigText([[
 [version]
