@@ -2,6 +2,8 @@ local fs = require("@std/fs")
 local path = require("@std/path")
 local toml = require("@batteries/toml")
 
+local validateConfigFields = require("@root/release/validateConfigFields")
+
 export type Target = {
 	file: string,
 	pattern: string?,
@@ -59,6 +61,7 @@ local function parseTarget(value: toml.TomlValue): Target?
 end
 
 local function parseConfigText(text: string): Config
+	validateConfigFields(text)
 	local parsed = toml.deserialize(text)
 
 	local version = parsed.version
