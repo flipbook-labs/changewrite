@@ -46,13 +46,12 @@ local function parseUnreleasedChange(text: string, categories: { string }?): Par
 	if category == nil or category == "" then
 		category = DEFAULT_CATEGORY
 	end
-	assert(
-		categories and table.find(categories, category) ~= nil,
-		`Unreleased change category "{category}" is not configured. Expected one of: {table.concat(
-			categories or {},
-			", "
-		)}`
-	)
+	if categories then
+		assert(
+			table.find(categories, category) ~= nil,
+			`Unreleased change category "{category}" is not configured. Expected one of: {table.concat(categories, ", ")}`
+		)
+	end
 
 	return {
 		bump = bump,

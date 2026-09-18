@@ -85,17 +85,17 @@ Use an invalid category.
 		end)
 	end)
 
-	suite:case("requires configured categories", function(assert)
-		assert.throws(function()
-			parseUnreleasedChange([[
+	suite:case("allows unrestricted categories when none are configured", function(assert)
+		local change = parseUnreleasedChange([[
 ---
 bump: patch
-category: Changes
+category: Internal
 ---
 
 Use a category without configuring it.
 ]])
-		end)
+
+		assert.eq(change.category, "Internal")
 	end)
 
 	suite:case("validates the default category against the configured list", function(assert)
