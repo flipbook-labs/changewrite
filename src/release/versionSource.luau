@@ -18,6 +18,24 @@ export type Config = {
 local CONFIG_FILE = "changewrite.toml"
 local DEFAULT_UNRELEASED_CHANGES_DIR = "./.changes/"
 
+local TOP_LEVEL_FIELDS: { [string]: boolean } = {
+	categories = true,
+	unreleased_changes = true,
+	version = true,
+}
+
+local VERSION_FIELDS: { [string]: boolean } = {
+	current = true,
+	file = true,
+	mirror = true,
+	pattern = true,
+}
+
+local TARGET_FIELDS: { [string]: boolean } = {
+	file = true,
+	pattern = true,
+}
+
 local DEFAULT_PATTERNS: { [string]: string } = {
 	["changewrite.toml"] = "current%s*=%s*[\"']([^\"']+)[\"']",
 	["loom.config.luau"] = "version%s*=%s*[\"']([^\"']+)[\"']",
@@ -42,6 +60,16 @@ local function readString(value: toml.TomlValue?): string?
 	return if typeof(value) == "string" then value else nil
 end
 
+local function assertKnownFields(
+	value: { [string]: toml.TomlValue },
+	allowedFields: { [string]: boolean },
+	context: string
+): ()
+	for field in value do
+		assert(allowedFields[field], `Unknown field "{field}" in {context}`)
+	end
+end
+
 local function readCategories(value: toml.TomlValue?): { string }?
 	if value == nil then
 		return nil
@@ -60,12 +88,13 @@ local function readCategories(value: toml.TomlValue?): { string }?
 	return categories
 end
 
-local function parseTarget(value: toml.TomlValue): Target?
+local function parseTarget(value: toml.TomlValue, context: string): Target?
 	if typeof(value) ~= "table" then
 		return nil
 	end
 
 	local target = value :: { [string]: toml.TomlValue }
+	assertKnownFields(target, TARGET_FIELDS, context)
 	local file = readString(target.file)
 	if not file then
 		return nil
@@ -79,11 +108,13 @@ end
 
 local function parseConfigText(text: string): Config
 	local parsed = toml.deserialize(text)
+	assertKnownFields(parsed, TOP_LEVEL_FIELDS, CONFIG_FILE)
 
 	local version = parsed.version
 	local versionConfig: { [string]: toml.TomlValue } = if typeof(version) == "table"
 		then version :: { [string]: toml.TomlValue }
 		else {}
+	assertKnownFields(versionConfig, VERSION_FIELDS, "[version]")
 
 	local file = readString(versionConfig.file)
 	local source: Target = if file
@@ -92,15 +123,17 @@ local function parseConfigText(text: string): Config
 
 	local mirrors: { Target } = {}
 	local mirror = versionConfig.mirror
-	local single = parseTarget(mirror)
-	if single then
-		table.insert(mirrors, single)
-	elseif typeof(mirror) == "table" then
+	if typeof(mirror) == "table" and #(mirror :: { toml.TomlValue }) > 0 then
 		for _, entry in mirror :: { toml.TomlValue } do
-			local target = parseTarget(entry)
+			local target = parseTarget(entry, "a version mirror")
 			if target then
 				table.insert(mirrors, target)
 			end
+		end
+	else
+		local single = parseTarget(mirror, "version mirror")
+		if single then
+			table.insert(mirrors, single)
 		end
 	end
 
