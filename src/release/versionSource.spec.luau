@@ -64,6 +64,49 @@ current = "1.2.3"
 		assert.eq(config.categories, nil)
 	end)
 
+	suite:case("rejects unknown top-level fields", function(assert)
+		assert.throws(function()
+			versionSource._parseConfigText([[
+unknown = "value"
+
+[version]
+current = "1.2.3"
+]])
+		end)
+	end)
+
+	suite:case("rejects unknown version fields", function(assert)
+		assert.throws(function()
+			versionSource._parseConfigText([[
+[version]
+current = "1.2.3"
+unknown = "value"
+]])
+		end)
+	end)
+
+	suite:case("rejects unknown mirror fields", function(assert)
+		assert.throws(function()
+			versionSource._parseConfigText([[
+[version]
+current = "1.2.3"
+mirror = [
+  { file = "wally.toml", unknown = "value" },
+]
+]])
+		end)
+	end)
+
+	suite:case("rejects unknown single-mirror fields", function(assert)
+		assert.throws(function()
+			versionSource._parseConfigText([[
+[version]
+current = "1.2.3"
+mirror = { file = "wally.toml", unknown = "value" }
+]])
+		end)
+	end)
+
 	suite:case("reads an explicit source file and mirror targets", function(assert)
 		local config = versionSource._parseConfigText([[
 [version]
