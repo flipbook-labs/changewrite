@@ -1,8 +1,10 @@
 -- Render a starter `changewrite.toml` making it the version authority and
 -- mirroring the detected manifests.
+local constants = require("@root/release/constants")
+
 local function renderInitConfig(version: string, mirrors: { string }): string
 	local lines = {
-		'categories = ["Features", "Fixes", "Changes", "Dependencies"]',
+		`categories = ["{table.concat(constants.DEFAULT_CATEGORIES, '", "')}"]`,
 		"",
 		"[version]",
 		`current = "{version}"`,

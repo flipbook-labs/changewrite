@@ -16,7 +16,7 @@ Add support for Foo values so Bar can be Bazzed.
 ```
 
 - **`bump`** (required) — how much to move the version: `major`, `minor`, or `patch`.
-- **`category`** (optional) — the heading this entry appears under in the changelog. When `categories` is configured in `changewrite.toml`, the value must come from that list. Defaults to `Changes`.
+- **`category`** (optional) — the heading this entry appears under in the changelog. The value must come from the `categories` list in `changewrite.toml`. Defaults to `Changes`.
 - **Body** — everything below the frontmatter is the changelog text. Aim for one or two sentences; it can span multiple paragraphs if a change needs it.
 
 ## How the version is chosen
@@ -28,4 +28,4 @@ The next version is the largest bump across all pending entries: a single `major
 - `README.md` (this file) is ignored, so it's safe to keep here.
 - Entries are deleted once they're released; they live in this folder only while unreleased.
 - The folder location is configurable via `unreleased_changes` in `changewrite.toml` (it defaults to `./.changes/`).
-- Run `changewrite lint` to validate every pending entry locally. The `check` command runs the same validation before enforcing that a pull request adds an entry.
+- Run `changewrite check` to validate every pending entry before enforcing that a pull request adds an entry.

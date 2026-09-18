@@ -4,14 +4,17 @@ local parseUnreleasedChange = require("@root/release/parseUnreleasedChange")
 
 test.suite("parseUnreleasedChange", function(suite)
 	suite:case("parses the bump, category, and body", function(assert)
-		local change = parseUnreleasedChange([[
+		local change = parseUnreleasedChange(
+			[[
 ---
 bump: minor
 category: Features
 ---
 
 Add support for unreleased changes.
-]])
+]],
+			{ "Features", "Fixes", "Changes", "Dependencies" }
+		)
 
 		assert.eq(change.bump, "minor")
 		assert.eq(change.category, "Features")
@@ -19,26 +22,32 @@ Add support for unreleased changes.
 	end)
 
 	suite:case("defaults the category to Changes", function(assert)
-		local change = parseUnreleasedChange([[
+		local change = parseUnreleasedChange(
+			[[
 ---
 bump: patch
 ---
 
 Fix a thing.
-]])
+]],
+			{ "Features", "Fixes", "Changes", "Dependencies" }
+		)
 
 		assert.eq(change.category, "Changes")
 	end)
 
 	suite:case("tolerates quoted frontmatter values", function(assert)
-		local change = parseUnreleasedChange([[
+		local change = parseUnreleasedChange(
+			[[
 ---
 bump: "major"
 category: 'Breaking'
 ---
 
 Drop the old API.
-]])
+]],
+			{ "Breaking" }
+		)
 
 		assert.eq(change.bump, "major")
 		assert.eq(change.category, "Breaking")
@@ -76,6 +85,19 @@ Use an invalid category.
 		end)
 	end)
 
+	suite:case("requires configured categories", function(assert)
+		assert.throws(function()
+			parseUnreleasedChange([[
+---
+bump: patch
+category: Changes
+---
+
+Use a category without configuring it.
+]])
+		end)
+	end)
+
 	suite:case("validates the default category against the configured list", function(assert)
 		assert.throws(function()
 			parseUnreleasedChange(
@@ -92,7 +114,8 @@ Use the default category.
 	end)
 
 	suite:case("preserves multi-paragraph bodies", function(assert)
-		local change = parseUnreleasedChange([[
+		local change = parseUnreleasedChange(
+			[[
 ---
 bump: minor
 ---
@@ -100,7 +123,9 @@ bump: minor
 First paragraph.
 
 Second paragraph.
-]])
+]],
+			{ "Changes" }
+		)
 
 		assert.eq(change.body, "First paragraph.\n\nSecond paragraph.")
 	end)

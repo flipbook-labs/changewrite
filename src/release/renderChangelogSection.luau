@@ -3,7 +3,11 @@ local types = require("@root/release/types")
 
 type UnreleasedChange = types.UnreleasedChange
 
-local function renderChangelogSection(version: string, entries: { UnreleasedChange }): string
+local function renderChangelogSection(
+	version: string,
+	entries: { UnreleasedChange },
+	configuredCategories: { string }?
+): string
 	local plain = version:gsub("^v", "")
 
 	local byCategory: { [string]: { UnreleasedChange } } = {}
@@ -15,10 +19,18 @@ local function renderChangelogSection(version: string, entries: { UnreleasedChan
 		end
 		table.insert(byCategory[entry.category], entry)
 	end
-	table.sort(categories)
+	if configuredCategories then
+		categories = configuredCategories
+	else
+		table.sort(categories)
+	end
 
 	local blocks: { string } = {}
 	for _, category in categories do
+		if byCategory[category] == nil then
+			continue
+		end
+
 		local bullets: { string } = {}
 		for _, entry in byCategory[category] do
 			table.insert(bullets, renderBullet(entry.body))
