@@ -2,6 +2,7 @@ local fs = require("@std/fs")
 
 local constants = require("@root/release/constants")
 local prependSection = require("@root/release/prependSection")
+local readCategories = require("@root/release/readCategories")
 local removeUnreleasedChanges = require("@root/release/removeUnreleasedChanges")
 local renderChangelogSection = require("@root/release/renderChangelogSection")
 local types = require("@root/release/types")
@@ -18,7 +19,7 @@ local function prepareReleaseFiles(nextVersion: string, changes: { UnreleasedCha
 		return changedFiles
 	end
 
-	local section = renderChangelogSection(nextVersion, changes)
+	local section = renderChangelogSection(nextVersion, changes, readCategories())
 	local existing = if fs.exists(constants.CHANGELOG_FILE)
 		then fs.readFileToString(constants.CHANGELOG_FILE)
 		else DEFAULT_HEADER

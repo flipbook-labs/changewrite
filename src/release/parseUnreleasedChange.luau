@@ -8,7 +8,7 @@ type ParsedUnreleasedChange = types.ParsedUnreleasedChange
 
 local DEFAULT_CATEGORY = "Changes"
 
-local function parseUnreleasedChange(text: string): ParsedUnreleasedChange
+local function parseUnreleasedChange(text: string, categories: { string }?): ParsedUnreleasedChange
 	local lines = splitLines(text)
 
 	local index = 1
@@ -45,6 +45,12 @@ local function parseUnreleasedChange(text: string): ParsedUnreleasedChange
 	local category = fields.category
 	if category == nil or category == "" then
 		category = DEFAULT_CATEGORY
+	end
+	if categories then
+		assert(
+			table.find(categories, category) ~= nil,
+			`Unreleased change category "{category}" is not configured. Expected one of: {table.concat(categories, ", ")}`
+		)
 	end
 
 	return {

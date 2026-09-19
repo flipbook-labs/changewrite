@@ -6,6 +6,7 @@ local richterm = require("@batteries/richterm")
 local chomp = require("@root/chomp")
 local config = require("@root/config")
 local detectAddedEntries = require("@root/release/detectAddedEntries")
+local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local splitLines = require("@root/release/splitLines")
 local types = require("@root/cli/types")
 local versionSource = require("@root/release/versionSource")
@@ -138,6 +139,8 @@ local function collectWorkingTreeAdditions(dir: string): { string }
 end
 
 local function run()
+	readUnreleasedChanges()
+
 	local dir = versionSource.getUnreleasedChangesDir()
 	local baseRef = parser:get("base") or detectDefaultBaseRef()
 	if not baseRef then

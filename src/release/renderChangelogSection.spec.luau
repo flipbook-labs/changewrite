@@ -10,7 +10,29 @@ local function entry(bump: "major" | "minor" | "patch", category: string, body: 
 end
 
 test.suite("renderChangelogSection", function(suite)
-	suite:case("groups entries under sorted category headings", function(assert)
+	suite:case("orders category headings from the configuration", function(assert)
+		local section = renderChangelogSection("0.4.0", {
+			entry("minor", "Features", "Add change partials."),
+			entry("patch", "Dependencies", "Upgrade Lute."),
+		}, { "Features", "Fixes", "Changes", "Dependencies" })
+
+		assert.eq(
+			section,
+			table.concat({
+				"## v0.4.0",
+				"",
+				"### Features",
+				"",
+				"- Add change partials.",
+				"",
+				"### Dependencies",
+				"",
+				"- Upgrade Lute.",
+			}, "\n")
+		)
+	end)
+
+	suite:case("sorts unrestricted category headings", function(assert)
 		local section = renderChangelogSection("0.4.0", {
 			entry("minor", "Features", "Add change partials."),
 			entry("patch", "Dependencies", "Upgrade Lute."),
