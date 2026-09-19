@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.8.0
+
+### Features
+
+- Configure changelog categories to control allowed headings and release order, with validation during `changewrite check`.
+
+### Changes
+
+- Organize version source and semantic versioning into focused internal modules.
+
+- Reject unknown fields in `changewrite.toml`, including version sources and mirrors.
+
+- Release automation reads the public Flipbook Backend App Client ID from an organization variable.
+
+
 ## v0.7.0
 
 ### Changes
