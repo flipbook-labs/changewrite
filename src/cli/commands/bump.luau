@@ -2,10 +2,11 @@ local cli = require("@batteries/cli")
 local json = require("@std/json")
 
 local getCurrentVersion = require("@root/release/getCurrentVersion")
-local getNextVersion = require("@root/release/getNextVersion")
-local parseVersion = require("@root/release/parseVersion")
+local getNextVersion = require("@root/semver/getNextVersion")
+local parseVersion = require("@root/semver/parseVersion")
 local prepareReleaseFiles = require("@root/release/prepareReleaseFiles")
 local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
+local stringifyPaths = require("@root/stringifyPaths")
 local types = require("@root/cli/types")
 
 local title = "bump"
@@ -34,7 +35,7 @@ local function bump()
 	-- Fold whatever changes are pending into the forced version, the same way
 	-- `prepare-pr` does. There may be none (this is an escape hatch for stepping
 	-- past a burned tag), in which case only the version moves.
-	local changedFiles = prepareReleaseFiles(nextVersion, readUnreleasedChanges())
+	local changedFiles = stringifyPaths(prepareReleaseFiles(nextVersion, readUnreleasedChanges()))
 
 	print(json.serialize({
 		version = nextVersion,

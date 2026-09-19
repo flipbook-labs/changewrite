@@ -1,17 +1,17 @@
 local test = require("@std/test")
 
-local versionSource = require("@root/release/versionSource")
+local parseVersionConfig = require("@root/release/parseVersionConfig")
 
-test.suite("versionSource config", function(suite)
+test.suite("parseVersionConfig", function(suite)
 	suite:case("defaults to changewrite.toml as the version source", function(assert)
 		local text = [[
 [version]
 current = "1.2.3"
 ]]
-		local config = versionSource._parseConfigText(text)
+		local config = parseVersionConfig(text)
 
 		assert.eq(config.current, "1.2.3")
-		assert.eq(config.source.file, "changewrite.toml")
+		assert.eq(tostring(config.source.file), "changewrite.toml")
 	end)
 
 	suite:case("defaults the unreleased changes directory to ./.changes/", function(assert)
@@ -19,9 +19,9 @@ current = "1.2.3"
 [version]
 current = "1.2.3"
 ]]
-		local config = versionSource._parseConfigText(text)
+		local config = parseVersionConfig(text)
 
-		assert.eq(config.unreleasedChangesDir, "./.changes/")
+		assert.eq(tostring(config.unreleasedChangesDir), "./.changes")
 	end)
 
 	suite:case("reads an explicit unreleased_changes directory", function(assert)
@@ -31,9 +31,9 @@ unreleased_changes = "changelog.d/"
 [version]
 current = "1.2.3"
 ]]
-		local config = versionSource._parseConfigText(text)
+		local config = parseVersionConfig(text)
 
-		assert.eq(config.unreleasedChangesDir, "changelog.d/")
+		assert.eq(tostring(config.unreleasedChangesDir), "changelog.d")
 	end)
 
 	suite:case("reads an explicit source file and mirror targets", function(assert)
@@ -46,13 +46,13 @@ mirror = [
   { file = "package.json", pattern = '"version"%s*:%s*"([^"]+)"' },
 ]
 ]]
-		local config = versionSource._parseConfigText(text)
+		local config = parseVersionConfig(text)
 
-		assert.eq(config.source.file, "wally.toml")
+		assert.eq(tostring(config.source.file), "wally.toml")
 		assert.eq(config.source.pattern, 'version = "([^"]+)"')
 		assert.eq(#config.mirrors, 2)
-		assert.eq(config.mirrors[1].file, "loom.config.luau")
-		assert.eq(config.mirrors[2].file, "package.json")
+		assert.eq(tostring(config.mirrors[1].file), "loom.config.luau")
+		assert.eq(tostring(config.mirrors[2].file), "package.json")
 		assert.eq(config.mirrors[2].pattern, '"version"%s*:%s*"([^"]+)"')
 	end)
 
@@ -62,10 +62,10 @@ mirror = [
 current = "1.0.0"
 mirror = { file = "loom.config.luau" }
 ]]
-		local config = versionSource._parseConfigText(text)
+		local config = parseVersionConfig(text)
 
 		assert.eq(#config.mirrors, 1)
-		assert.eq(config.mirrors[1].file, "loom.config.luau")
+		assert.eq(tostring(config.mirrors[1].file), "loom.config.luau")
 	end)
 
 	suite:case("ignores comments and surrounding whitespace", function(assert)
@@ -74,9 +74,9 @@ mirror = { file = "loom.config.luau" }
 [version]
 current = "4.5.6" # inline comment
 ]]
-		local config = versionSource._parseConfigText(text)
+		local config = parseVersionConfig(text)
 
 		assert.eq(config.current, "4.5.6")
-		assert.eq(config.source.file, "changewrite.toml")
+		assert.eq(tostring(config.source.file), "changewrite.toml")
 	end)
 end)

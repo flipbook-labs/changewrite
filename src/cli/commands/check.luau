@@ -6,10 +6,10 @@ local richterm = require("@batteries/richterm")
 local chomp = require("@root/chomp")
 local config = require("@root/config")
 local detectAddedEntries = require("@root/release/detectAddedEntries")
+local getUnreleasedChangesDir = require("@root/release/getUnreleasedChangesDir")
 local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local splitLines = require("@root/release/splitLines")
 local types = require("@root/cli/types")
-local versionSource = require("@root/release/versionSource")
 
 local title = "check"
 local summary = "Validate the unreleased changelog entries for the current branch."
@@ -51,11 +51,11 @@ local function formatChangelogTemplate(): string
 end
 
 local function printNoChangesError()
-	local dir = versionSource.getUnreleasedChangesDir()
+	local dir = getUnreleasedChangesDir()
 
 	print(richterm.red("A changelog entry is required."))
 	print("")
-	print(`Add a markdown entry under {richterm.bold(dir)} describing this change:`)
+	print(`Add a markdown entry under {richterm.bold(tostring(dir))} describing this change:`)
 	print("")
 	print(richterm.bold("Template:"))
 	print(formatChangelogTemplate())
@@ -100,7 +100,7 @@ end
 -- Entry files that exist only in the working tree, so a local run can confirm a
 -- just-created entry before it is committed. On CI the checkout is clean, so
 -- these listings come back empty and the committed diff alone decides the run.
-local function collectWorkingTreeAdditions(dir: string): { string }
+local function collectWorkingTreeAdditions(dir: path.Path): { string }
 	local paths: { string } = {}
 
 	-- New files staged against HEAD but not yet committed. A brand-new file only
@@ -112,7 +112,7 @@ local function collectWorkingTreeAdditions(dir: string): { string }
 		"--diff-filter=A",
 		"HEAD",
 		"--",
-		dir,
+		tostring(dir),
 	})
 	if tracked.ok then
 		for _, line in splitLines(tracked.stdout) do
@@ -127,7 +127,7 @@ local function collectWorkingTreeAdditions(dir: string): { string }
 		"--others",
 		"--exclude-standard",
 		"--",
-		dir,
+		tostring(dir),
 	})
 	if untracked.ok then
 		for _, line in splitLines(untracked.stdout) do
@@ -141,7 +141,7 @@ end
 local function run()
 	readUnreleasedChanges()
 
-	local dir = versionSource.getUnreleasedChangesDir()
+	local dir = getUnreleasedChangesDir()
 	local baseRef = parser:get("base") or detectDefaultBaseRef()
 	if not baseRef then
 		printNoBaseRefError()
@@ -159,7 +159,7 @@ local function run()
 		"--diff-filter=A",
 		`{baseRef}...HEAD`,
 		"--",
-		dir,
+		tostring(dir),
 	})
 
 	if not diff.ok then

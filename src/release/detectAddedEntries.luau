@@ -9,7 +9,7 @@
 
 local path = require("@std/path")
 
-local function isEntryFile(file: string, dir: string): boolean
+local function isEntryFile(file: path.Path, dir: path.Path): boolean
 	local relative = path.relative(path.normalize(dir), path.normalize(file))
 
 	-- `readUnreleasedChanges` lists the directory non-recursively, so only a
@@ -28,13 +28,15 @@ local function isEntryFile(file: string, dir: string): boolean
 	return name:lower() ~= "readme.md"
 end
 
-local function detectAddedEntries(addedFiles: { string }, dir: string): { string }
+local function detectAddedEntries(addedFiles: { string }, dir: path.Pathlike): { string }
+	local dirPath = path.parse(dir)
 	local entries: { string } = {}
 	-- Callers union several git listings (committed, staged, untracked), so the
 	-- same path can arrive more than once. Keep the first and drop repeats.
 	local seen: { [string]: true } = {}
 	for _, file in addedFiles do
-		if isEntryFile(file, dir) and not seen[file] then
+		local filePath = path.parse(file)
+		if isEntryFile(filePath, dirPath) and not seen[file] then
 			seen[file] = true
 			table.insert(entries, file)
 		end

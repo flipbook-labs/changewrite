@@ -1,6 +1,6 @@
 local test = require("@std/test")
 
-local pickHighestVersion = require("@root/release/pickHighestVersion")
+local pickHighestVersion = require("@root/semver/pickHighestVersion")
 
 test.suite("pickHighestVersion", function(suite)
 	suite:case("returns the sole version", function(assert)

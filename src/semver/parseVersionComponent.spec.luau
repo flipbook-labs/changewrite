@@ -1,6 +1,6 @@
 local test = require("@std/test")
 
-local parseVersionComponent = require("@root/release/parseVersionComponent")
+local parseVersionComponent = require("@root/semver/parseVersionComponent")
 
 test.suite("parseVersionComponent", function(suite)
 	suite:case("accepts major", function(assert)

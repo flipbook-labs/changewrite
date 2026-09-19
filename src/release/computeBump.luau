@@ -1,4 +1,4 @@
-local types = require("@root/release/types")
+local types = require("@root/semver/types")
 
 type VersionComponent = types.VersionComponent
 
