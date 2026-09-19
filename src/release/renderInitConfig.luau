@@ -15,7 +15,7 @@ local function renderInitConfig(version: string, mirrors: { path.Path }): string
 	if #mirrors > 0 then
 		table.insert(lines, "mirror = [")
 		for _, file in mirrors do
-			table.insert(lines, '  { file = "' .. tostring(file) .. '" },')
+			table.insert(lines, `  \{ file = "{file}" \},`)
 		end
 		table.insert(lines, "]")
 	end
