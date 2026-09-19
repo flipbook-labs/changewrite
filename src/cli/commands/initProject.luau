@@ -41,7 +41,7 @@ local function run()
 			if version and pcall(parseVersion, version) then
 				table.insert(versions, version)
 			elseif version then
-				print(`Ignoring unsupported version {richterm.bold(version)} in {tostring(manifestPath)}.`)
+				print(`Ignoring unsupported version {richterm.bold(version)} in {manifestPath}.`)
 			end
 		end
 	end
