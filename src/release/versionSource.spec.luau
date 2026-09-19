@@ -1,14 +1,14 @@
 local test = require("@std/test")
 
-local parseConfig = require("@root/release/parseConfig")
+local versionSource = require("@root/release/versionSource")
 
-test.suite("parseConfig", function(suite)
+test.suite("versionSource config", function(suite)
 	suite:case("defaults to changewrite.toml as the version source", function(assert)
 		local text = [[
 [version]
 current = "1.2.3"
 ]]
-		local config = parseConfig(text)
+		local config = versionSource._parseConfigText(text)
 
 		assert.eq(config.current, "1.2.3")
 		assert.eq(config.source.file, "changewrite.toml")
@@ -19,7 +19,7 @@ current = "1.2.3"
 [version]
 current = "1.2.3"
 ]]
-		local config = parseConfig(text)
+		local config = versionSource._parseConfigText(text)
 
 		assert.eq(config.unreleasedChangesDir, "./.changes/")
 	end)
@@ -31,44 +31,9 @@ unreleased_changes = "changelog.d/"
 [version]
 current = "1.2.3"
 ]]
-		local config = parseConfig(text)
+		local config = versionSource._parseConfigText(text)
 
 		assert.eq(config.unreleasedChangesDir, "changelog.d/")
-	end)
-
-	suite:case("reads configured changelog categories", function(assert)
-		local text = [[
-categories = ["Features", "Fixes", "Changes"]
-
-[version]
-current = "1.2.3"
-]]
-		local config = parseConfig(text)
-
-		assert.eq(config.categories, { "Features", "Fixes", "Changes" })
-	end)
-
-	suite:case("rejects a category map", function(assert)
-		local text = [[
-categories = { intended = "Features" }
-
-[version]
-current = "1.2.3"
-]]
-
-		assert.throws(function()
-			parseConfig(text)
-		end)
-	end)
-
-	suite:case("omits changelog categories when they are not configured", function(assert)
-		local text = [[
-[version]
-current = "1.2.3"
-]]
-		local config = parseConfig(text)
-
-		assert.eq(config.categories, nil)
 	end)
 
 	suite:case("reads an explicit source file and mirror targets", function(assert)
@@ -81,7 +46,7 @@ mirror = [
   { file = "package.json", pattern = '"version"%s*:%s*"([^"]+)"' },
 ]
 ]]
-		local config = parseConfig(text)
+		local config = versionSource._parseConfigText(text)
 
 		assert.eq(config.source.file, "wally.toml")
 		assert.eq(config.source.pattern, 'version = "([^"]+)"')
@@ -97,7 +62,7 @@ mirror = [
 current = "1.0.0"
 mirror = { file = "loom.config.luau" }
 ]]
-		local config = parseConfig(text)
+		local config = versionSource._parseConfigText(text)
 
 		assert.eq(#config.mirrors, 1)
 		assert.eq(config.mirrors[1].file, "loom.config.luau")
@@ -109,7 +74,7 @@ mirror = { file = "loom.config.luau" }
 [version]
 current = "4.5.6" # inline comment
 ]]
-		local config = parseConfig(text)
+		local config = versionSource._parseConfigText(text)
 
 		assert.eq(config.current, "4.5.6")
 		assert.eq(config.source.file, "changewrite.toml")
