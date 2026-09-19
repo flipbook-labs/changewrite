@@ -11,7 +11,7 @@ current = "1.2.3"
 		local config = parseVersionConfig(text)
 
 		assert.eq(config.current, "1.2.3")
-		assert.eq(config.source.file, "changewrite.toml")
+		assert.eq(tostring(config.source.file), "changewrite.toml")
 	end)
 
 	suite:case("defaults the unreleased changes directory to ./.changes/", function(assert)
@@ -21,7 +21,7 @@ current = "1.2.3"
 ]]
 		local config = parseVersionConfig(text)
 
-		assert.eq(config.unreleasedChangesDir, "./.changes/")
+		assert.eq(tostring(config.unreleasedChangesDir), "./.changes")
 	end)
 
 	suite:case("reads an explicit unreleased_changes directory", function(assert)
@@ -33,7 +33,7 @@ current = "1.2.3"
 ]]
 		local config = parseVersionConfig(text)
 
-		assert.eq(config.unreleasedChangesDir, "changelog.d/")
+		assert.eq(tostring(config.unreleasedChangesDir), "changelog.d")
 	end)
 
 	suite:case("reads an explicit source file and mirror targets", function(assert)
@@ -48,11 +48,11 @@ mirror = [
 ]]
 		local config = parseVersionConfig(text)
 
-		assert.eq(config.source.file, "wally.toml")
+		assert.eq(tostring(config.source.file), "wally.toml")
 		assert.eq(config.source.pattern, 'version = "([^"]+)"')
 		assert.eq(#config.mirrors, 2)
-		assert.eq(config.mirrors[1].file, "loom.config.luau")
-		assert.eq(config.mirrors[2].file, "package.json")
+		assert.eq(tostring(config.mirrors[1].file), "loom.config.luau")
+		assert.eq(tostring(config.mirrors[2].file), "package.json")
 		assert.eq(config.mirrors[2].pattern, '"version"%s*:%s*"([^"]+)"')
 	end)
 
@@ -65,7 +65,7 @@ mirror = { file = "loom.config.luau" }
 		local config = parseVersionConfig(text)
 
 		assert.eq(#config.mirrors, 1)
-		assert.eq(config.mirrors[1].file, "loom.config.luau")
+		assert.eq(tostring(config.mirrors[1].file), "loom.config.luau")
 	end)
 
 	suite:case("ignores comments and surrounding whitespace", function(assert)
@@ -77,6 +77,6 @@ current = "4.5.6" # inline comment
 		local config = parseVersionConfig(text)
 
 		assert.eq(config.current, "4.5.6")
-		assert.eq(config.source.file, "changewrite.toml")
+		assert.eq(tostring(config.source.file), "changewrite.toml")
 	end)
 end)

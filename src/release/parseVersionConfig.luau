@@ -1,3 +1,4 @@
+local path = require("@std/path")
 local toml = require("@batteries/toml")
 
 local constants = require("@root/release/constants")
@@ -21,11 +22,11 @@ local function parseVersionConfig(text: string): VersionConfig
 	local file = readTomlString(versionConfig.file)
 	local source: VersionTarget = if file
 		then {
-			file = file,
+			file = path.parse(file),
 			pattern = readTomlString(versionConfig.pattern),
 		}
 		else {
-			file = constants.CONFIG_FILE,
+			file = path.parse(constants.CONFIG_FILE),
 			pattern = constants.DEFAULT_PATTERNS[constants.CONFIG_FILE],
 		}
 
@@ -47,7 +48,9 @@ local function parseVersionConfig(text: string): VersionConfig
 		current = readTomlString(versionConfig.current),
 		source = source,
 		mirrors = mirrors,
-		unreleasedChangesDir = readTomlString(parsed.unreleased_changes) or constants.DEFAULT_UNRELEASED_CHANGES_DIR,
+		unreleasedChangesDir = path.parse(
+			readTomlString(parsed.unreleased_changes) or constants.DEFAULT_UNRELEASED_CHANGES_DIR
+		),
 	}
 end
 

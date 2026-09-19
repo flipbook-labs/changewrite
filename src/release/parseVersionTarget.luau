@@ -1,3 +1,4 @@
+local path = require("@std/path")
 local toml = require("@batteries/toml")
 
 local readTomlString = require("@root/release/readTomlString")
@@ -17,7 +18,7 @@ local function parseVersionTarget(value: toml.TomlValue): VersionTarget?
 	end
 
 	return {
-		file = file,
+		file = path.parse(file),
 		pattern = readTomlString(target.pattern),
 	}
 end

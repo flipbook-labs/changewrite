@@ -14,7 +14,7 @@ local function getLastVersionBumpCommit(version: string): string?
 		"-S",
 		version,
 		"--",
-		sourceFile,
+		tostring(sourceFile),
 	})
 	assert(result.ok, result.stderr)
 

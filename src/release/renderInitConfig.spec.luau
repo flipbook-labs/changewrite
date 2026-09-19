@@ -1,3 +1,4 @@
+local path = require("@std/path")
 local test = require("@std/test")
 
 local renderInitConfig = require("@root/release/renderInitConfig")
@@ -5,7 +6,7 @@ local renderInitConfig = require("@root/release/renderInitConfig")
 test.suite("renderInitConfig", function(suite)
 	suite:case("renders mirrors as an array of inline tables", function(assert)
 		assert.eq(
-			renderInitConfig("0.3.0", { "wally.toml", "Cargo.toml" }),
+			renderInitConfig("0.3.0", { path.parse("wally.toml"), path.parse("Cargo.toml") }),
 			table.concat({
 				'categories = ["Features", "Fixes", "Changes", "Dependencies"]',
 				"",

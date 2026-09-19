@@ -1,3 +1,5 @@
+local path = require("@std/path")
+
 local semverTypes = require("@root/semver/types")
 
 type VersionComponent = semverTypes.VersionComponent
@@ -9,11 +11,11 @@ export type ParsedUnreleasedChange = {
 }
 
 export type UnreleasedChange = ParsedUnreleasedChange & {
-	file: string,
+	file: path.Path,
 }
 
 export type VersionTarget = {
-	file: string,
+	file: path.Path,
 	pattern: string?,
 }
 
@@ -21,7 +23,7 @@ export type VersionConfig = {
 	current: string?,
 	source: VersionTarget,
 	mirrors: { VersionTarget },
-	unreleasedChangesDir: string,
+	unreleasedChangesDir: path.Path,
 }
 
 return nil

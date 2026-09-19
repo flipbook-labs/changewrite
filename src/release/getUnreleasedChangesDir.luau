@@ -1,6 +1,8 @@
+local path = require("@std/path")
+
 local readVersionConfig = require("@root/release/readVersionConfig")
 
-local function getUnreleasedChangesDir(): string
+local function getUnreleasedChangesDir(): path.Path
 	return readVersionConfig().unreleasedChangesDir
 end
 

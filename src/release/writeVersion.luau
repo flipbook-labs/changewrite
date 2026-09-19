@@ -1,7 +1,9 @@
+local path = require("@std/path")
+
 local readVersionConfig = require("@root/release/readVersionConfig")
 local writeTargetVersion = require("@root/release/writeTargetVersion")
 
-local function writeVersion(nextVersion: string): { string }
+local function writeVersion(nextVersion: string): { path.Path }
 	local config = readVersionConfig()
 	local changedFiles = { config.source.file }
 	writeTargetVersion(config.source, nextVersion)

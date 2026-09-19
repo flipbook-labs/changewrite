@@ -4,7 +4,7 @@ local readVersionConfig = require("@root/release/readVersionConfig")
 
 local function getCurrentVersion(): string
 	local config = readVersionConfig()
-	if config.source.file == constants.CONFIG_FILE and config.current then
+	if tostring(config.source.file) == constants.CONFIG_FILE and config.current then
 		return config.current
 	end
 	return readTargetVersion(config.source)

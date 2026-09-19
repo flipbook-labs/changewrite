@@ -1,4 +1,6 @@
-local function replaceCapturedVersion(content: string, pattern: string, nextVersion: string, file: string): string
+local path = require("@std/path")
+
+local function replaceCapturedVersion(content: string, pattern: string, nextVersion: string, file: path.Path): string
 	local startIndex, endIndex, currentVersion = content:find(pattern)
 	assert(startIndex and endIndex and currentVersion, `Could not find a version in {file}`)
 

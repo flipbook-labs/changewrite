@@ -8,6 +8,7 @@ local getCurrentVersion = require("@root/release/getCurrentVersion")
 local prepareReleaseFiles = require("@root/release/prepareReleaseFiles")
 local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local resolveNextVersion = require("@root/release/resolveNextVersion")
+local stringifyPaths = require("@root/stringifyPaths")
 local types = require("@root/cli/types")
 
 local title = "prepare-pr"
@@ -37,7 +38,7 @@ local function preparePr()
 	local tagExists = process.run({ config.gitCmd, "rev-parse", "-q", "--verify", `refs/tags/v{current}` }).ok
 
 	local nextVersion = resolveNextVersion(current, tagExists, bumpKind)
-	local changedFiles = prepareReleaseFiles(nextVersion, changes)
+	local changedFiles = stringifyPaths(prepareReleaseFiles(nextVersion, changes))
 
 	print(json.serialize({
 		version = nextVersion,

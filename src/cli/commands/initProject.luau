@@ -8,6 +8,7 @@ local parseVersion = require("@root/semver/parseVersion")
 local pickHighestVersion = require("@root/semver/pickHighestVersion")
 local readOptionalVersion = require("@root/release/readOptionalVersion")
 local renderInitConfig = require("@root/release/renderInitConfig")
+local stringifyPaths = require("@root/stringifyPaths")
 local types = require("@root/cli/types")
 
 local title = "init"
@@ -27,19 +28,20 @@ local function run()
 		`{constants.CONFIG_FILE} already exists. Delete it first if you want to start over.`
 	)
 
-	local mirrors: { string } = {}
+	local mirrors: { path.Path } = {}
 	local versions: { string } = {}
 	for _, manifest in constants.MIRROR_MANIFESTS do
-		if fs.exists(path.resolve(manifest)) then
-			table.insert(mirrors, manifest)
+		local manifestPath = path.parse(manifest)
+		if fs.exists(manifestPath) then
+			table.insert(mirrors, manifestPath)
 			-- changewrite tracks plain X.Y.Z versions, so parseVersion rejects a
 			-- prerelease or build suffix a manifest might carry. Mirror the file
 			-- regardless and skip its version so init falls back instead of crashing.
-			local version = readOptionalVersion(manifest)
+			local version = readOptionalVersion(manifestPath)
 			if version and pcall(parseVersion, version) then
 				table.insert(versions, version)
 			elseif version then
-				print(`Ignoring unsupported version {richterm.bold(version)} in {manifest}.`)
+				print(`Ignoring unsupported version {richterm.bold(version)} in {tostring(manifestPath)}.`)
 			end
 		end
 	end
@@ -52,7 +54,7 @@ local function run()
 
 	print(`Wrote {richterm.bold(constants.CONFIG_FILE)} at version {richterm.bold(version)}.`)
 	if #mirrors > 0 then
-		print(`Mirroring: {table.concat(mirrors, ", ")}`)
+		print(`Mirroring: {table.concat(stringifyPaths(mirrors), ", ")}`)
 	end
 end
 

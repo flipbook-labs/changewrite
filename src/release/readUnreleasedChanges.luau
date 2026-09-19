@@ -24,7 +24,7 @@ local function readUnreleasedChanges(): { UnreleasedChange }
 			continue
 		end
 
-		local file = tostring(path.normalize(path.join(dir, entry.name)))
+		local file = path.join(dir, entry.name)
 		local success, parsed = pcall(parseUnreleasedChange, fs.readFileToString(file), categories)
 		assert(success, `{file}: {parsed}`)
 		table.insert(changes, {
@@ -36,7 +36,7 @@ local function readUnreleasedChanges(): { UnreleasedChange }
 	end
 
 	table.sort(changes, function(a: UnreleasedChange, b: UnreleasedChange)
-		return a.file < b.file
+		return tostring(a.file) < tostring(b.file)
 	end)
 	return changes
 end
