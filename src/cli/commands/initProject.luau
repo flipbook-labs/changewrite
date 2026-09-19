@@ -3,6 +3,7 @@ local fs = require("@std/fs")
 local path = require("@std/path")
 local richterm = require("@batteries/richterm")
 
+local constants = require("@root/release/constants")
 local parseVersion = require("@root/release/parseVersion")
 local pickHighestVersion = require("@root/release/pickHighestVersion")
 local renderInitConfig = require("@root/release/renderInitConfig")
@@ -20,15 +21,15 @@ parser:add("help", "flag", {
 })
 
 local function run()
-	local configPath = path.resolve(versionSource.CONFIG_FILE)
+	local configPath = path.resolve(constants.CONFIG_FILE)
 	assert(
 		not fs.exists(configPath),
-		`{versionSource.CONFIG_FILE} already exists. Delete it first if you want to start over.`
+		`{constants.CONFIG_FILE} already exists. Delete it first if you want to start over.`
 	)
 
 	local mirrors: { string } = {}
 	local versions: { string } = {}
-	for _, manifest in versionSource.MIRROR_MANIFESTS do
+	for _, manifest in constants.MIRROR_MANIFESTS do
 		if fs.exists(path.resolve(manifest)) then
 			table.insert(mirrors, manifest)
 			-- changewrite tracks plain X.Y.Z versions, so parseVersion rejects a
@@ -49,7 +50,7 @@ local function run()
 
 	fs.writeStringToFile(configPath, renderInitConfig(version, mirrors))
 
-	print(`Wrote {richterm.bold(versionSource.CONFIG_FILE)} at version {richterm.bold(version)}.`)
+	print(`Wrote {richterm.bold(constants.CONFIG_FILE)} at version {richterm.bold(version)}.`)
 	if #mirrors > 0 then
 		print(`Mirroring: {table.concat(mirrors, ", ")}`)
 	end

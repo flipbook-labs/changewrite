@@ -1,127 +1,20 @@
 local fs = require("@std/fs")
 local path = require("@std/path")
-local toml = require("@batteries/toml")
 
-export type Target = {
-	file: string,
-	pattern: string?,
-}
+local constants = require("@root/release/constants")
+local parseConfig = require("@root/release/parseConfig")
 
-export type Config = {
-	categories: { string }?,
-	current: string?,
-	source: Target,
-	mirrors: { Target },
-	unreleasedChangesDir: string,
-}
-
-local CONFIG_FILE = "changewrite.toml"
-local DEFAULT_UNRELEASED_CHANGES_DIR = "./.changes/"
-
-local DEFAULT_PATTERNS: { [string]: string } = {
-	["changewrite.toml"] = "current%s*=%s*[\"']([^\"']+)[\"']",
-	["loom.config.luau"] = "version%s*=%s*[\"']([^\"']+)[\"']",
-	["wally.toml"] = "version%s*=%s*[\"']([^\"']+)[\"']",
-	["rotriever.toml"] = "version%s*=%s*[\"']([^\"']+)[\"']",
-	["Cargo.toml"] = "version%s*=%s*[\"']([^\"']+)[\"']",
-	["package.json"] = "[\"']version[\"']%s*:%s*[\"']([^\"']+)[\"']",
-}
-
--- `init` emits mirrors in this order. DEFAULT_PATTERNS is keyed by file, so it
--- has no stable iteration order; this fixed list keeps generated configs
--- deterministic.
-local MIRROR_MANIFESTS: { string } = {
-	"loom.config.luau",
-	"wally.toml",
-	"Cargo.toml",
-	"rotriever.toml",
-	"package.json",
-}
-
-local function readString(value: toml.TomlValue?): string?
-	return if typeof(value) == "string" then value else nil
-end
-
-local function readCategories(value: toml.TomlValue?): { string }?
-	if value == nil then
-		return nil
-	end
-	assert(typeof(value) == "table", "`categories` must be a non-empty array of strings")
-
-	local categoryValues = value :: { toml.TomlValue }
-	local categories = {}
-	local seen = {}
-	for _, category in categoryValues do
-		assert(typeof(category) == "string" and category ~= "", "`categories` must be a non-empty array of strings")
-		assert(not seen[category], `Duplicate changelog category "{category}"`)
-		seen[category] = true
-		table.insert(categories, category)
-	end
-	assert(#categories > 0 and #categories == #categoryValues, "`categories` must be a non-empty array of strings")
-	return categories
-end
-
-local function parseTarget(value: toml.TomlValue): Target?
-	if typeof(value) ~= "table" then
-		return nil
-	end
-
-	local target = value :: { [string]: toml.TomlValue }
-	local file = readString(target.file)
-	if not file then
-		return nil
-	end
-
-	return {
-		file = file,
-		pattern = readString(target.pattern),
-	}
-end
-
-local function parseConfigText(text: string): Config
-	local parsed = toml.deserialize(text)
-
-	local version = parsed.version
-	local versionConfig: { [string]: toml.TomlValue } = if typeof(version) == "table"
-		then version :: { [string]: toml.TomlValue }
-		else {}
-
-	local file = readString(versionConfig.file)
-	local source: Target = if file
-		then { file = file, pattern = readString(versionConfig.pattern) }
-		else { file = CONFIG_FILE, pattern = DEFAULT_PATTERNS[CONFIG_FILE] }
-
-	local mirrors: { Target } = {}
-	local mirror = versionConfig.mirror
-	local single = parseTarget(mirror)
-	if single then
-		table.insert(mirrors, single)
-	elseif typeof(mirror) == "table" then
-		for _, entry in mirror :: { toml.TomlValue } do
-			local target = parseTarget(entry)
-			if target then
-				table.insert(mirrors, target)
-			end
-		end
-	end
-
-	return {
-		categories = readCategories(parsed.categories),
-		current = readString(versionConfig.current),
-		source = source,
-		mirrors = mirrors,
-		unreleasedChangesDir = readString(parsed.unreleased_changes) or DEFAULT_UNRELEASED_CHANGES_DIR,
-	}
-end
+type Target = parseConfig.Target
+type Config = parseConfig.Config
 
 local function readConfig(): Config
-	local configPath = path.resolve(CONFIG_FILE)
-	assert(fs.exists(configPath), `Could not find {CONFIG_FILE} in the current directory`)
-	return parseConfigText(fs.readFileToString(configPath))
+	local configPath = path.resolve(constants.CONFIG_FILE)
+	assert(fs.exists(configPath), `Could not find {constants.CONFIG_FILE} in the current directory`)
+	return parseConfig(fs.readFileToString(configPath))
 end
 
 local function patternFor(target: Target): string
-	local pattern = target.pattern or DEFAULT_PATTERNS[target.file]
+	local pattern = target.pattern or constants.DEFAULT_PATTERNS[target.file]
 	assert(pattern, `No version pattern configured for {target.file}`)
 	return pattern
 end
@@ -158,7 +51,7 @@ end
 
 local function getCurrentVersion(): string
 	local config = readConfig()
-	if config.source.file == CONFIG_FILE and config.current then
+	if config.source.file == constants.CONFIG_FILE and config.current then
 		return config.current
 	end
 	return readTargetVersion(config.source)
@@ -193,7 +86,7 @@ end
 -- carries no recognizable version. Used by `init` to inherit an existing pin.
 local function readOptionalVersion(file: string): string?
 	local resolved = path.resolve(file)
-	local pattern = DEFAULT_PATTERNS[file]
+	local pattern = constants.DEFAULT_PATTERNS[file]
 	if not pattern or not fs.exists(resolved) then
 		return nil
 	end
@@ -202,9 +95,6 @@ local function readOptionalVersion(file: string): string?
 end
 
 return {
-	_parseConfigText = parseConfigText,
-	CONFIG_FILE = CONFIG_FILE,
-	MIRROR_MANIFESTS = MIRROR_MANIFESTS,
 	getCategories = getCategories,
 	getCurrentVersion = getCurrentVersion,
 	getUnreleasedChangesDir = getUnreleasedChangesDir,
