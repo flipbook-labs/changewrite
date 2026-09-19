@@ -1,6 +1,6 @@
 local test = require("@std/test")
 
-local getNextVersion = require("@root/release/getNextVersion")
+local getNextVersion = require("@root/semver/getNextVersion")
 
 test.suite("getNextVersion", function(suite)
 	suite:case("major bumps the major and resets the minor and patch", function(assert)

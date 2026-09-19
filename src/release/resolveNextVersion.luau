@@ -1,5 +1,5 @@
-local getNextVersion = require("@root/release/getNextVersion")
-local types = require("@root/release/types")
+local getNextVersion = require("@root/semver/getNextVersion")
+local types = require("@root/semver/types")
 
 type VersionComponent = types.VersionComponent
 

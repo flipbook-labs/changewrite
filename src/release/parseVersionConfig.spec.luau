@@ -1,14 +1,14 @@
 local test = require("@std/test")
 
-local versionSource = require("@root/release/versionSource")
+local parseVersionConfig = require("@root/release/parseVersionConfig")
 
-test.suite("versionSource config", function(suite)
+test.suite("parseVersionConfig", function(suite)
 	suite:case("defaults to changewrite.toml as the version source", function(assert)
 		local text = [[
 [version]
 current = "1.2.3"
 ]]
-		local config = versionSource._parseConfigText(text)
+		local config = parseVersionConfig(text)
 
 		assert.eq(config.current, "1.2.3")
 		assert.eq(config.source.file, "changewrite.toml")
@@ -19,7 +19,7 @@ current = "1.2.3"
 [version]
 current = "1.2.3"
 ]]
-		local config = versionSource._parseConfigText(text)
+		local config = parseVersionConfig(text)
 
 		assert.eq(config.unreleasedChangesDir, "./.changes/")
 	end)
@@ -31,7 +31,7 @@ unreleased_changes = "changelog.d/"
 [version]
 current = "1.2.3"
 ]]
-		local config = versionSource._parseConfigText(text)
+		local config = parseVersionConfig(text)
 
 		assert.eq(config.unreleasedChangesDir, "changelog.d/")
 	end)
@@ -46,7 +46,7 @@ mirror = [
   { file = "package.json", pattern = '"version"%s*:%s*"([^"]+)"' },
 ]
 ]]
-		local config = versionSource._parseConfigText(text)
+		local config = parseVersionConfig(text)
 
 		assert.eq(config.source.file, "wally.toml")
 		assert.eq(config.source.pattern, 'version = "([^"]+)"')
@@ -62,7 +62,7 @@ mirror = [
 current = "1.0.0"
 mirror = { file = "loom.config.luau" }
 ]]
-		local config = versionSource._parseConfigText(text)
+		local config = parseVersionConfig(text)
 
 		assert.eq(#config.mirrors, 1)
 		assert.eq(config.mirrors[1].file, "loom.config.luau")
@@ -74,7 +74,7 @@ mirror = { file = "loom.config.luau" }
 [version]
 current = "4.5.6" # inline comment
 ]]
-		local config = versionSource._parseConfigText(text)
+		local config = parseVersionConfig(text)
 
 		assert.eq(config.current, "4.5.6")
 		assert.eq(config.source.file, "changewrite.toml")

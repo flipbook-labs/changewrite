@@ -1,15 +1,15 @@
 local fs = require("@std/fs")
 local path = require("@std/path")
 
+local getUnreleasedChangesDir = require("@root/release/getUnreleasedChangesDir")
 local parseUnreleasedChange = require("@root/release/parseUnreleasedChange")
 local readCategories = require("@root/release/readCategories")
 local types = require("@root/release/types")
-local versionSource = require("@root/release/versionSource")
 
 type UnreleasedChange = types.UnreleasedChange
 
 local function readUnreleasedChanges(): { UnreleasedChange }
-	local dir = versionSource.getUnreleasedChangesDir()
+	local dir = getUnreleasedChangesDir()
 	local categories = readCategories()
 	if not fs.exists(dir) then
 		return {}

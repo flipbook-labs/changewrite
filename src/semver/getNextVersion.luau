@@ -1,5 +1,5 @@
-local parseVersion = require("@root/release/parseVersion")
-local types = require("@root/release/types")
+local parseVersion = require("@root/semver/parseVersion")
+local types = require("@root/semver/types")
 
 type VersionComponent = types.VersionComponent
 

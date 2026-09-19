@@ -2,10 +2,10 @@ local process = require("@std/process")
 
 local chomp = require("@root/chomp")
 local config = require("@root/config")
-local versionSource = require("@root/release/versionSource")
+local getSourceFile = require("@root/release/getSourceFile")
 
 local function getLastVersionBumpCommit(version: string): string?
-	local sourceFile = versionSource.getSourceFile()
+	local sourceFile = getSourceFile()
 	local result = process.run({
 		config.gitCmd,
 		"log",

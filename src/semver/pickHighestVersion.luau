@@ -1,4 +1,4 @@
-local parseVersion = require("@root/release/parseVersion")
+local parseVersion = require("@root/semver/parseVersion")
 
 -- Pick the highest semver from a non-empty list, comparing major, then minor,
 -- then patch. `init` uses this when mirrors disagree on the current version.

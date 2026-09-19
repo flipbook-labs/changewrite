@@ -1,5 +1,5 @@
 local chomp = require("@root/chomp")
-local parseVersionComponent = require("@root/release/parseVersionComponent")
+local parseVersionComponent = require("@root/semver/parseVersionComponent")
 local splitLines = require("@root/release/splitLines")
 local stripQuotes = require("@root/release/stripQuotes")
 local types = require("@root/release/types")
