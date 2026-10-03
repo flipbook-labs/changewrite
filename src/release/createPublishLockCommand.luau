@@ -5,6 +5,7 @@ local buildStatusArgs = require("@root/release/buildStatusArgs")
 local chomp = require("@root/chomp")
 local config = require("@root/config")
 local constants = require("@root/release/constants")
+local readPublishBranch = require("@root/release/readPublishBranch")
 local types = require("@root/cli/types")
 
 local function describe(state: buildStatusArgs.State): string
@@ -22,7 +23,7 @@ local function createPublishLockCommand(options: {
 }): types.Command
 	local parser = cli.parser()
 	parser:add("branch", "option", {
-		help = `Post the status to this branch's head commit. Defaults to the publish branch ({constants.PUBLISH_BRANCH}).`,
+		help = "Post the status to this branch's head commit. Defaults to `[release] branch` from changewrite.toml.",
 	})
 	parser:add("sha", "option", {
 		help = "Post the status to this exact commit instead of a branch head. Takes precedence over --branch.",
@@ -52,7 +53,7 @@ local function createPublishLockCommand(options: {
 
 		local branch = parser:get("branch")
 		if not branch or branch == "" then
-			branch = constants.PUBLISH_BRANCH
+			branch = readPublishBranch()
 		end
 
 		local ref = process.run({

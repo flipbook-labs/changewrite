@@ -32,13 +32,24 @@ inputs:
     required: false
     default: ""
   base:
-    description: Base branch for the generated publish PR.
+    description: >-
+      Base branch for the generated publish PR. Defaults to the repository's
+      default branch.
     required: false
-    default: main
+    default: ""
   branch:
-    description: Branch name for the generated publish PR.
+    description: >-
+      Branch name for the generated publish PR. Defaults to `[release] branch`
+      in changewrite.toml, or `publish-next-version` when that is unset.
     required: false
-    default: publish-next-version
+    default: ""
+  debug:
+    description: >-
+      Run the release flow without releasing. Opens the publish PR from
+      `debug-<branch>` with a `[DEBUG]` title prefix, and skips drafting and
+      publishing the release as `prepare-only` does.
+    required: false
+    default: "false"
   pr-title:
     description: Title for the generated publish PR.
     required: false
@@ -135,22 +146,41 @@ runs:
       run: bash "$GITHUB_ACTION_PATH/scripts/install-changewrite.sh"
 
     - name: Require an unreleased change entry
-      if: inputs.require-entry == 'true' && github.head_ref != inputs.branch
+      if: inputs.require-entry == 'true'
       shell: bash
       env:
         BASE_REF: ${{ github.base_ref }}
+        BRANCH: ${{ inputs.branch }}
       run: |
         set -euo pipefail
 
-        # github.base_ref names the PR base branch but isn't fetched by default,
-        # so fetch it and pass it to check. Non-PR runs leave it empty, where the
-        # CLI falls back to the remote's default branch.
+        # check diffs against the PR base branch, which isn't fetched by default.
         if [[ -n "${BASE_REF:-}" ]]; then
           git fetch --no-tags origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
-          "$CHANGEWRITE_BIN" check --base "origin/${BASE_REF}"
-        else
-          "$CHANGEWRITE_BIN" check
         fi
+        "$CHANGEWRITE_BIN" check --publish-branch "$BRANCH"
+
+    - name: Resolve branches
+      id: branches
+      if: inputs.require-entry != 'true'
+      shell: bash
+      env:
+        BASE: ${{ inputs.base }}
+        BRANCH: ${{ inputs.branch }}
+        DEBUG: ${{ inputs.debug }}
+      run: |
+        set -euo pipefail
+
+        args=(branches --base-branch "$BASE" --publish-branch "$BRANCH")
+        if [[ "$DEBUG" == "true" ]]; then
+          args+=(--debug)
+        fi
+
+        result="$("$CHANGEWRITE_BIN" "${args[@]}")"
+        echo "$result"
+
+        echo "base=$(jq -r '.base' <<< "$result")" >> "$GITHUB_OUTPUT"
+        echo "publish=$(jq -r '.publish' <<< "$result")" >> "$GITHUB_OUTPUT"
 
     - name: Evaluate release gate
       id: gate
@@ -175,7 +205,7 @@ runs:
 
     - name: Draft release
       id: draft
-      if: steps.gate.outputs.should_publish == 'true' && inputs.prepare-only != 'true' && inputs.force-version == ''
+      if: steps.gate.outputs.should_publish == 'true' && inputs.prepare-only != 'true' && inputs.debug != 'true' && inputs.force-version == ''
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
@@ -195,7 +225,7 @@ runs:
 
     - name: Publish release
       id: publish
-      if: steps.gate.outputs.should_publish == 'true' && inputs.publish-immediately == 'true' && inputs.prepare-only != 'true' && inputs.force-version == ''
+      if: steps.gate.outputs.should_publish == 'true' && inputs.publish-immediately == 'true' && inputs.prepare-only != 'true' && inputs.debug != 'true' && inputs.force-version == ''
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
@@ -215,7 +245,7 @@ runs:
 
     - name: Prepare release changes
       id: prepare
-      if: inputs.require-entry != 'true' && inputs.force-version == '' && (inputs.prepare-only == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true'))
+      if: inputs.require-entry != 'true' && inputs.force-version == '' && (inputs.prepare-only == 'true' || inputs.debug == 'true' || (steps.gate.outputs.should_publish != 'true' && steps.gate.outputs.has_changes == 'true'))
       shell: bash
       run: |
         set -euo pipefail
@@ -267,6 +297,7 @@ runs:
       shell: bash
       env:
         PR_TITLE_TEMPLATE: ${{ inputs.pr-title }}
+        DEBUG: ${{ inputs.debug }}
         PR_BODY_TEMPLATE: ${{ inputs.pr-body }}
         VERSION: ${{ steps.prepare.outputs.version || steps.bump.outputs.version }}
         TAG: v${{ steps.prepare.outputs.version || steps.bump.outputs.version }}
@@ -287,6 +318,9 @@ runs:
         }
 
         title="$(render_template "$PR_TITLE_TEMPLATE")"
+        if [[ "$DEBUG" == "true" ]]; then
+          title="[DEBUG] $title"
+        fi
         body="$(render_template "$PR_BODY_TEMPLATE")"
 
         {
@@ -303,8 +337,8 @@ runs:
       uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ inputs.pr-token || inputs.github-token }}
-        base: ${{ inputs.base }}
-        branch: ${{ inputs.branch }}
+        base: ${{ steps.branches.outputs.base }}
+        branch: ${{ steps.branches.outputs.publish }}
         draft: false
         commit-message: Publish v${{ steps.prepare.outputs.version || steps.bump.outputs.version }}
         title: ${{ steps.pr.outputs.title }}

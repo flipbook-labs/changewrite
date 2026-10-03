@@ -22,6 +22,9 @@ local parser = cli.parser()
 parser:add("base", "option", {
 	help = "Base ref to diff against when detecting a newly added entry. Defaults to the pull request's base branch on GitHub Actions, otherwise the repository's default branch.",
 })
+parser:add("publish-branch", "option", {
+	help = "Pass on this publish branch instead of `[release] branch` from changewrite.toml.",
+})
 parser:add("help", "flag", {
 	help = "Show this help message",
 })
@@ -129,7 +132,13 @@ local function run()
 	readUnreleasedChanges()
 
 	local currentBranch = getCurrentBranch()
-	if currentBranch and isPublishBranch(currentBranch, readPublishBranch()) then
+	local publishBranch = parser:get("publish-branch")
+	if not publishBranch or publishBranch == "" then
+		publishBranch = readPublishBranch()
+	end
+	assert(publishBranch)
+
+	if currentBranch and isPublishBranch(currentBranch, publishBranch) then
 		print(`Skipping the entry check on the publish branch ({currentBranch}).`)
 		return
 	end
