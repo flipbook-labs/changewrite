@@ -6,8 +6,12 @@ local richterm = require("@batteries/richterm")
 local chomp = require("@root/chomp")
 local config = require("@root/config")
 local detectAddedEntries = require("@root/release/detectAddedEntries")
+local getCurrentBranch = require("@root/release/getCurrentBranch")
 local getUnreleasedChangesDir = require("@root/release/getUnreleasedChangesDir")
+local isPublishBranch = require("@root/release/isPublishBranch")
+local readPublishBranch = require("@root/release/readPublishBranch")
 local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
+local resolveBaseBranch = require("@root/release/resolveBaseBranch")
 local splitLines = require("@root/release/splitLines")
 local types = require("@root/cli/types")
 
@@ -16,28 +20,11 @@ local summary = "Validate the unreleased changelog entries for the current branc
 
 local parser = cli.parser()
 parser:add("base", "option", {
-	help = "Base ref to diff against when detecting a newly added entry. Defaults to the remote's default branch.",
+	help = "Base ref to diff against when detecting a newly added entry. Defaults to the pull request's base branch on GitHub Actions, otherwise the repository's default branch.",
 })
 parser:add("help", "flag", {
 	help = "Show this help message",
 })
-
--- git records the remote's default branch as `refs/remotes/origin/HEAD` on
--- clone, so read it rather than assuming `origin/main`.
-local function detectDefaultBaseRef(): string?
-	local result = process.run({
-		config.gitCmd,
-		"symbolic-ref",
-		"--short",
-		"refs/remotes/origin/HEAD",
-	})
-	if not result.ok then
-		return nil
-	end
-
-	local ref = chomp(result.stdout)
-	return if ref ~= "" then ref else nil
-end
 
 local function formatChangelogTemplate(): string
 	return table.concat({
@@ -141,13 +128,30 @@ end
 local function run()
 	readUnreleasedChanges()
 
-	local dir = getUnreleasedChangesDir()
-	local baseRef = parser:get("base") or detectDefaultBaseRef()
+	local currentBranch = getCurrentBranch()
+	if currentBranch and isPublishBranch(currentBranch, readPublishBranch()) then
+		print(`Skipping the entry check on the publish branch ({currentBranch}).`)
+		return
+	end
+
+	local baseRef = parser:get("base")
 	if not baseRef then
-		printNoBaseRefError()
-		process.exit(1)
+		local baseBranch = resolveBaseBranch()
+		if not baseBranch then
+			printNoBaseRefError()
+			process.exit(1)
+		end
+		assert(baseBranch)
+
+		if currentBranch == baseBranch then
+			print(`Skipping the entry check on the base branch ({baseBranch}).`)
+			return
+		end
+		baseRef = `origin/{baseBranch}`
 	end
 	assert(baseRef)
+
+	local dir = getUnreleasedChangesDir()
 
 	-- Added files between the merge-base of the base ref and HEAD, limited to
 	-- the unreleased-changes directory. The three-dot range reports what this
