@@ -9,6 +9,8 @@ local detectAddedEntries = require("@root/release/detectAddedEntries")
 local getCurrentBranch = require("@root/release/getCurrentBranch")
 local getUnreleasedChangesDir = require("@root/release/getUnreleasedChangesDir")
 local isPublishBranch = require("@root/release/isPublishBranch")
+local isSameRepositoryPullRequest = require("@root/release/isSameRepositoryPullRequest")
+local readGithubEvent = require("@root/release/readGithubEvent")
 local readPublishBranch = require("@root/release/readPublishBranch")
 local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local resolveBaseBranch = require("@root/release/resolveBaseBranch")
@@ -128,6 +130,13 @@ local function collectWorkingTreeAdditions(dir: path.Path): { string }
 	return paths
 end
 
+-- GitHub Actions sets GITHUB_HEAD_REF only for pull_request and
+-- pull_request_target runs.
+local function isPullRequestRun(): boolean
+	local headRef = process.env.GITHUB_HEAD_REF
+	return headRef ~= nil and headRef ~= ""
+end
+
 local function run()
 	readUnreleasedChanges()
 
@@ -138,7 +147,13 @@ local function run()
 	end
 	assert(publishBranch)
 
-	if currentBranch and isPublishBranch(currentBranch, publishBranch) then
+	-- In a pull request the current branch is the PR's head, which a fork names
+	-- freely. Only a head branch in this repository can be the publish branch,
+	-- and a pull request never runs on the base branch itself.
+	local inPullRequest = isPullRequestRun()
+	local fromThisRepository = not inPullRequest or isSameRepositoryPullRequest(readGithubEvent())
+
+	if currentBranch and fromThisRepository and isPublishBranch(currentBranch, publishBranch) then
 		print(`Skipping the entry check on the publish branch ({currentBranch}).`)
 		return
 	end
@@ -152,7 +167,7 @@ local function run()
 		end
 		assert(baseBranch)
 
-		if currentBranch == baseBranch then
+		if not inPullRequest and currentBranch == baseBranch then
 			print(`Skipping the entry check on the base branch ({baseBranch}).`)
 			return
 		end

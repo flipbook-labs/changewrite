@@ -5,8 +5,12 @@ local constants = require("@root/release/constants")
 local parsePublishBranch = require("@root/release/parsePublishBranch")
 
 local function readPublishBranch(): string
+	-- Without a config file every setting takes its default, including the
+	-- publish branch the action and publish-lock fall back to.
 	local configPath = path.resolve(constants.CONFIG_FILE)
-	assert(fs.exists(configPath), `Could not find {constants.CONFIG_FILE} in the current directory`)
+	if not fs.exists(configPath) then
+		return constants.PUBLISH_BRANCH
+	end
 	return parsePublishBranch(fs.readFileToString(configPath))
 end
 

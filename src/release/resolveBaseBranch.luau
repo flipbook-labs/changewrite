@@ -1,19 +1,14 @@
-local fs = require("@std/fs")
 local json = require("@std/json")
 local process = require("@std/process")
 
 local chomp = require("@root/chomp")
 local config = require("@root/config")
+local readGithubEvent = require("@root/release/readGithubEvent")
 
 local REMOTE_PREFIX = "origin/"
 
 local function readEventDefaultBranch(): string?
-	local eventPath = process.env.GITHUB_EVENT_PATH
-	if not eventPath or eventPath == "" or not fs.exists(eventPath) then
-		return nil
-	end
-
-	local event = json.asObject(json.deserialize(fs.readFileToString(eventPath)))
+	local event = readGithubEvent()
 	local repository = if event then json.asObject(event.repository) else nil
 	local branch = if repository then repository.default_branch else nil
 	return if typeof(branch) == "string" and branch ~= "" then branch else nil
