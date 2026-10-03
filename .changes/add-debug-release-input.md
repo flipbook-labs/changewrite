@@ -3,4 +3,4 @@ bump: minor
 category: Features
 ---
 
-Add a `debug` action input that opens the publish PR from `debug-<branch>` with a `[DEBUG]` title and skips releasing.
+Add a `debug` action input and a `branches` command. The action and `lock`/`unlock` default to `[release] branch`.
