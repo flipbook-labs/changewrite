@@ -39,7 +39,7 @@ inputs:
     default: ""
   branch:
     description: >-
-      Branch name for the generated publish PR. Defaults to `[release] branch`
+      Branch name for the generated publish PR. Defaults to `release.branch`
       in changewrite.toml, or `publish-next-version` when that is unset.
     required: false
     default: ""
@@ -150,7 +150,7 @@ runs:
       shell: bash
       env:
         BASE_REF: ${{ github.base_ref }}
-        BRANCH: ${{ inputs.branch }}
+        PUBLISH_BRANCH: ${{ inputs.branch }}
       run: |
         set -euo pipefail
 
@@ -158,21 +158,21 @@ runs:
         if [[ -n "${BASE_REF:-}" ]]; then
           git fetch --no-tags origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
         fi
-        "$CHANGEWRITE_BIN" check --publish-branch "$BRANCH"
+        "$CHANGEWRITE_BIN" check --publish-branch "$PUBLISH_BRANCH"
 
     - name: Resolve branches
       id: branches
       if: inputs.require-entry != 'true'
       shell: bash
       env:
-        BASE: ${{ inputs.base }}
-        BRANCH: ${{ inputs.branch }}
-        DEBUG: ${{ inputs.debug }}
+        BASE_BRANCH: ${{ inputs.base }}
+        PUBLISH_BRANCH: ${{ inputs.branch }}
+        IS_DEBUG: ${{ inputs.debug }}
       run: |
         set -euo pipefail
 
-        args=(branches --base-branch "$BASE" --publish-branch "$BRANCH")
-        if [[ "$DEBUG" == "true" ]]; then
+        args=(branches --base-branch "$BASE_BRANCH" --publish-branch "$PUBLISH_BRANCH")
+        if [[ "$IS_DEBUG" == "true" ]]; then
           args+=(--debug)
         fi
 
@@ -297,7 +297,7 @@ runs:
       shell: bash
       env:
         PR_TITLE_TEMPLATE: ${{ inputs.pr-title }}
-        DEBUG: ${{ inputs.debug }}
+        IS_DEBUG: ${{ inputs.debug }}
         PR_BODY_TEMPLATE: ${{ inputs.pr-body }}
         VERSION: ${{ steps.prepare.outputs.version || steps.bump.outputs.version }}
         TAG: v${{ steps.prepare.outputs.version || steps.bump.outputs.version }}
@@ -318,7 +318,7 @@ runs:
         }
 
         title="$(render_template "$PR_TITLE_TEMPLATE")"
-        if [[ "$DEBUG" == "true" ]]; then
+        if [[ "$IS_DEBUG" == "true" ]]; then
           title="[DEBUG] $title"
         fi
         body="$(render_template "$PR_BODY_TEMPLATE")"
