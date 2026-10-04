@@ -2,6 +2,7 @@ local helpText = require("@root/cli/helpText")
 local types = require("@root/cli/types")
 
 local attachCommand = require("@root/cli/commands/attach")
+local branchesCommand = require("@root/cli/commands/branches")
 local bumpCommand = require("@root/cli/commands/bump")
 local checkCommand = require("@root/cli/commands/check")
 local draftCommand = require("@root/cli/commands/draft")
@@ -56,6 +57,10 @@ local function run()
 			{
 				name = "check",
 				description = checkCommand.summary,
+			},
+			{
+				name = "branches",
+				description = branchesCommand.summary,
 			},
 			{
 				name = "lock",

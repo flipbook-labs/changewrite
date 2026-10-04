@@ -16,6 +16,32 @@ current = "1.2.3"
 		end)
 	end)
 
+	suite:case("accepts the release branch", function(assert)
+		local text = [[
+[release]
+branch = "release-next"
+
+[version]
+current = "1.2.3"
+]]
+
+		assert.never.throws(function()
+			validateConfigFields(text)
+		end)
+	end)
+
+	suite:case("rejects unknown release fields", function(assert)
+		local text = [[
+[release]
+branch = "release-next"
+unknown = "value"
+]]
+
+		assert.throws(function()
+			validateConfigFields(text)
+		end)
+	end)
+
 	suite:case("rejects unknown version fields", function(assert)
 		local text = [[
 [version]

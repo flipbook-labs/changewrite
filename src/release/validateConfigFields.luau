@@ -5,8 +5,13 @@ local validateVersionTargetFields = require("@root/release/validateVersionTarget
 
 local TOP_LEVEL_FIELDS: { [string]: boolean } = {
 	categories = true,
+	release = true,
 	unreleased_changes = true,
 	version = true,
+}
+
+local RELEASE_FIELDS: { [string]: boolean } = {
+	branch = true,
 }
 
 local VERSION_FIELDS: { [string]: boolean } = {
@@ -19,6 +24,11 @@ local VERSION_FIELDS: { [string]: boolean } = {
 local function validateConfigFields(text: string): ()
 	local parsed = toml.deserialize(text)
 	assertKnownFields(parsed, TOP_LEVEL_FIELDS, "changewrite.toml")
+
+	local release = parsed.release
+	if typeof(release) == "table" then
+		assertKnownFields(release :: { [string]: toml.TomlValue }, RELEASE_FIELDS, "[release]")
+	end
 
 	local version = parsed.version
 	if typeof(version) ~= "table" then
