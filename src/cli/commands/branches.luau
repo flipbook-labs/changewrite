@@ -14,7 +14,7 @@ parser:add("base-branch", "option", {
 	help = "Use this base branch instead of resolving one. Defaults to the pull request's base branch on GitHub Actions, otherwise the repository's default branch.",
 })
 parser:add("publish-branch", "option", {
-	help = "Use this publish branch instead of `[release] branch` from changewrite.toml.",
+	help = "Use this publish branch instead of `release.branch` from changewrite.toml.",
 })
 parser:add("debug", "flag", {
 	help = "Print the debug variant of the publish branch.",

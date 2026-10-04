@@ -25,7 +25,7 @@ parser:add("base", "option", {
 	help = "Base ref to diff against when detecting a newly added entry. Defaults to the pull request's base branch on GitHub Actions, otherwise the repository's default branch.",
 })
 parser:add("publish-branch", "option", {
-	help = "Pass on this publish branch instead of `[release] branch` from changewrite.toml.",
+	help = "Pass on this publish branch instead of `release.branch` from changewrite.toml.",
 })
 parser:add("help", "flag", {
 	help = "Show this help message",

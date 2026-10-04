@@ -102,7 +102,7 @@ jobs:
           pr-token: ${{ steps.app-token.outputs.token }}
           force-publish: ${{ inputs.force_publish || false }}
           force-version: ${{ inputs.force_version }}
-          debug: ${{ github.event_name == 'pull_request' }}
+          debug: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'debug:release-pr') }}
           post-draft-hook: |
             "$CHANGEWRITE_BIN" attach --tag "$CHANGEWRITE_TAG" --files assets/*.zip
           pr-body: |

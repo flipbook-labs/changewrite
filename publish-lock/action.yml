@@ -21,7 +21,7 @@ inputs:
   branch:
     description: >-
       Branch whose head commit the status is posted to. Ignored when `sha` is
-      set. Defaults to `[release] branch` in changewrite.toml, or
+      set. Defaults to `release.branch` in changewrite.toml, or
       `publish-next-version` when that is unset.
     required: false
     default: ""

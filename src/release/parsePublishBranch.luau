@@ -2,8 +2,8 @@ local toml = require("@batteries/toml")
 
 local constants = require("@root/release/constants")
 
-local function parsePublishBranch(text: string): string
-	local release = toml.deserialize(text).release
+local function parsePublishBranch(config: { [string]: toml.TomlValue }): string
+	local release = config.release
 	if typeof(release) ~= "table" then
 		return constants.PUBLISH_BRANCH
 	end

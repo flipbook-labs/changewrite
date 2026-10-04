@@ -34,6 +34,6 @@ return {
 	PUBLISH_LOCK_CONTEXT = "publish-lock",
 
 	-- The branch a release run regenerates the publish PR on when
-	-- `[release] branch` is unset. Mirrors the action's `branch` input default.
+	-- `release.branch` is unset. Mirrors the action's `branch` input default.
 	PUBLISH_BRANCH = "publish-next-version",
 }

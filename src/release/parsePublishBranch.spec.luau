@@ -4,36 +4,26 @@ local parsePublishBranch = require("@root/release/parsePublishBranch")
 
 test.suite("parsePublishBranch", function(suite)
 	suite:case("reads the configured publish branch", function(assert)
-		local text = [[
-[release]
-branch = "release-next"
-]]
-
-		assert.eq(parsePublishBranch(text), "release-next")
+		assert.eq(parsePublishBranch({ release = { branch = "release-next" } }), "release-next")
 	end)
 
 	suite:case("defaults to publish-next-version without a release table", function(assert)
-		local text = [[
-[version]
-current = "1.2.3"
-]]
-
-		assert.eq(parsePublishBranch(text), "publish-next-version")
+		assert.eq(parsePublishBranch({ version = { current = "1.2.3" } }), "publish-next-version")
 	end)
 
 	suite:case("defaults to publish-next-version when the release table omits branch", function(assert)
-		assert.eq(parsePublishBranch("[release]\n"), "publish-next-version")
+		assert.eq(parsePublishBranch({ release = {} }), "publish-next-version")
 	end)
 
 	suite:case("rejects an empty branch", function(assert)
 		assert.throws(function()
-			parsePublishBranch('[release]\nbranch = ""\n')
+			parsePublishBranch({ release = { branch = "" } })
 		end)
 	end)
 
 	suite:case("rejects a non-string branch", function(assert)
 		assert.throws(function()
-			parsePublishBranch("[release]\nbranch = 1\n")
+			parsePublishBranch({ release = { branch = 1 } })
 		end)
 	end)
 end)
