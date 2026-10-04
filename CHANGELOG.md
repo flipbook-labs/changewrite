@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.9.0
+
+### Features
+
+- Set the publish branch with `release.branch` in `changewrite.toml`, add a `debug` action input, and add a `branches` command.
+
+### Changes
+
+- Show release branch progress and publishing readiness in the publish-lock status messages.
+
+
 ## v0.8.0
 
 ### Features
