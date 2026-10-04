@@ -9,10 +9,10 @@ local types = require("@root/cli/types")
 
 local function describe(state: buildStatusArgs.State): string
 	if state == "failure" then
-		return "A release run is updating the publish PR, so it is out of date"
+		return "Updating the release branch..."
 	end
 
-	return "The publish PR is up to date with its base branch"
+	return "Ready to publish"
 end
 
 local function createPublishLockCommand(options: {
