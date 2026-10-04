@@ -9,8 +9,10 @@ local readPublishBranch = require("@root/release/readPublishBranch")
 local types = require("@root/cli/types")
 
 local function describe(state: buildStatusArgs.State): string
+	-- A release run that dies before unlocking leaves this status behind, so the
+	-- wording has to hold after a failed run as well as during a live one.
 	if state == "failure" then
-		return "Updating the release branch..."
+		return "Locked until a release run finishes updating the release branch"
 	end
 
 	return "Ready to publish"
