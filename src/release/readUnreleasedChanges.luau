@@ -1,6 +1,7 @@
 local fs = require("@std/fs")
 local path = require("@std/path")
 
+local constants = require("@root/release/constants")
 local getUnreleasedChangesDir = require("@root/release/getUnreleasedChangesDir")
 local parseUnreleasedChange = require("@root/release/parseUnreleasedChange")
 local readCategories = require("@root/release/readCategories")
@@ -20,7 +21,8 @@ local function readUnreleasedChanges(): { UnreleasedChange }
 		if entry.type ~= "file" or not entry.name:match("%.md$") then
 			continue
 		end
-		if entry.name:lower() == "readme.md" then
+		local lowerName = entry.name:lower()
+		if lowerName == "readme.md" or lowerName == constants.RELEASE_SUMMARY_FILE then
 			continue
 		end
 
@@ -31,6 +33,10 @@ local function readUnreleasedChanges(): { UnreleasedChange }
 			bump = parsed.bump,
 			category = parsed.category,
 			body = parsed.body,
+			kind = parsed.kind,
+			flags = parsed.flags,
+			highlight = parsed.highlight,
+			pr = parsed.pr,
 			file = file,
 		})
 	end

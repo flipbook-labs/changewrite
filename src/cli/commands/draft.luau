@@ -6,6 +6,7 @@ local process = require("@std/process")
 
 local chomp = require("@root/chomp")
 local config = require("@root/config")
+local extractReleaseName = require("@root/release/notes/extractReleaseName")
 local getCurrentVersion = require("@root/release/getCurrentVersion")
 local getLastVersionBumpCommit = require("@root/release/getLastVersionBumpCommit")
 local getTempDir = require("@root/getTempDir")
@@ -69,8 +70,12 @@ local function draft()
 	-- Same renderer the publish PR uses for its preview, so the drafted notes and
 	-- the previewed notes can't drift. The tag doesn't exist locally yet, so
 	-- renderReleaseNotes renders the unreleased commits under the prospective tag.
+	local notes = renderReleaseNotes(tag)
 	local notesPath = path.join(getTempDir(), "release-notes.md")
-	fs.writeStringToFile(notesPath, renderReleaseNotes(tag))
+	fs.writeStringToFile(notesPath, notes)
+
+	local releaseName = extractReleaseName(notes)
+	local releaseTitle = if releaseName then `{tag}: {releaseName}` else tag
 
 	run(config.ghCmd, {
 		"release",
@@ -78,7 +83,7 @@ local function draft()
 		tag,
 		"--draft",
 		"--title",
-		tag,
+		releaseTitle,
 		"--target",
 		sha,
 		"--notes-file",

@@ -140,4 +140,64 @@ Nope.
 			parseUnreleasedChange(text)
 		end)
 	end)
+	suite:case("leaves the release-notes fields empty when they are not set", function(assert)
+		local change = parseUnreleasedChange("---\nbump: patch\n---\n\nFix a thing.\n")
+
+		assert.eq(change.kind, nil)
+		assert.eq(#change.flags, 0)
+		assert.eq(change.highlight, nil)
+		assert.eq(change.pr, nil)
+	end)
+
+	suite:case("parses kind, flags, highlight, and pr", function(assert)
+		local text = [[
+---
+bump: minor
+kind: new
+flags: api, security
+highlight: "Flipbook in your experience"
+pr: "#652"
+---
+
+Add an embedded runtime.
+]]
+		local change = parseUnreleasedChange(text)
+
+		assert.eq(change.kind, "new")
+		assert.eq(#change.flags, 2)
+		assert.eq(change.flags[1], "api")
+		assert.eq(change.flags[2], "security")
+		assert.eq(change.highlight, "Flipbook in your experience")
+		assert.eq(change.pr, 652)
+	end)
+
+	suite:case("accepts flags written as a bracketed list and drops repeats", function(assert)
+		local change = parseUnreleasedChange("---\nbump: patch\nflags: [deprecated, 'api', deprecated]\n---\n\nBody.\n")
+
+		assert.eq(#change.flags, 2)
+		assert.eq(change.flags[1], "deprecated")
+		assert.eq(change.flags[2], "api")
+	end)
+
+	suite:case("rejects an unknown kind", function(assert)
+		local success, err = pcall(parseUnreleasedChange, "---\nbump: patch\nkind: added\n---\n\nBody.\n", nil)
+
+		assert.eq(success, false)
+		assert.neq(string.find(tostring(err), 'kind "added" is not supported', 1, true), nil)
+	end)
+
+	suite:case("rejects an unknown flag", function(assert)
+		local success, err =
+			pcall(parseUnreleasedChange, "---\nbump: patch\nflags: api, experimental\n---\n\nBody.\n", nil)
+
+		assert.eq(success, false)
+		assert.neq(string.find(tostring(err), 'flag "experimental" is not supported', 1, true), nil)
+	end)
+
+	suite:case("rejects a pr that is not a number", function(assert)
+		local success, err = pcall(parseUnreleasedChange, "---\nbump: patch\npr: abc\n---\n\nBody.\n", nil)
+
+		assert.eq(success, false)
+		assert.neq(string.find(tostring(err), "must be a pull request number", 1, true), nil)
+	end)
 end)

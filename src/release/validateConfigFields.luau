@@ -5,6 +5,7 @@ local validateVersionTargetFields = require("@root/release/validateVersionTarget
 
 local TOP_LEVEL_FIELDS: { [string]: boolean } = {
 	categories = true,
+	collapsed = true,
 	release = true,
 	unreleased_changes = true,
 	version = true,
