@@ -1,15 +1,15 @@
-local formatNumber = require("@root/chips/formatNumber")
-local pathToSvgData = require("@root/chips/pathToSvgData")
+local vector = require("@libs/vector")
+
 local types = require("@root/chips/types")
 
 type ChipLayers = types.ChipLayers
 type ChipPalette = types.ChipPalette
 type Paint = types.Paint
-type Path = types.Path
+type Path = vector.Path
 
 local function renderShape(path: Path, paint: Paint): string
-	local opacity = if paint.opacity < 1 then ` fill-opacity="{formatNumber(paint.opacity)}"` else ""
-	return `<path d="{pathToSvgData(path)}" fill="{paint.color}"{opacity}/>`
+	local opacity = if paint.opacity < 1 then ` fill-opacity="{vector.formatNumber(paint.opacity)}"` else ""
+	return `<path d="{vector.pathToSvgData(path)}" fill="{paint.color}"{opacity}/>`
 end
 
 -- The label is drawn as shapes rather than text, because an SVG shown as an

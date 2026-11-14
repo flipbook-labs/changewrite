@@ -1,7 +1,7 @@
 local test = require("@std/test")
 
-local rasterizePath = require("@root/chips/rasterizePath")
-local types = require("@root/chips/types")
+local rasterizePath = require("./rasterizePath")
+local types = require("./types")
 
 type Path = types.Path
 

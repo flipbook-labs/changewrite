@@ -1,6 +1,6 @@
 local test = require("@std/test")
 
-local encodePng = require("@root/chips/encodePng")
+local encodePng = require("./encodePng")
 
 local function onePixel(r: number, g: number, b: number, a: number)
 	local pixels = buffer.create(4)

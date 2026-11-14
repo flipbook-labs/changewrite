@@ -1,4 +1,4 @@
-local types = require("@root/chips/types")
+local types = require("./types")
 
 type Font = types.Font
 type Glyph = types.Glyph
@@ -148,8 +148,8 @@ local function readSimpleGlyph(data: buffer, offset: number, contourCount: numbe
 end
 
 -- Reads the outlines and advance widths of a static TrueType font. Composite
--- glyphs (accented letters built from parts) aren't supported, since chip
--- labels only use plain capitals.
+-- glyphs, such as accented letters built from parts, aren't supported, and
+-- asking for one raises an error.
 local function readTrueTypeFont(data: buffer): Font
 	local tables = readTables(data)
 	for _, required in { "head", "hhea", "hmtx", "maxp", "cmap", "loca", "glyf", "OS/2" } do

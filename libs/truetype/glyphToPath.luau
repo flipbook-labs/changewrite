@@ -1,4 +1,4 @@
-local types = require("@root/chips/types")
+local types = require("./types")
 
 type Glyph = types.Glyph
 type GlyphPoint = types.GlyphPoint

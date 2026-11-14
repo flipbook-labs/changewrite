@@ -3,9 +3,10 @@ local fs = require("@std/fs")
 local path = require("@std/path")
 local process = require("@std/process")
 
+local truetype = require("@libs/truetype")
+
 local chipData = require("@repo/assets/chips/chips")
 local generateChips = require("@root/chips/generateChips")
-local readTrueTypeFont = require("@root/chips/readTrueTypeFont")
 
 local parser = cli.parser()
 parser:add("check", "flag", {
@@ -13,7 +14,7 @@ parser:add("check", "flag", {
 })
 parser:parse({ ... })
 
-local font = readTrueTypeFont(buffer.fromstring(fs.readFileToString(chipData.font)))
+local font = truetype.readTrueTypeFont(buffer.fromstring(fs.readFileToString(chipData.font)))
 local files = generateChips(font, chipData.chips, chipData.metrics, chipData.pngScale)
 local outputDir = path.join("assets", "chips", chipData.version)
 

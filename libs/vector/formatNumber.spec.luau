@@ -1,6 +1,6 @@
 local test = require("@std/test")
 
-local formatNumber = require("@root/chips/formatNumber")
+local formatNumber = require("./formatNumber")
 
 test.suite("formatNumber", function(suite)
 	suite:case("drops trailing zeros and a bare decimal point", function(assert)

@@ -1,5 +1,5 @@
-local flattenPath = require("@root/chips/flattenPath")
-local types = require("@root/chips/types")
+local flattenPath = require("./flattenPath")
+local types = require("./types")
 
 type Path = types.Path
 

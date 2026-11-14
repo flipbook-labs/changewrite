@@ -1,6 +1,6 @@
-local rasterizeChip = require("@root/chips/rasterizeChip")
+local types = require("./types")
 
-type Image = rasterizeChip.Image
+type Image = types.Image
 
 local SIGNATURE = "\137PNG\r\n\26\n"
 -- Deflate's stored blocks hold at most this many bytes each.
@@ -45,8 +45,8 @@ local function chunk(kind: string, data: string): string
 end
 
 -- Encodes an RGBA image as a PNG. The image data uses uncompressed deflate
--- blocks, since Lute has no compression library and chips are small enough
--- that the files stay a few kilobytes.
+-- blocks, since Lute has no compression library, so files are about as large
+-- as the raw pixels. That suits small images such as icons.
 local function encodePng(image: Image): string
 	local rows: { string } = {}
 	local rowBytes = image.width * 4

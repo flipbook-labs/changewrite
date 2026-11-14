@@ -1,31 +1,6 @@
--- Coordinates are in pixels with y pointing down, the convention SVG and the
--- rasterizer share.
-export type PathCommand =
-	{ op: "M", x: number, y: number }
-	| { op: "L", x: number, y: number }
-	| { op: "Q", x1: number, y1: number, x: number, y: number }
-	| { op: "C", x1: number, y1: number, x2: number, y2: number, x: number, y: number }
-	| { op: "Z" }
+local vector = require("@libs/vector")
 
-export type Path = { PathCommand }
-
--- A TrueType outline point, in font units with y pointing up.
-export type GlyphPoint = {
-	x: number,
-	y: number,
-	isOnCurve: boolean,
-}
-
-export type Glyph = {
-	advanceWidth: number,
-	contours: { { GlyphPoint } },
-}
-
-export type Font = {
-	unitsPerEm: number,
-	capHeight: number,
-	getGlyph: (string) -> Glyph,
-}
+type Path = vector.Path
 
 -- A color with an alpha from 0 to 1.
 export type Paint = {

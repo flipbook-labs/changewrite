@@ -1,12 +1,12 @@
 local fs = require("@std/fs")
 local test = require("@std/test")
 
-local readTrueTypeFont = require("@root/chips/readTrueTypeFont")
+local truetype = require("@libs/truetype")
 
 local FONT_PATH = "assets/chips/font/SchibstedGrotesk-Bold.ttf"
 
-test.suite("readTrueTypeFont", function(suite)
-	local font = readTrueTypeFont(buffer.fromstring(fs.readFileToString(FONT_PATH)))
+test.suite("chip font", function(suite)
+	local font = truetype.readTrueTypeFont(buffer.fromstring(fs.readFileToString(FONT_PATH)))
 
 	suite:case("reads the font's em size and cap height", function(assert)
 		-- Values read independently from the font's head and OS/2 tables.

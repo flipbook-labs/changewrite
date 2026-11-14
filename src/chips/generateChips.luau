@@ -1,12 +1,14 @@
+local png = require("@libs/png")
+local truetype = require("@libs/truetype")
+
 local buildChipLayers = require("@root/chips/buildChipLayers")
-local encodePng = require("@root/chips/encodePng")
 local rasterizeChip = require("@root/chips/rasterizeChip")
 local renderChipSvg = require("@root/chips/renderChipSvg")
 local types = require("@root/chips/types")
 
 type ChipMetrics = types.ChipMetrics
 type ChipSpec = types.ChipSpec
-type Font = types.Font
+type Font = truetype.Font
 
 export type ChipFile = {
 	name: string,
@@ -29,7 +31,7 @@ local function generateChips(font: Font, chips: { ChipSpec }, metrics: ChipMetri
 		})
 		table.insert(files, {
 			name = `{chip.name}-light.png`,
-			contents = encodePng(rasterizeChip(layers, chip.light, pngScale)),
+			contents = png.encodePng(rasterizeChip(layers, chip.light, pngScale)),
 		})
 	end
 	return files

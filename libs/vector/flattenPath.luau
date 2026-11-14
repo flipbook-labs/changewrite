@@ -1,20 +1,15 @@
-local types = require("@root/chips/types")
+local types = require("./types")
 
+type Edge = types.Edge
 type Path = types.Path
 
-export type Edge = {
-	x0: number,
-	y0: number,
-	x1: number,
-	y1: number,
-}
-
 -- Fixed step counts, rather than ones picked from curve length, keep the output
--- identical from run to run. At chip size these are finer than a pixel.
+-- identical from run to run. For shapes a few dozen pixels across, these are
+-- finer than a pixel.
 local QUADRATIC_STEPS = 8
 local CUBIC_STEPS = 12
 
--- Turns a path into straight edges, scaled from chip pixels to image pixels.
+-- Turns a path into straight edges, with coordinates multiplied by `scale`.
 local function flattenPath(path: Path, scale: number): { Edge }
 	local edges: { Edge } = {}
 	local startX, startY = 0, 0

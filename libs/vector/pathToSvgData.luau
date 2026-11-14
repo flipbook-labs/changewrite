@@ -1,5 +1,5 @@
-local formatNumber = require("@root/chips/formatNumber")
-local types = require("@root/chips/types")
+local formatNumber = require("./formatNumber")
+local types = require("./types")
 
 type Path = types.Path
 
