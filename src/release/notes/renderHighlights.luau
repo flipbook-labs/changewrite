@@ -24,7 +24,9 @@ local function renderHighlights(entries: { UnreleasedChange }, repositoryUrl: st
 		end
 
 		local chips = renderChips(entry)
-		local heading = if chips == "" then `#### {title}` else `#### {chips} {title}`
+		-- A bold line rather than a heading, because GitHub renders heading text
+		-- larger than the chips and the two stop lining up.
+		local heading = if chips == "" then `**{title}**` else `{chips} **{title}**`
 		if entry.kind == ChangeKind.Breaking then
 			-- The full entry is already under Breaking changes, which is where a
 			-- reader has to act, so the highlight only points there.
