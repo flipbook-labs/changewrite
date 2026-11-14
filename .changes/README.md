@@ -37,7 +37,7 @@ Add an embedded runtime so stories can be browsed inside a running experience.
 
 - **`kind`** — what kind of change it is: `new`, `improved`, `fixed`, or `breaking`. It renders as a chip in front of the entry, and entries are sorted by kind within their category. `breaking` entries are gathered under a Breaking changes heading near the top instead of under their category, and the release gets a banner asking readers to act.
 - **`flags`** — extra chips for who should look: any of `api`, `deprecated`, and `security`, written as `flags: api, security`. A `security` flag adds a banner recommending the update.
-- **`highlight`** — a short title for a change worth a headline. The entry's full body appears under Highlights, and its category lists it by title.
+- **`highlight`** — a short title for a change worth a headline. The entry's full body appears under Highlights, and its category lists it by title. Level 1 and 2 headings in a body render as level 4 so they nest under the release.
 - **`pr`** — the pull request number. Changewrite finds it from the squash commit that added the entry, so set it only when that commit doesn't name the right pull request.
 
 ### Release summary

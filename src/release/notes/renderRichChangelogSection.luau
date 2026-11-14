@@ -1,4 +1,5 @@
 local ChangeKind = require("@root/release/ChangeKind")
+local demoteHeadings = require("@root/release/notes/demoteHeadings")
 local renderActionBanner = require("@root/release/notes/renderActionBanner")
 local renderBreakingChanges = require("@root/release/notes/renderBreakingChanges")
 local renderCategory = require("@root/release/notes/renderCategory")
@@ -28,6 +29,20 @@ local function renderRichChangelogSection(
 ): string
 	local plain = version:gsub("^v", "")
 
+	local demotedEntries: { UnreleasedChange } = {}
+	for _, entry in entries do
+		local copy = table.clone(entry)
+		copy.body = demoteHeadings(entry.body)
+		table.insert(demotedEntries, copy)
+	end
+	entries = demotedEntries
+
+	local summary = options.summary
+	if summary then
+		summary = table.clone(summary)
+		summary.tldr = demoteHeadings(summary.tldr)
+	end
+
 	local byCategory: { [string]: { UnreleasedChange } } = {}
 	local seenCategories: { string } = {}
 	for _, entry in entries do
@@ -55,9 +70,9 @@ local function renderRichChangelogSection(
 		end
 	end
 
-	add(if options.summary then renderReleaseName(options.summary) else nil)
+	add(if summary then renderReleaseName(summary) else nil)
 	add(renderActionBanner(entries))
-	add(renderReleaseTldr(options.summary, entries))
+	add(renderReleaseTldr(summary, entries))
 	add(renderStatsLine(entries, options.collapsed))
 	add(renderBreakingChanges(entries, options.repositoryUrl))
 	add(renderHighlights(entries, options.repositoryUrl))

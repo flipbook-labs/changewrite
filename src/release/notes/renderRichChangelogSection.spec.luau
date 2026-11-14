@@ -182,4 +182,22 @@ test.suite("renderRichChangelogSection", function(suite)
 
 		assert.eq(section:find("1. Fix it. (#12)", 1, true) ~= nil, true)
 	end)
+	suite:case("keeps a heading in an entry body from ending the release", function(assert)
+		local section = renderRichChangelogSection("1.0.0", {
+			entry("Add a new API.\n\n## Migration\n\nCall the new one.", {
+				kind = "new",
+				highlight = "A new API",
+			}),
+		}, {
+			collapsed = {},
+			summary = {
+				file = path.parse("release.md"),
+				tldr = "A big one.\n\n## Why",
+			},
+		})
+
+		assert.eq(section:find("\n## ", 1, true), nil)
+		assert.neq(section:find("#### Migration", 1, true), nil)
+		assert.neq(section:find("#### Why", 1, true), nil)
+	end)
 end)

@@ -4,10 +4,12 @@
 
 	What counts as an entry matches what `readUnreleasedChanges` consumes at
 	release time: a markdown file directly inside the unreleased-changes
-	directory, excluding the directory's `README.md`.
+	directory, excluding the directory's `README.md` and the release summary.
 ]]
 
 local path = require("@std/path")
+
+local constants = require("@root/release/constants")
 
 local function isEntryFile(file: path.Path, dir: path.Path): boolean
 	local relative = path.relative(path.normalize(dir), path.normalize(file))
@@ -25,7 +27,10 @@ local function isEntryFile(file: path.Path, dir: path.Path): boolean
 		return false
 	end
 
-	return name:lower() ~= "readme.md"
+	-- The release summary adds a TL;DR but no version bump, so it can't stand in
+	-- for an entry.
+	local lowerName = name:lower()
+	return lowerName ~= "readme.md" and lowerName ~= constants.RELEASE_SUMMARY_FILE
 end
 
 local function detectAddedEntries(addedFiles: { string }, dir: path.Pathlike): { string }
