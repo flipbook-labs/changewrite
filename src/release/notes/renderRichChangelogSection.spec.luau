@@ -90,13 +90,13 @@ test.suite("renderRichChangelogSection", function(suite)
 				"",
 				"### Highlights",
 				"",
-				`#### {chip("breaking", "BREAKING")} A new loader`,
+				`> #### {chip("breaking", "BREAKING")} A new loader`,
+				">",
+				"> See [Breaking changes](#breaking-changes).",
 				"",
-				"See [Breaking changes](#breaking-changes).",
-				"",
-				`#### {chip("new", "NEW")} {chip("api", "API")} Embedded runtime`,
-				"",
-				`Add an embedded runtime. ([#5]({REPO}/pull/5))`,
+				`> #### {chip("new", "NEW")} {chip("api", "API")} Embedded runtime`,
+				">",
+				`> Add an embedded runtime. ([#5]({REPO}/pull/5))`,
 				"",
 				"### Features",
 				"",
@@ -197,7 +197,7 @@ test.suite("renderRichChangelogSection", function(suite)
 		})
 
 		assert.eq(section:find("\n## ", 1, true), nil)
-		assert.neq(section:find("#### Migration", 1, true), nil)
+		assert.neq(section:find("> #### Migration", 1, true), nil)
 		assert.neq(section:find("#### Why", 1, true), nil)
 	end)
 end)
