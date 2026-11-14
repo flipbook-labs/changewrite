@@ -5,23 +5,29 @@
 -- there is code, such as a shell comment.
 local function demoteHeadings(text: string): string
 	local lines: { string } = {}
-	local fence: string? = nil
+	-- The open fence's character and length. Per CommonMark, only a line of at
+	-- least as many of the same character, with nothing after it, closes it.
+	local fenceCharacter: string? = nil
+	local fenceLength = 0
 	for line in (text .. "\n"):gmatch("(.-)\n") do
-		local marker = line:match("^%s*(```+)") or line:match("^%s*(~~~+)")
-		if marker then
-			if fence == nil then
-				fence = marker:sub(1, 1)
-			elseif marker:sub(1, 1) == fence then
-				fence = nil
+		if fenceCharacter == nil then
+			local marker = line:match("^ ? ? ?(```+)") or line:match("^ ? ? ?(~~~+)")
+			if marker then
+				fenceCharacter = marker:sub(1, 1)
+				fenceLength = #marker
+			else
+				local rest = line:match("^##? (.*)$")
+				if rest then
+					line = `#### {rest}`
+				end
 			end
-			table.insert(lines, line)
-			continue
-		end
-
-		if fence == nil then
-			local rest = line:match("^##? (.*)$")
-			if rest then
-				line = `#### {rest}`
+		else
+			local closing = line:match("^ ? ? ?([`~]+)%s*$")
+			if closing and closing:sub(1, 1) == fenceCharacter and #closing >= fenceLength then
+				local isUniform = closing == string.rep(fenceCharacter, #closing)
+				if isUniform then
+					fenceCharacter = nil
+				end
 			end
 		end
 		table.insert(lines, line)
