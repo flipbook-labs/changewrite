@@ -6,6 +6,7 @@
     "pkg": "./packages/",
     "root": "./src",
     "batteries": "@pkg/lute@v1.0.1-nightly.20260701/batteries",
-    "repo": "./"
+    "repo": "./",
+    "libs": "./libs"
   }
 }
