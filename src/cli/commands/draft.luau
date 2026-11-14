@@ -6,7 +6,6 @@ local process = require("@std/process")
 
 local chomp = require("@root/chomp")
 local config = require("@root/config")
-local extractReleaseName = require("@root/release/notes/extractReleaseName")
 local getCurrentVersion = require("@root/release/getCurrentVersion")
 local getLastVersionBumpCommit = require("@root/release/getLastVersionBumpCommit")
 local getTempDir = require("@root/getTempDir")
@@ -74,16 +73,13 @@ local function draft()
 	local notesPath = path.join(getTempDir(), "release-notes.md")
 	fs.writeStringToFile(notesPath, notes)
 
-	local releaseName = extractReleaseName(notes)
-	local releaseTitle = if releaseName then `{tag}: {releaseName}` else tag
-
 	run(config.ghCmd, {
 		"release",
 		"create",
 		tag,
 		"--draft",
 		"--title",
-		releaseTitle,
+		tag,
 		"--target",
 		sha,
 		"--notes-file",

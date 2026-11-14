@@ -27,7 +27,6 @@ local function readReleaseSummary(): ReleaseSummary?
 		assert(success, `{file}: {parsed}`)
 		return {
 			file = file,
-			name = parsed.name,
 			tldr = parsed.tldr,
 		}
 	end

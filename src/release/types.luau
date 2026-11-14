@@ -24,7 +24,6 @@ export type UnreleasedChange = ParsedUnreleasedChange & {
 
 export type ReleaseSummary = {
 	file: path.Path,
-	name: string?,
 	tldr: string,
 }
 

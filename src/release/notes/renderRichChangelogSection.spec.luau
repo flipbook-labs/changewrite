@@ -62,7 +62,6 @@ test.suite("renderRichChangelogSection", function(suite)
 			collapsed = { "Internal" },
 			summary = {
 				file = path.parse("release.md"),
-				name = "Out in the open",
 				tldr = "Flipbook now runs outside Studio.",
 			},
 			repositoryUrl = REPO,
@@ -72,8 +71,6 @@ test.suite("renderRichChangelogSection", function(suite)
 			section,
 			table.concat({
 				"## v2.0.0",
-				"",
-				"<!-- release-name: Out in the open -->",
 				"",
 				"> [!WARNING]",
 				"> Action required: this release has breaking changes. Each one under [Breaking changes](#breaking-changes) says what changed.",

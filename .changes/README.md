@@ -42,13 +42,9 @@ Add an embedded runtime so stories can be browsed inside a running experience.
 
 ### Release summary
 
-An optional `release.md` in this folder opens the release notes with a TL;DR. Its frontmatter can set a `name`, which becomes part of the GitHub release title:
+An optional `release.md` in this folder opens the release notes with a TL;DR, written as plain Markdown:
 
 ```markdown
----
-name: Out in the open
----
-
 Flipbook now runs inside live experiences, and a shared link opens straight to the right stories.
 ```
 

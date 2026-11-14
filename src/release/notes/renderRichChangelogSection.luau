@@ -4,7 +4,6 @@ local renderActionBanner = require("@root/release/notes/renderActionBanner")
 local renderBreakingChanges = require("@root/release/notes/renderBreakingChanges")
 local renderCategory = require("@root/release/notes/renderCategory")
 local renderHighlights = require("@root/release/notes/renderHighlights")
-local renderReleaseName = require("@root/release/notes/renderReleaseName")
 local renderReleaseTldr = require("@root/release/notes/renderReleaseTldr")
 local renderStatsLine = require("@root/release/notes/renderStatsLine")
 local types = require("@root/release/types")
@@ -70,7 +69,6 @@ local function renderRichChangelogSection(
 		end
 	end
 
-	add(if summary then renderReleaseName(summary) else nil)
 	add(renderActionBanner(entries))
 	add(renderReleaseTldr(summary, entries))
 	add(renderStatsLine(entries, options.collapsed))
