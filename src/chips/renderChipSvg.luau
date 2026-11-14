@@ -1,0 +1,29 @@
+local formatNumber = require("@root/chips/formatNumber")
+local pathToSvgData = require("@root/chips/pathToSvgData")
+local types = require("@root/chips/types")
+
+type ChipLayers = types.ChipLayers
+type ChipPalette = types.ChipPalette
+type Paint = types.Paint
+type Path = types.Path
+
+local function renderShape(path: Path, paint: Paint): string
+	local opacity = if paint.opacity < 1 then ` fill-opacity="{formatNumber(paint.opacity)}"` else ""
+	return `<path d="{pathToSvgData(path)}" fill="{paint.color}"{opacity}/>`
+end
+
+-- The label is drawn as shapes rather than text, because an SVG shown as an
+-- image can't load web fonts.
+local function renderChipSvg(layers: ChipLayers, palette: ChipPalette, label: string): string
+	return table.concat({
+		`<svg xmlns="http://www.w3.org/2000/svg" width="{layers.width}" height="{layers.height}" viewBox="0 0 {layers.width} {layers.height}" role="img" aria-label="{label}">`,
+		renderShape(layers.rim, palette.rim),
+		renderShape(layers.tint, palette.tint),
+		renderShape(layers.dot, palette.dot),
+		renderShape(layers.text, palette.text),
+		"</svg>",
+		"",
+	}, "\n")
+end
+
+return renderChipSvg
