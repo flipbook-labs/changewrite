@@ -3,7 +3,7 @@ local path = require("@std/path")
 
 local constants = require("@root/release/constants")
 local findEntryOrigin = require("@root/release/notes/findEntryOrigin")
-local findPullRequestTime = require("@root/release/notes/findPullRequestTime")
+local findPullRequestTimes = require("@root/release/notes/findPullRequestTimes")
 local getAssetsDir = require("@root/chips/getAssetsDir")
 local getChipAssetsUrl = require("@root/release/notes/getChipAssetsUrl")
 local getRepositoryUrl = require("@root/release/notes/getRepositoryUrl")
@@ -42,14 +42,22 @@ local function prepareReleaseFiles(nextVersion: string, changes: { UnreleasedCha
 	if usesRichNotes(changes, summary, collapsed) then
 		local resolved: { UnreleasedChange } = {}
 		local addedAt: { [UnreleasedChange]: number } = {}
+		local namedPrs: { number } = {}
+		for _, change in changes do
+			if change.pr then
+				table.insert(namedPrs, change.pr)
+			end
+		end
+		local prTimes = findPullRequestTimes(namedPrs)
 		for _, change in changes do
 			local origin = findEntryOrigin(change.file)
 			local copy = table.clone(change)
 			copy.pr = change.pr or origin.pr
 			-- An entry that names its PR was usually added by a different one,
 			-- such as a PR that backfills entries. It sorts by when its own PR
-			-- merged, so it lands among the changes it came before.
-			local time = if change.pr then findPullRequestTime(change.pr) or origin.addedAt else origin.addedAt
+			-- merged, so it lands among the changes it came before. If that
+			-- merge isn't in the history, it sorts by the commit that added it.
+			local time = if change.pr then prTimes[change.pr] or origin.addedAt else origin.addedAt
 			if time then
 				addedAt[copy] = time
 			end
