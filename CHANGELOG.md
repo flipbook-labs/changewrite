@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.11.1
+
+### Fixes
+
+- An entry that sets `pr` now sorts by when that pull request merged, instead of by the commit that added the entry. Entries backfilled in one pull request then land among the changes they describe.
+
+
 ## v0.11.0
 
 ### Changes
