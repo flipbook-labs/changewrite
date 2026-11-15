@@ -8,7 +8,6 @@ local parseVersion = require("@root/semver/parseVersion")
 local pickHighestVersion = require("@root/semver/pickHighestVersion")
 local readOptionalVersion = require("@root/release/readOptionalVersion")
 local renderInitConfig = require("@root/release/renderInitConfig")
-local selectMirrorManifests = require("@root/release/selectMirrorManifests")
 local stringifyPaths = require("@root/stringifyPaths")
 local types = require("@root/cli/types")
 
@@ -29,26 +28,21 @@ local function run()
 		`{constants.CONFIG_FILE} already exists. Delete it first if you want to start over.`
 	)
 
-	local present: { string } = {}
-	for _, manifest in constants.MIRROR_MANIFESTS do
-		if fs.exists(path.parse(manifest)) then
-			table.insert(present, manifest)
-		end
-	end
-
 	local mirrors: { path.Path } = {}
 	local versions: { string } = {}
-	for _, manifest in selectMirrorManifests(present) do
+	for _, manifest in constants.MIRROR_MANIFESTS do
 		local manifestPath = path.parse(manifest)
-		table.insert(mirrors, manifestPath)
-		-- changewrite tracks plain X.Y.Z versions, so parseVersion rejects a
-		-- prerelease or build suffix a manifest might carry. Mirror the file
-		-- regardless and skip its version so init falls back instead of crashing.
-		local version = readOptionalVersion(manifestPath)
-		if version and pcall(parseVersion, version) then
-			table.insert(versions, version)
-		elseif version then
-			print(`Ignoring unsupported version {richterm.bold(version)} in {manifestPath}.`)
+		if fs.exists(manifestPath) then
+			table.insert(mirrors, manifestPath)
+			-- changewrite tracks plain X.Y.Z versions, so parseVersion rejects a
+			-- prerelease or build suffix a manifest might carry. Mirror the file
+			-- regardless and skip its version so init falls back instead of crashing.
+			local version = readOptionalVersion(manifestPath)
+			if version and pcall(parseVersion, version) then
+				table.insert(versions, version)
+			elseif version then
+				print(`Ignoring unsupported version {richterm.bold(version)} in {manifestPath}.`)
+			end
 		end
 	end
 

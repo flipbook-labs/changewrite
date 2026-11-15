@@ -33,12 +33,6 @@ return {
 	DEFAULT_PATTERNS = DEFAULT_PATTERNS,
 	DEFAULT_UNRELEASED_CHANGES_DIR = "./.changes/",
 	MIRROR_MANIFESTS = MIRROR_MANIFESTS,
-	-- Maps a manifest to the newer manifest that replaces it. Lute reads
-	-- `pkg.luau` and ignores `loom.config.luau`, so `init` mirrors only the
-	-- newer file when a repo still has both.
-	SUPERSEDED_MANIFESTS = {
-		["loom.config.luau"] = "pkg.luau",
-	} :: { [string]: string },
 	-- The commit-status context the publish lock posts under. Make this a
 	-- required status check on the base branch for the lock to block a merge.
 	PUBLISH_LOCK_CONTEXT = "publish-lock",
