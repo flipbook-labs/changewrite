@@ -1,5 +1,6 @@
 local DEFAULT_PATTERNS: { [string]: string } = {
 	["changewrite.toml"] = "current%s*=%s*[\"']([^\"']+)[\"']",
+	["pkg.luau"] = "version%s*=%s*[\"']([^\"']+)[\"']",
 	["loom.config.luau"] = "version%s*=%s*[\"']([^\"']+)[\"']",
 	["wally.toml"] = "version%s*=%s*[\"']([^\"']+)[\"']",
 	["rotriever.toml"] = "version%s*=%s*[\"']([^\"']+)[\"']",
@@ -10,6 +11,7 @@ local DEFAULT_PATTERNS: { [string]: string } = {
 -- DEFAULT_PATTERNS is keyed by file and has no stable iteration order. Keep the
 -- manifests in the order that `init` should emit them.
 local MIRROR_MANIFESTS: { string } = {
+	"pkg.luau",
 	"loom.config.luau",
 	"wally.toml",
 	"Cargo.toml",
@@ -31,6 +33,12 @@ return {
 	DEFAULT_PATTERNS = DEFAULT_PATTERNS,
 	DEFAULT_UNRELEASED_CHANGES_DIR = "./.changes/",
 	MIRROR_MANIFESTS = MIRROR_MANIFESTS,
+	-- Maps a manifest to the newer manifest that replaces it. Lute reads
+	-- `pkg.luau` and ignores `loom.config.luau`, so `init` mirrors only the
+	-- newer file when a repo still has both.
+	SUPERSEDED_MANIFESTS = {
+		["loom.config.luau"] = "pkg.luau",
+	} :: { [string]: string },
 	-- The commit-status context the publish lock posts under. Make this a
 	-- required status check on the base branch for the lock to block a merge.
 	PUBLISH_LOCK_CONTEXT = "publish-lock",
