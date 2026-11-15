@@ -1,11 +1,11 @@
 local chipDrawing = require("@root/chips/chipDrawing")
-local chipLock = require("@root/chips/chipLock")
+local planChips = require("@root/chips/planChips")
 
 -- Chips are images rather than inline styling, because GitHub strips CSS from
 -- release notes. The viewer's browser picks the light or dark source to match
 -- their color mode, and the PNG stands in where SVG isn't shown, such as in
 -- notification emails.
-local function renderChip(chip: chipLock.LockedChip, assetsUrl: string): string
+local function renderChip(chip: planChips.PlannedChip, assetsUrl: string): string
 	local alt = chip.text:gsub("&", "&amp;"):gsub('"', "&quot;"):gsub("<", "&lt;")
 	return table.concat({
 		"<picture>",

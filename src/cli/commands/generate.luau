@@ -4,9 +4,7 @@ local path = require("@std/path")
 local process = require("@std/process")
 local richterm = require("@batteries/richterm")
 
-local chipConstants = require("@root/chips/constants")
 local chipDrawing = require("@root/chips/chipDrawing")
-local chipLock = require("@root/chips/chipLock")
 local findStaleChipAssets = require("@root/chips/findStaleChipAssets")
 local generateChips = require("@root/chips/generateChips")
 local getAssetsDir = require("@root/chips/getAssetsDir")
@@ -39,7 +37,7 @@ local function check()
 	process.exit(1)
 end
 
--- Files for an earlier look of a chip stay in place, because past releases
+-- A chip removed from changewrite.toml keeps its files, because past releases
 -- still link to them.
 local function generate()
 	if parser:has("check") then
@@ -66,7 +64,6 @@ local function generate()
 			written += 1
 		end
 	end
-	fs.writeStringToFile(path.join(dir, chipConstants.LOCKFILE_NAME), chipLock.serialize(planned))
 
 	print(`Generated {#planned} chips in {dir} ({written} files written).`)
 end

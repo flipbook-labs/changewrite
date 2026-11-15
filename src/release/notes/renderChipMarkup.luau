@@ -1,12 +1,12 @@
-local chipLock = require("@root/chips/chipLock")
 local notesTypes = require("@root/release/notes/types")
+local planChips = require("@root/chips/planChips")
 local renderChip = require("@root/release/notes/renderChip")
 
--- Renders every chip in the lockfile, so the notes can look each one up by key.
-local function renderChipMarkup(lock: chipLock.ChipLock, assetsUrl: string): notesTypes.ChipMarkup
+-- Renders each chip, so the notes can look one up by key.
+local function renderChipMarkup(chips: { planChips.PlannedChip }, assetsUrl: string): notesTypes.ChipMarkup
 	local markup: notesTypes.ChipMarkup = {}
-	for key, chip in lock do
-		markup[key] = renderChip(chip, assetsUrl)
+	for _, chip in chips do
+		markup[chip.key] = renderChip(chip, assetsUrl)
 	end
 	return markup
 end
