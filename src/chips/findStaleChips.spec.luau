@@ -1,67 +1,59 @@
 local test = require("@std/test")
 
-local chipLock = require("@root/chips/chipLock")
 local findStaleChips = require("@root/chips/findStaleChips")
 local planChips = require("@root/chips/planChips")
 local types = require("@root/chips/types")
 
 type ChipStyle = types.ChipStyle
 
-local function style(name: string, color: string): ChipStyle
+local function style(name: string): ChipStyle
 	return {
 		group = "kind",
 		name = name,
 		text = name,
 		colorMode = {
-			light = { color = color },
-			dark = { color = color },
+			light = { color = "#7c5cff" },
+			dark = { color = "#7c5cff" },
 		},
 	}
 end
 
-local function always(_name: string): boolean
-	return true
+-- Stands in for the drawn files: each file's contents are its own name.
+local function draw(planned: { planChips.PlannedChip }): { [string]: string }
+	local drawn: { [string]: string } = {}
+	for _, chip in planned do
+		for _, file in { chip.files.light, chip.files.dark, chip.files.fallback } do
+			drawn[file] = file
+		end
+	end
+	return drawn
 end
 
 test.suite("findStaleChips", function(suite)
-	suite:case("passes when the lockfile and files match the config", function(assert)
-		local planned = planChips({ style("engine", "#7c5cff") })
-		local lock = chipLock.parse(chipLock.serialize(planned))
+	suite:case("passes when every file matches what would be drawn", function(assert)
+		local planned = planChips({ style("engine") })
+		local drawn = draw(planned)
 
-		assert.eq(#findStaleChips(planned, lock, always), 0)
-	end)
-
-	suite:case("reports a missing lockfile", function(assert)
-		local stale = findStaleChips(planChips({ style("engine", "#7c5cff") }), nil, always)
-
-		assert.eq(stale[1], "The chip lockfile is missing")
-	end)
-
-	suite:case("reports added, restyled, and removed chips", function(assert)
-		local lock = chipLock.parse(chipLock.serialize(planChips({
-			style("engine", "#7c5cff"),
-			style("legacy", "#7c5cff"),
-		})))
-		local planned = planChips({ style("engine", "#2da44e"), style("docs", "#7c5cff") })
-
-		local stale = findStaleChips(planned, lock, always)
-		assert.eq(
-			table.concat(stale, "\n"),
-			table.concat({
-				"kind/engine changed in changewrite.toml",
-				"kind/docs has no chip yet",
-				"kind/legacy is no longer in changewrite.toml",
-			}, "\n")
-		)
+		assert.eq(#findStaleChips(planned, drawn, function(name: string): string?
+			return drawn[name]
+		end), 0)
 	end)
 
 	suite:case("reports a chip whose files are missing", function(assert)
-		local planned = planChips({ style("engine", "#7c5cff") })
-		local lock = chipLock.parse(chipLock.serialize(planned))
+		local planned = planChips({ style("engine") })
 
-		local stale = findStaleChips(planned, lock, function(name: string): boolean
-			return not name:match("%.png$")
+		local stale = findStaleChips(planned, draw(planned), function(name: string): string?
+			return if name:match("%.png$") then nil else name
 		end)
-		assert.eq(stale[1], `kind/engine is missing {planned[1].files.fallback}`)
+		assert.eq(table.concat(stale, "\n"), "kind/engine is missing kind-engine-light.png")
+	end)
+
+	suite:case("reports a chip whose files differ once per chip", function(assert)
+		local planned = planChips({ style("engine"), style("docs") })
+
+		local stale = findStaleChips(planned, draw(planned), function(name: string): string?
+			return if name:match("^kind%-engine") then "an earlier look" else name
+		end)
+		assert.eq(table.concat(stale, "\n"), "kind/engine changed in changewrite.toml")
 	end)
 end)

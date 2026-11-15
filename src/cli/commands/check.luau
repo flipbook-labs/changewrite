@@ -1,4 +1,5 @@
 local cli = require("@batteries/cli")
+local fs = require("@std/fs")
 local path = require("@std/path")
 local process = require("@std/process")
 local richterm = require("@batteries/richterm")
@@ -7,12 +8,12 @@ local chomp = require("@root/chomp")
 local config = require("@root/config")
 local detectAddedEntries = require("@root/release/detectAddedEntries")
 local findStaleChipAssets = require("@root/chips/findStaleChipAssets")
+local getAssetsDir = require("@root/chips/getAssetsDir")
 local getCurrentBranch = require("@root/release/getCurrentBranch")
 local getUnreleasedChangesDir = require("@root/release/getUnreleasedChangesDir")
 local isPublishBranch = require("@root/release/isPublishBranch")
 local isSameRepositoryPullRequest = require("@root/release/isSameRepositoryPullRequest")
 local readCategories = require("@root/release/readCategories")
-local readChipLock = require("@root/chips/readChipLock")
 local readChipStyles = require("@root/chips/readChipStyles")
 local readCollapsedCategories = require("@root/release/readCollapsedCategories")
 local readGithubEvent = require("@root/release/readGithubEvent")
@@ -160,7 +161,7 @@ end
 -- Chips only matter to a repo that uses them: one that configures kinds, has
 -- entries with a kind or flags, or has generated chips before.
 local function usesChips(entries: { releaseTypes.UnreleasedChange }): boolean
-	if #readKindNames() > 0 or readChipLock() ~= nil then
+	if #readKindNames() > 0 or fs.exists(getAssetsDir()) then
 		return true
 	end
 	for _, entry in entries do

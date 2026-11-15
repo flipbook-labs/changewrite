@@ -6,9 +6,10 @@ local findEntryOrigin = require("@root/release/notes/findEntryOrigin")
 local getAssetsDir = require("@root/chips/getAssetsDir")
 local getChipAssetsUrl = require("@root/release/notes/getChipAssetsUrl")
 local getRepositoryUrl = require("@root/release/notes/getRepositoryUrl")
+local planChips = require("@root/chips/planChips")
 local prependSection = require("@root/release/prependSection")
 local readCategories = require("@root/release/readCategories")
-local readChipLock = require("@root/chips/readChipLock")
+local readChipStyles = require("@root/chips/readChipStyles")
 local readCollapsedCategories = require("@root/release/readCollapsedCategories")
 local readReleaseSummary = require("@root/release/readReleaseSummary")
 local removeUnreleasedChanges = require("@root/release/removeUnreleasedChanges")
@@ -51,13 +52,21 @@ local function prepareReleaseFiles(nextVersion: string, changes: { UnreleasedCha
 		end
 		resolved = sortByAddedAt(resolved, addedAt)
 		local repositoryUrl = getRepositoryUrl()
-		local lock = readChipLock()
-		local chips = if lock
-			then renderChipMarkup(
-				lock,
-				getChipAssetsUrl(repositoryUrl, resolveBaseBranch() or "main", tostring(getAssetsDir()))
-			)
-			else nil
+		local assetsDir = getAssetsDir()
+		-- Only chips whose files `changewrite generate` has written get markup.
+		-- An entry that uses any other chip fails to render with a message
+		-- naming that command, instead of linking an image that doesn't exist.
+		-- Files that exist but are out of date are `check`'s job to catch.
+		local generated: { planChips.PlannedChip } = {}
+		for _, chip in planChips(readChipStyles()) do
+			if fs.exists(path.join(assetsDir, chip.files.fallback)) then
+				table.insert(generated, chip)
+			end
+		end
+		local chips = renderChipMarkup(
+			generated,
+			getChipAssetsUrl(repositoryUrl, resolveBaseBranch() or "main", tostring(assetsDir))
+		)
 		section = renderRichChangelogSection(nextVersion, resolved, {
 			categories = categories,
 			collapsed = collapsed,

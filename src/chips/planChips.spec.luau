@@ -18,24 +18,20 @@ local function style(text: string, color: string): ChipStyle
 end
 
 test.suite("planChips", function(suite)
-	suite:case("names each chip's files after its key and hash", function(assert)
+	suite:case("names each chip's files after its group and name", function(assert)
 		local chip = planChips({ style("Engine", "#7c5cff") })[1]
 
 		assert.eq(chip.key, "kind/engine")
-		assert.eq(#chip.hash, 8)
-		assert.eq(chip.files.light, `kind-engine-{chip.hash}-light.svg`)
-		assert.eq(chip.files.dark, `kind-engine-{chip.hash}-dark.svg`)
-		assert.eq(chip.files.fallback, `kind-engine-{chip.hash}-light.png`)
+		assert.eq(chip.files.light, "kind-engine-light.svg")
+		assert.eq(chip.files.dark, "kind-engine-dark.svg")
+		assert.eq(chip.files.fallback, "kind-engine-light.png")
 	end)
 
-	suite:case("keeps the hash for an unchanged chip and changes it on a restyle", function(assert)
+	suite:case("keeps a chip's filenames when it's restyled", function(assert)
 		local first = planChips({ style("Engine", "#7c5cff") })[1]
-		local again = planChips({ style("Engine", "#7c5cff") })[1]
-		local recolored = planChips({ style("Engine", "#2da44e") })[1]
-		local renamed = planChips({ style("Runtime", "#7c5cff") })[1]
+		local restyled = planChips({ style("Runtime", "#2da44e") })[1]
 
-		assert.eq(again.hash, first.hash)
-		assert.neq(recolored.hash, first.hash)
-		assert.neq(renamed.hash, first.hash)
+		assert.eq(restyled.files.light, first.files.light)
+		assert.eq(restyled.files.fallback, first.files.fallback)
 	end)
 end)

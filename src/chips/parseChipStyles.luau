@@ -109,9 +109,15 @@ local function parseChipStyles(text: string): { ChipStyle }
 
 	if parsed.kind ~= nil then
 		local kinds = asTable(parsed.kind, "`kind`")
+		-- A kind's chip files are named after it, and some filesystems ignore
+		-- case, so kinds named `App` and `app` would overwrite each other's files.
+		local seen: { [string]: string } = {}
 		for _, name in sortedKeys(kinds) do
 			local context = `[kind.{name}]`
 			assert(name:match("^[%w_-]+$"), `{context} must be named with letters, digits, "-", or "_"`)
+			local other = seen[name:lower()]
+			assert(other == nil, `{context} and [kind.{other}] differ only by case, so their chip files would collide`)
+			seen[name:lower()] = name
 			local fields = asTable(kinds[name], context)
 			assert(fields.text ~= nil, `{context} needs a text`)
 			assert(fields.color ~= nil, `{context} needs a color`)

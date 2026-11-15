@@ -58,7 +58,7 @@ color = "#a28bff"
 
 The `breaking`, `deprecated`, and `security` flags have built-in chips, and a `[flag.<name>]` table of the same shape restyles one.
 
-Chips are images, because GitHub strips CSS from release notes. Run `changewrite generate` after changing kinds or flag styles, and commit what it writes to `assets/` in this folder: the chip images, and `lock.json`, which records a hash of each chip's look and its files. Each chip's filenames include that hash, so a restyled chip gets new URLs that GitHub's image cache hasn't seen. Files for an earlier look stay, because past releases still link to them. `changewrite check` fails while the chips don't match `changewrite.toml`.
+Chips are images, because GitHub strips CSS from release notes. Run `changewrite generate` after changing kinds or flag styles, and commit the images it writes to `assets/` in this folder. Each chip's files are named after it, such as `kind-engine-light.svg`, so restyling a chip rewrites the same files and past releases show the new look too. A chip removed from `changewrite.toml` keeps its files, because past releases still link to them. `changewrite check` fails while the chips don't match `changewrite.toml`.
 
 ### Release summary
 
