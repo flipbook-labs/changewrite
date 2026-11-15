@@ -3,6 +3,7 @@ local path = require("@std/path")
 
 local constants = require("@root/release/constants")
 local findEntryOrigin = require("@root/release/notes/findEntryOrigin")
+local findPullRequestTime = require("@root/release/notes/findPullRequestTime")
 local getAssetsDir = require("@root/chips/getAssetsDir")
 local getChipAssetsUrl = require("@root/release/notes/getChipAssetsUrl")
 local getRepositoryUrl = require("@root/release/notes/getRepositoryUrl")
@@ -45,8 +46,12 @@ local function prepareReleaseFiles(nextVersion: string, changes: { UnreleasedCha
 			local origin = findEntryOrigin(change.file)
 			local copy = table.clone(change)
 			copy.pr = change.pr or origin.pr
-			if origin.addedAt then
-				addedAt[copy] = origin.addedAt
+			-- An entry that names its PR was usually added by a different one,
+			-- such as a PR that backfills entries. It sorts by when its own PR
+			-- merged, so it lands among the changes it came before.
+			local time = if change.pr then findPullRequestTime(change.pr) or origin.addedAt else origin.addedAt
+			if time then
+				addedAt[copy] = time
 			end
 			table.insert(resolved, copy)
 		end

@@ -37,7 +37,7 @@ Add an embedded runtime so stories can be browsed inside a running experience.
 - **`kind`** — what the change touches, such as `docs` or `engine`, from the kinds configured in `changewrite.toml` (see Kinds and chips). Once a repo configures any kinds, every entry needs one. It renders as a chip in front of the entry. Entries are listed in the order they merged, so kinds mix within a category.
 - **`flags`** — what the change asks of readers: any of `breaking`, `deprecated`, and `security`, written as `flags: breaking, security`. Each renders as a chip after the kind chip. `breaking` entries are gathered under a Breaking changes heading near the top instead of under their category, and the release gets a banner asking readers to act. A `security` flag adds a banner recommending the update.
 - **`highlight`** — a short title for a change worth a headline. The entry's full body appears under Highlights, and its category lists it by title. Level 1 and 2 headings in a body render as level 4 so they nest under the release.
-- **`pr`** — the pull request number. Changewrite finds it from the squash commit that added the entry, so set it only when that commit doesn't name the right pull request.
+- **`pr`** — the pull request number. Changewrite finds it from the squash commit that added the entry, so set it only when that commit doesn't name the right pull request, such as an entry backfilled later. Entries are listed in the order their pull requests merged, so an entry with `pr` sorts by when that pull request merged.
 
 ### Kinds and chips
 
