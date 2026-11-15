@@ -28,6 +28,13 @@
       "dark": "kind-agents-3c64c020-dark.svg",
       "fallback": "kind-agents-3c64c020-light.png"
     },
+    "kind/ci": {
+      "text": "CI",
+      "hash": "a7634c51",
+      "light": "kind-ci-a7634c51-light.svg",
+      "dark": "kind-ci-a7634c51-dark.svg",
+      "fallback": "kind-ci-a7634c51-light.png"
+    },
     "kind/controls": {
       "text": "Controls",
       "hash": "c6cbe705",
