@@ -2,7 +2,7 @@ local fs = require("@std/fs")
 local path = require("@std/path")
 
 local constants = require("@root/release/constants")
-local findEntryPullRequest = require("@root/release/notes/findEntryPullRequest")
+local findEntryOrigin = require("@root/release/notes/findEntryOrigin")
 local getAssetsDir = require("@root/chips/getAssetsDir")
 local getChipAssetsUrl = require("@root/release/notes/getChipAssetsUrl")
 local getRepositoryUrl = require("@root/release/notes/getRepositoryUrl")
@@ -16,6 +16,7 @@ local renderChangelogSection = require("@root/release/renderChangelogSection")
 local renderChipMarkup = require("@root/release/notes/renderChipMarkup")
 local renderRichChangelogSection = require("@root/release/notes/renderRichChangelogSection")
 local resolveBaseBranch = require("@root/release/resolveBaseBranch")
+local sortByAddedAt = require("@root/release/notes/sortByAddedAt")
 local types = require("@root/release/types")
 local usesRichNotes = require("@root/release/notes/usesRichNotes")
 local writeVersion = require("@root/release/writeVersion")
@@ -38,11 +39,17 @@ local function prepareReleaseFiles(nextVersion: string, changes: { UnreleasedCha
 	local section: string
 	if usesRichNotes(changes, summary, collapsed) then
 		local resolved: { UnreleasedChange } = {}
+		local addedAt: { [UnreleasedChange]: number } = {}
 		for _, change in changes do
+			local origin = findEntryOrigin(change.file)
 			local copy = table.clone(change)
-			copy.pr = change.pr or findEntryPullRequest(change.file)
+			copy.pr = change.pr or origin.pr
+			if origin.addedAt then
+				addedAt[copy] = origin.addedAt
+			end
 			table.insert(resolved, copy)
 		end
+		resolved = sortByAddedAt(resolved, addedAt)
 		local repositoryUrl = getRepositoryUrl()
 		local lock = readChipLock()
 		local chips = if lock

@@ -102,8 +102,8 @@ test.suite("renderRichChangelogSection", function(suite)
 				"",
 				"### Features",
 				"",
-				`1. [docs] Add a docs page. ([#6]({REPO}/pull/6))`,
-				`2. [engine] Embedded runtime ([#5]({REPO}/pull/5))`,
+				`1. [engine] Embedded runtime ([#5]({REPO}/pull/5))`,
+				`2. [docs] Add a docs page. ([#6]({REPO}/pull/6))`,
 				"",
 				"### Fixes",
 				"",
@@ -165,7 +165,7 @@ test.suite("renderRichChangelogSection", function(suite)
 		assert.eq(section:find("\n\nHighlights: Alpha, Beta, and Gamma.\n\n", 1, true) ~= nil, true)
 	end)
 
-	suite:case("groups a category's entries by kind, with entries without one last", function(assert)
+	suite:case("keeps a category's entries in the order given, whatever their kind", function(assert)
 		local section = renderRichChangelogSection("1.0.0", {
 			entry("Plain.", {}),
 			entry("Engine.", { kind = "engine" }),
@@ -178,8 +178,8 @@ test.suite("renderRichChangelogSection", function(suite)
 		local plainAt = section:find("Plain.", 1, true) :: number
 		local engineAt = section:find("Engine.", 1, true) :: number
 		local docsAt = section:find("Docs.", 1, true) :: number
-		assert.eq(docsAt < engineAt, true)
-		assert.eq(engineAt < plainAt, true)
+		assert.eq(plainAt < engineAt, true)
+		assert.eq(engineAt < docsAt, true)
 	end)
 
 	suite:case("names the command to run when a chip hasn't been generated", function(assert)
