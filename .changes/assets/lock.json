@@ -1,0 +1,60 @@
+{
+  "chips": {
+    "flag/breaking": {
+      "text": "Breaking",
+      "hash": "f2bfb954",
+      "light": "flag-breaking-f2bfb954-light.svg",
+      "dark": "flag-breaking-f2bfb954-dark.svg",
+      "fallback": "flag-breaking-f2bfb954-light.png"
+    },
+    "flag/deprecated": {
+      "text": "Deprecated",
+      "hash": "ad2b1551",
+      "light": "flag-deprecated-ad2b1551-light.svg",
+      "dark": "flag-deprecated-ad2b1551-dark.svg",
+      "fallback": "flag-deprecated-ad2b1551-light.png"
+    },
+    "flag/security": {
+      "text": "Security",
+      "hash": "9730f29c",
+      "light": "flag-security-9730f29c-light.svg",
+      "dark": "flag-security-9730f29c-dark.svg",
+      "fallback": "flag-security-9730f29c-light.png"
+    },
+    "kind/agents": {
+      "text": "Agents",
+      "hash": "3c64c020",
+      "light": "kind-agents-3c64c020-light.svg",
+      "dark": "kind-agents-3c64c020-dark.svg",
+      "fallback": "kind-agents-3c64c020-light.png"
+    },
+    "kind/controls": {
+      "text": "Controls",
+      "hash": "c6cbe705",
+      "light": "kind-controls-c6cbe705-light.svg",
+      "dark": "kind-controls-c6cbe705-dark.svg",
+      "fallback": "kind-controls-c6cbe705-light.png"
+    },
+    "kind/embedded": {
+      "text": "Embedded",
+      "hash": "cd781796",
+      "light": "kind-embedded-cd781796-light.svg",
+      "dark": "kind-embedded-cd781796-dark.svg",
+      "fallback": "kind-embedded-cd781796-light.png"
+    },
+    "kind/plugin": {
+      "text": "Plugin",
+      "hash": "7346171c",
+      "light": "kind-plugin-7346171c-light.svg",
+      "dark": "kind-plugin-7346171c-dark.svg",
+      "fallback": "kind-plugin-7346171c-light.png"
+    },
+    "kind/preview": {
+      "text": "Preview",
+      "hash": "f7c232d0",
+      "light": "kind-preview-f7c232d0-light.svg",
+      "dark": "kind-preview-f7c232d0-dark.svg",
+      "fallback": "kind-preview-f7c232d0-light.png"
+    }
+  }
+}
