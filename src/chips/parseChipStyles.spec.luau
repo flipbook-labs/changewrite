@@ -102,4 +102,14 @@ text = "Heads up"
 			parseChipStyles('[kind.engine]\ntext = "Engine"\ncolor = "#7c5cff"\nlabel = "Engine"\n')
 		end)
 	end)
+
+	suite:case("rejects kinds whose names differ only by case", function(assert)
+		local success, err = pcall(
+			parseChipStyles,
+			'[kind.App]\ntext = "App"\ncolor = "#7c5cff"\n\n[kind.app]\ntext = "App"\ncolor = "#2da44e"\n'
+		)
+
+		assert.eq(success, false)
+		assert.neq(string.find(tostring(err), "[kind.app] and [kind.App] differ only by case", 1, true), nil)
+	end)
 end)
