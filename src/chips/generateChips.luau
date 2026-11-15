@@ -23,15 +23,15 @@ local function generateChips(font: Font, chips: { ChipSpec }, metrics: ChipMetri
 		local layers = buildChipLayers(font, chip.label, metrics)
 		table.insert(files, {
 			name = `{chip.name}-light.svg`,
-			contents = renderChipSvg(layers, chip.light, chip.label),
+			contents = renderChipSvg(layers, chip.colorMode.light, chip.label),
 		})
 		table.insert(files, {
 			name = `{chip.name}-dark.svg`,
-			contents = renderChipSvg(layers, chip.dark, chip.label),
+			contents = renderChipSvg(layers, chip.colorMode.dark, chip.label),
 		})
 		table.insert(files, {
 			name = `{chip.name}-light.png`,
-			contents = png.encodePng(rasterizeChip(layers, chip.light, pngScale)),
+			contents = png.encodePng(rasterizeChip(layers, chip.colorMode.light, pngScale)),
 		})
 	end
 	return files

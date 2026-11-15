@@ -1,5 +1,5 @@
 local ChangeFlag = require("@root/release/ChangeFlag")
-local ChangeKind = require("@root/release/ChangeKind")
+local isBreaking = require("@root/release/notes/isBreaking")
 local types = require("@root/release/types")
 
 type UnreleasedChange = types.UnreleasedChange
@@ -10,7 +10,7 @@ local function renderActionBanner(entries: { UnreleasedChange }): string?
 	local hasBreaking = false
 	local hasSecurity = false
 	for _, entry in entries do
-		if entry.kind == ChangeKind.Breaking then
+		if isBreaking(entry) then
 			hasBreaking = true
 		end
 		if table.find(entry.flags, ChangeFlag.Security) then

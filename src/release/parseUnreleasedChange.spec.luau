@@ -153,49 +153,58 @@ Nope.
 		local text = [[
 ---
 bump: minor
-kind: new
-flags: api, security
+kind: engine
+flags: breaking, security
 highlight: "Flipbook in your experience"
 pr: "#652"
 ---
 
 Add an embedded runtime.
 ]]
-		local change = parseUnreleasedChange(text)
+		local change = parseUnreleasedChange(text, nil, { "docs", "engine" })
 
-		assert.eq(change.kind, "new")
+		assert.eq(change.kind, "engine")
 		assert.eq(#change.flags, 2)
-		assert.eq(change.flags[1], "api")
+		assert.eq(change.flags[1], "breaking")
 		assert.eq(change.flags[2], "security")
 		assert.eq(change.highlight, "Flipbook in your experience")
 		assert.eq(change.pr, 652)
 	end)
 
 	suite:case("accepts flags written as a bracketed list and drops repeats", function(assert)
-		local change = parseUnreleasedChange("---\nbump: patch\nflags: [deprecated, 'api', deprecated]\n---\n\nBody.\n")
+		local change =
+			parseUnreleasedChange("---\nbump: patch\nflags: [deprecated, 'security', deprecated]\n---\n\nBody.\n")
 
 		assert.eq(#change.flags, 2)
 		assert.eq(change.flags[1], "deprecated")
-		assert.eq(change.flags[2], "api")
+		assert.eq(change.flags[2], "security")
 	end)
 
-	suite:case("rejects an unknown kind", function(assert)
-		local success, err = pcall(parseUnreleasedChange, "---\nbump: patch\nkind: added\n---\n\nBody.\n", nil)
+	suite:case("rejects a kind changewrite.toml doesn't configure", function(assert)
+		local success, err =
+			pcall(parseUnreleasedChange, "---\nbump: patch\nkind: added\n---\n\nBody.\n", nil, { "engine" })
 
 		assert.eq(success, false)
-		assert.neq(string.find(tostring(err), 'kind "added" is not supported', 1, true), nil)
+		assert.neq(string.find(tostring(err), 'kind "added" is not configured. Expected one of: engine', 1, true), nil)
+	end)
+
+	suite:case("points at changewrite.toml when no kinds are configured", function(assert)
+		local success, err = pcall(parseUnreleasedChange, "---\nbump: patch\nkind: engine\n---\n\nBody.\n", nil, nil)
+
+		assert.eq(success, false)
+		assert.neq(string.find(tostring(err), "Add a [kind.engine] table", 1, true), nil)
 	end)
 
 	suite:case("rejects an unknown flag", function(assert)
 		local success, err =
-			pcall(parseUnreleasedChange, "---\nbump: patch\nflags: api, experimental\n---\n\nBody.\n", nil)
+			pcall(parseUnreleasedChange, "---\nbump: patch\nflags: breaking, experimental\n---\n\nBody.\n", nil, nil)
 
 		assert.eq(success, false)
 		assert.neq(string.find(tostring(err), 'flag "experimental" is not supported', 1, true), nil)
 	end)
 
 	suite:case("rejects a pr that is not a number", function(assert)
-		local success, err = pcall(parseUnreleasedChange, "---\nbump: patch\npr: abc\n---\n\nBody.\n", nil)
+		local success, err = pcall(parseUnreleasedChange, "---\nbump: patch\npr: abc\n---\n\nBody.\n", nil, nil)
 
 		assert.eq(success, false)
 		assert.neq(string.find(tostring(err), "must be a pull request number", 1, true), nil)

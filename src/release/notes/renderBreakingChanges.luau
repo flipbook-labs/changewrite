@@ -1,4 +1,5 @@
-local ChangeKind = require("@root/release/ChangeKind")
+local isBreaking = require("@root/release/notes/isBreaking")
+local notesTypes = require("@root/release/notes/types")
 local renderChips = require("@root/release/notes/renderChips")
 local renderNumberedList = require("@root/release/notes/renderNumberedList")
 local renderPullRequestLink = require("@root/release/notes/renderPullRequestLink")
@@ -6,18 +7,18 @@ local types = require("@root/release/types")
 
 type UnreleasedChange = types.UnreleasedChange
 
-local function renderBreakingChanges(entries: { UnreleasedChange }, repositoryUrl: string?): string?
+local function renderBreakingChanges(entries: { UnreleasedChange }, context: notesTypes.NotesContext): string?
 	local items: { string } = {}
 	for _, entry in entries do
-		if entry.kind ~= ChangeKind.Breaking then
+		if not isBreaking(entry) then
 			continue
 		end
 
 		local body = entry.body
 		if entry.pr then
-			body ..= ` ({renderPullRequestLink(entry.pr, repositoryUrl)})`
+			body ..= ` ({renderPullRequestLink(entry.pr, context.repositoryUrl)})`
 		end
-		local lead = renderChips(entry) .. " "
+		local lead = renderChips(entry, context.chips) .. " "
 		if entry.highlight then
 			table.insert(items, `{lead}**{entry.highlight}**\n\n{body}`)
 		else

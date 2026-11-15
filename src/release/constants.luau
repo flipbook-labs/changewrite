@@ -19,10 +19,8 @@ local MIRROR_MANIFESTS: { string } = {
 
 return {
 	CHANGELOG_FILE = "CHANGELOG.md",
-	-- Kinds sort in this order within a category. Both lists also set the order
-	-- of the allowed values named in validation errors.
-	CHANGE_FLAGS = { "api", "deprecated", "security" },
-	CHANGE_KINDS = { "new", "improved", "fixed", "breaking" },
+	-- Also the order of the allowed values named in validation errors.
+	CHANGE_FLAGS = { "breaking", "deprecated", "security" },
 	CONFIG_FILE = "changewrite.toml",
 	DEFAULT_CATEGORIES = {
 		"Features",
@@ -42,6 +40,6 @@ return {
 	PUBLISH_BRANCH = "publish-next-version",
 
 	-- An optional file in the unreleased-changes directory holding the release's
-	-- TL;DR and name. It is consumed with the entries but is not an entry itself.
+	-- TL;DR. It is consumed with the entries but is not an entry itself.
 	RELEASE_SUMMARY_FILE = "release.md",
 }

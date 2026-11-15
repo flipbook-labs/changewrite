@@ -15,11 +15,33 @@ export type ChipPalette = {
 	text: Paint,
 }
 
+export type ColorModeName = "light" | "dark"
+
+-- What a chip is drawn with in each color mode, so GitHub can show the one
+-- that matches the viewer's.
+export type ByColorMode<T> = {
+	light: T,
+	dark: T,
+}
+
 export type ChipSpec = {
 	name: string,
 	label: string,
-	light: ChipPalette,
-	dark: ChipPalette,
+	colorMode: ByColorMode<ChipPalette>,
+}
+
+export type ColorModeStyle = {
+	color: string,
+	textColor: string?,
+}
+
+-- A chip as `changewrite.toml` describes it: a kind the repo configures, or one
+-- of the flags, which have built-in styles a repo can override.
+export type ChipStyle = {
+	group: "kind" | "flag",
+	name: string,
+	text: string,
+	colorMode: ByColorMode<ColorModeStyle>,
 }
 
 export type ChipMetrics = {

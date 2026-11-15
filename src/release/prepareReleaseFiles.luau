@@ -3,14 +3,19 @@ local path = require("@std/path")
 
 local constants = require("@root/release/constants")
 local findEntryPullRequest = require("@root/release/notes/findEntryPullRequest")
+local getAssetsDir = require("@root/chips/getAssetsDir")
+local getChipAssetsUrl = require("@root/release/notes/getChipAssetsUrl")
 local getRepositoryUrl = require("@root/release/notes/getRepositoryUrl")
 local prependSection = require("@root/release/prependSection")
 local readCategories = require("@root/release/readCategories")
+local readChipLock = require("@root/chips/readChipLock")
 local readCollapsedCategories = require("@root/release/readCollapsedCategories")
 local readReleaseSummary = require("@root/release/readReleaseSummary")
 local removeUnreleasedChanges = require("@root/release/removeUnreleasedChanges")
 local renderChangelogSection = require("@root/release/renderChangelogSection")
+local renderChipMarkup = require("@root/release/notes/renderChipMarkup")
 local renderRichChangelogSection = require("@root/release/notes/renderRichChangelogSection")
+local resolveBaseBranch = require("@root/release/resolveBaseBranch")
 local types = require("@root/release/types")
 local usesRichNotes = require("@root/release/notes/usesRichNotes")
 local writeVersion = require("@root/release/writeVersion")
@@ -38,11 +43,20 @@ local function prepareReleaseFiles(nextVersion: string, changes: { UnreleasedCha
 			copy.pr = change.pr or findEntryPullRequest(change.file)
 			table.insert(resolved, copy)
 		end
+		local repositoryUrl = getRepositoryUrl()
+		local lock = readChipLock()
+		local chips = if lock
+			then renderChipMarkup(
+				lock,
+				getChipAssetsUrl(repositoryUrl, resolveBaseBranch() or "main", tostring(getAssetsDir()))
+			)
+			else nil
 		section = renderRichChangelogSection(nextVersion, resolved, {
 			categories = categories,
 			collapsed = collapsed,
 			summary = summary,
-			repositoryUrl = getRepositoryUrl(),
+			repositoryUrl = repositoryUrl,
+			chips = chips,
 		})
 	else
 		section = renderChangelogSection(nextVersion, changes, categories)

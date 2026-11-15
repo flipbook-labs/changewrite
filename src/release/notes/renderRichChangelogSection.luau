@@ -1,5 +1,6 @@
-local ChangeKind = require("@root/release/ChangeKind")
 local demoteHeadings = require("@root/release/notes/demoteHeadings")
+local isBreaking = require("@root/release/notes/isBreaking")
+local notesTypes = require("@root/release/notes/types")
 local renderActionBanner = require("@root/release/notes/renderActionBanner")
 local renderBreakingChanges = require("@root/release/notes/renderBreakingChanges")
 local renderCategory = require("@root/release/notes/renderCategory")
@@ -16,6 +17,7 @@ export type RichSectionOptions = {
 	collapsed: { string },
 	summary: ReleaseSummary?,
 	repositoryUrl: string?,
+	chips: notesTypes.ChipMarkup?,
 }
 
 -- Lays the section out so what a reader has to act on comes before what is
@@ -45,7 +47,7 @@ local function renderRichChangelogSection(
 	local byCategory: { [string]: { UnreleasedChange } } = {}
 	local seenCategories: { string } = {}
 	for _, entry in entries do
-		if entry.kind == ChangeKind.Breaking then
+		if isBreaking(entry) then
 			continue
 		end
 		if byCategory[entry.category] == nil then
@@ -69,20 +71,25 @@ local function renderRichChangelogSection(
 		end
 	end
 
+	local context: notesTypes.NotesContext = {
+		repositoryUrl = options.repositoryUrl,
+		chips = options.chips or {},
+	}
+
 	add(renderActionBanner(entries))
 	add(renderReleaseTldr(summary, entries))
-	add(renderStatsLine(entries, options.collapsed))
-	add(renderBreakingChanges(entries, options.repositoryUrl))
-	add(renderHighlights(entries, options.repositoryUrl))
+	add(renderStatsLine(entries, categories))
+	add(renderBreakingChanges(entries, context))
+	add(renderHighlights(entries, context))
 
 	for _, category in categories do
 		if byCategory[category] and not table.find(options.collapsed, category) then
-			add(renderCategory(category, byCategory[category], options.repositoryUrl, false))
+			add(renderCategory(category, byCategory[category], context, false))
 		end
 	end
 	for _, category in categories do
 		if byCategory[category] and table.find(options.collapsed, category) then
-			add(renderCategory(category, byCategory[category], options.repositoryUrl, true))
+			add(renderCategory(category, byCategory[category], context, true))
 		end
 	end
 

@@ -5,12 +5,13 @@ local stripQuotes = require("@root/release/stripQuotes")
 local types = require("@root/release/types")
 
 type ChangeFlag = types.ChangeFlag
-type ChangeKind = types.ChangeKind
 type ParsedUnreleasedChange = types.ParsedUnreleasedChange
 
 local DEFAULT_CATEGORY = "Changes"
 
-local function parseUnreleasedChange(text: string, categories: { string }?): ParsedUnreleasedChange
+-- `kinds` lists the kinds `changewrite.toml` configures. A repo that configures
+-- none can't use the field.
+local function parseUnreleasedChange(text: string, categories: { string }?, kinds: { string }?): ParsedUnreleasedChange
 	local frontmatter = parseFrontmatter(text, "Unreleased change")
 	local fields = frontmatter.fields
 	local body = frontmatter.body
@@ -28,20 +29,23 @@ local function parseUnreleasedChange(text: string, categories: { string }?): Par
 		)
 	end
 
-	local kind: ChangeKind? = nil
+	local kind: string? = nil
 	if fields.kind ~= nil and fields.kind ~= "" then
+		local configured = kinds or {}
 		assert(
-			table.find(constants.CHANGE_KINDS, fields.kind) ~= nil,
-			`Unreleased change kind "{fields.kind}" is not supported. Expected one of: {table.concat(
-				constants.CHANGE_KINDS,
-				", "
-			)}`
+			table.find(configured, fields.kind) ~= nil,
+			if #configured == 0
+				then `Unreleased change kind "{fields.kind}" is not configured. Add a [kind.{fields.kind}] table to changewrite.toml`
+				else `Unreleased change kind "{fields.kind}" is not configured. Expected one of: {table.concat(
+					configured,
+					", "
+				)}`
 		)
-		kind = fields.kind :: ChangeKind
+		kind = fields.kind
 	end
 
 	-- Flags are written as a comma-separated list, with or without the square
-	-- brackets of a YAML flow sequence: `flags: api, security` or `flags: [api]`.
+	-- brackets of a YAML flow sequence: `flags: breaking, security` or `flags: [breaking]`.
 	local flags: { ChangeFlag } = {}
 	local flagList = (fields.flags or ""):match("^%[(.*)%]$") or fields.flags or ""
 	for _, rawFlag in flagList:split(",") do

@@ -1,23 +1,33 @@
 local path = require("@std/path")
 local test = require("@std/test")
 
+local notesTypes = require("@root/release/notes/types")
 local renderRichChangelogSection = require("@root/release/notes/renderRichChangelogSection")
 local types = require("@root/release/types")
 
 type ChangeFlag = types.ChangeFlag
-type ChangeKind = types.ChangeKind
 type UnreleasedChange = types.UnreleasedChange
 
 type EntryFields = {
 	category: string?,
-	kind: ChangeKind?,
+	kind: string?,
 	flags: { ChangeFlag }?,
 	highlight: string?,
 	pr: number?,
 }
 
 local REPO = "https://github.com/acme/widget"
-local CHIPS = "https://raw.githubusercontent.com/flipbook-labs/changewrite/main/assets/chips/v1"
+
+-- Stand-in markup, so the expected layout stays readable. `renderChip` has its
+-- own spec for the real markup.
+local CHIPS: notesTypes.ChipMarkup = {
+	["kind/docs"] = "[docs]",
+	["kind/engine"] = "[engine]",
+	["kind/ui"] = "[ui]",
+	["flag/breaking"] = "[breaking]",
+	["flag/deprecated"] = "[deprecated]",
+	["flag/security"] = "[security]",
+}
 
 local function entry(body: string, fields: EntryFields): UnreleasedChange
 	return {
@@ -32,39 +42,34 @@ local function entry(body: string, fields: EntryFields): UnreleasedChange
 	}
 end
 
--- Written out by hand so the expected markup doesn't come from the renderer.
-local function chip(name: string, label: string): string
-	return `<picture><source media="(prefers-color-scheme: dark)" srcset="{CHIPS}/{name}-dark.svg">`
-		.. `<source media="(prefers-color-scheme: light)" srcset="{CHIPS}/{name}-light.svg">`
-		.. `<img src="{CHIPS}/{name}-light.png" alt="{label}" height="18" align="texttop"></picture>`
-end
-
 test.suite("renderRichChangelogSection", function(suite)
 	suite:case("lays out a release from action to information", function(assert)
 		local section = renderRichChangelogSection("2.0.0", {
 			entry("Remove the old loader.", {
 				category = "Features",
-				kind = "breaking",
+				kind = "engine",
+				flags = { "breaking" },
 				highlight = "A new loader",
 				pr = 9,
 			}),
-			entry("Fix a crash on reload.", { category = "Features", kind = "fixed", pr = 7 }),
 			entry("Add an embedded runtime.", {
 				category = "Features",
-				kind = "new",
-				flags = { "api" },
+				kind = "engine",
 				highlight = "Embedded runtime",
 				pr = 5,
 			}),
-			entry("Restructure CI.", { category = "Internal", kind = "improved", pr = 3 }),
+			entry("Add a docs page.", { category = "Features", kind = "docs", pr = 6 }),
+			entry("Fix a crash on reload.", { category = "Fixes", kind = "ui", pr = 7 }),
+			entry("Restructure CI.", { category = "Internal", pr = 3 }),
 		}, {
-			categories = { "Features", "Internal" },
+			categories = { "Features", "Fixes", "Internal" },
 			collapsed = { "Internal" },
 			summary = {
 				file = path.parse("release.md"),
 				tldr = "Flipbook now runs outside Studio.",
 			},
 			repositoryUrl = REPO,
+			chips = CHIPS,
 		})
 
 		assert.eq(
@@ -77,33 +82,37 @@ test.suite("renderRichChangelogSection", function(suite)
 				"",
 				"Flipbook now runs outside Studio.",
 				"",
-				"1 new · 1 fixed · 1 breaking · 1 internal",
+				"Breaking 1 · Features 2 · Fixes 1 · Internal 1",
 				"",
 				"### Breaking changes",
 				"",
-				`1. {chip("breaking", "BREAKING")} **A new loader**`,
+				"1. [engine] [breaking] **A new loader**",
 				"",
 				`   Remove the old loader. ([#9]({REPO}/pull/9))`,
 				"",
 				"### Highlights",
 				"",
-				`> {chip("breaking", "BREAKING")} **A new loader**`,
+				"> [engine] [breaking] **A new loader**",
 				">",
 				"> See [Breaking changes](#breaking-changes).",
 				"",
-				`> {chip("new", "NEW")} {chip("api", "API")} **Embedded runtime**`,
+				"> [engine] **Embedded runtime**",
 				">",
 				`> Add an embedded runtime. ([#5]({REPO}/pull/5))`,
 				"",
 				"### Features",
 				"",
-				`1. {chip("new", "NEW")} {chip("api", "API")} Embedded runtime ([#5]({REPO}/pull/5))`,
-				`2. {chip("fixed", "FIXED")} Fix a crash on reload. ([#7]({REPO}/pull/7))`,
+				`1. [docs] Add a docs page. ([#6]({REPO}/pull/6))`,
+				`2. [engine] Embedded runtime ([#5]({REPO}/pull/5))`,
+				"",
+				"### Fixes",
+				"",
+				`1. [ui] Fix a crash on reload. ([#7]({REPO}/pull/7))`,
 				"",
 				"<details>",
 				"<summary>Internal (1)</summary>",
 				"",
-				`1. {chip("improved", "IMPROVED")} Restructure CI. ([#3]({REPO}/pull/3))`,
+				`1. Restructure CI. ([#3]({REPO}/pull/3))`,
 				"",
 				"</details>",
 			}, "\n")
@@ -112,9 +121,10 @@ test.suite("renderRichChangelogSection", function(suite)
 
 	suite:case("renders no banner when the release needs no action", function(assert)
 		local section = renderRichChangelogSection("1.1.0", {
-			entry("Add a thing.", { kind = "new" }),
+			entry("Add a thing.", { kind = "engine" }),
 		}, {
 			collapsed = {},
+			chips = CHIPS,
 		})
 
 		assert.eq(
@@ -122,20 +132,21 @@ test.suite("renderRichChangelogSection", function(suite)
 			table.concat({
 				"## v1.1.0",
 				"",
-				"1 new",
+				"Changes 1",
 				"",
 				"### Changes",
 				"",
-				`1. {chip("new", "NEW")} Add a thing.`,
+				"1. [engine] Add a thing.",
 			}, "\n")
 		)
 	end)
 
 	suite:case("recommends updating when an entry is flagged as a security fix", function(assert)
 		local section = renderRichChangelogSection("1.0.1", {
-			entry("Escape story names.", { kind = "fixed", flags = { "security" } }),
+			entry("Escape story names.", { kind = "ui", flags = { "security" } }),
 		}, {
 			collapsed = {},
+			chips = CHIPS,
 		})
 
 		assert.eq(section:find("> [!IMPORTANT]\n> Update recommended", 1, true) ~= nil, true)
@@ -154,20 +165,34 @@ test.suite("renderRichChangelogSection", function(suite)
 		assert.eq(section:find("\n\nHighlights: Alpha, Beta, and Gamma.\n\n", 1, true) ~= nil, true)
 	end)
 
-	suite:case("lists entries without a kind after those with one", function(assert)
+	suite:case("groups a category's entries by kind, with entries without one last", function(assert)
 		local section = renderRichChangelogSection("1.0.0", {
 			entry("Plain.", {}),
-			entry("Fixed.", { kind = "fixed" }),
-			entry("Improved.", { kind = "improved" }),
+			entry("Engine.", { kind = "engine" }),
+			entry("Docs.", { kind = "docs" }),
 		}, {
 			collapsed = {},
+			chips = CHIPS,
 		})
 
 		local plainAt = section:find("Plain.", 1, true) :: number
-		local fixedAt = section:find("Fixed.", 1, true) :: number
-		local improvedAt = section:find("Improved.", 1, true) :: number
-		assert.eq(improvedAt < fixedAt, true)
-		assert.eq(fixedAt < plainAt, true)
+		local engineAt = section:find("Engine.", 1, true) :: number
+		local docsAt = section:find("Docs.", 1, true) :: number
+		assert.eq(docsAt < engineAt, true)
+		assert.eq(engineAt < plainAt, true)
+	end)
+
+	suite:case("names the command to run when a chip hasn't been generated", function(assert)
+		local success, err = pcall(function()
+			return renderRichChangelogSection("1.0.0", {
+				entry("Add a thing.", { kind = "engine" }),
+			}, {
+				collapsed = {},
+			})
+		end)
+
+		assert.eq(success, false)
+		assert.neq(string.find(tostring(err), "changewrite generate", 1, true), nil)
 	end)
 
 	suite:case("links a pull request by number when the repository is unknown", function(assert)
@@ -182,11 +207,12 @@ test.suite("renderRichChangelogSection", function(suite)
 	suite:case("keeps a heading in an entry body from ending the release", function(assert)
 		local section = renderRichChangelogSection("1.0.0", {
 			entry("Add a new API.\n\n## Migration\n\nCall the new one.", {
-				kind = "new",
+				kind = "engine",
 				highlight = "A new API",
 			}),
 		}, {
 			collapsed = {},
+			chips = CHIPS,
 			summary = {
 				file = path.parse("release.md"),
 				tldr = "A big one.\n\n## Why",

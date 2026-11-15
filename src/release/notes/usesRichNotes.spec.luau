@@ -23,7 +23,7 @@ test.suite("usesRichNotes", function(suite)
 
 	suite:case("turns on when any entry sets a release-notes field", function(assert)
 		local withKind = plainEntry()
-		withKind.kind = "fixed"
+		withKind.kind = "engine"
 		local withFlag = plainEntry()
 		withFlag.flags = { "security" }
 		local withHighlight = plainEntry()

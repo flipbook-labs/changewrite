@@ -73,11 +73,46 @@ test.suite("readGlyphOutline", function(suite)
 		assert.eq(points[3].isOnCurve, true)
 	end)
 
-	suite:case("rejects a composite glyph", function(assert)
-		local data = glyphBytes({ i16(-1), i16(0), i16(0), i16(0), i16(0) })
+	suite:case("places a composite glyph's parts", function(assert)
+		-- Two components of glyph 7: one moved by byte offsets (10, -5), and one
+		-- moved by word offsets (300, 0) and scaled by half.
+		local data = glyphBytes({
+			i16(-1),
+			i16(0),
+			i16(0),
+			i16(0),
+			i16(0),
+			i16(0x0002 + 0x0020),
+			i16(7),
+			u8(10),
+			u8(0xFB),
+			i16(0x0001 + 0x0002 + 0x0008),
+			i16(7),
+			i16(300),
+			i16(0),
+			i16(0x2000),
+		})
+		local requested: { number } = {}
+		local contours = readGlyphOutline(data, 0, function(glyphIndex: number)
+			table.insert(requested, glyphIndex)
+			return { { { x = 100, y = 40, isOnCurve = true } } }
+		end)
+
+		assert.eq(#contours, 2)
+		assert.eq(requested[1], 7)
+		assert.eq(contours[1][1].x, 110)
+		assert.eq(contours[1][1].y, 35)
+		assert.eq(contours[2][1].x, 350)
+		assert.eq(contours[2][1].y, 20)
+	end)
+
+	suite:case("rejects a composite glyph that places parts by matching points", function(assert)
+		local data = glyphBytes({ i16(-1), i16(0), i16(0), i16(0), i16(0), i16(0), i16(7), u8(0), u8(0) })
 
 		assert.throws(function()
-			readGlyphOutline(data, 0)
+			readGlyphOutline(data, 0, function()
+				return {}
+			end)
 		end)
 	end)
 end)

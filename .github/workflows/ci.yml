@@ -29,9 +29,6 @@ jobs:
       - name: Test
         run: lute test
 
-      - name: Check chips
-        run: lute run chips --check
-
   analyze:
     runs-on: ubuntu-latest
     timeout-minutes: 5
