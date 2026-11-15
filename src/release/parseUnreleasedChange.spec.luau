@@ -19,7 +19,7 @@ Add support for unreleased changes.
 		assert.eq(change.body, "Add support for unreleased changes.")
 	end)
 
-	suite:case("defaults the category to Changes", function(assert)
+	suite:case("defaults the category to Changes when no categories are configured", function(assert)
 		local text = [[
 ---
 bump: patch
@@ -27,7 +27,7 @@ bump: patch
 
 Fix a thing.
 ]]
-		local change = parseUnreleasedChange(text, { "Features", "Fixes", "Changes", "Dependencies" })
+		local change = parseUnreleasedChange(text)
 
 		assert.eq(change.category, "Changes")
 	end)
@@ -90,18 +90,13 @@ Use a category without configuring it.
 		assert.eq(change.category, "Internal")
 	end)
 
-	suite:case("validates the default category against the configured list", function(assert)
-		local text = [[
----
-bump: patch
----
-
-Use the default category.
-]]
-
-		assert.throws(function()
-			parseUnreleasedChange(text, { "Features", "Fixes" })
+	suite:case("requires a category once categories are configured", function(assert)
+		local success, err = pcall(function()
+			return parseUnreleasedChange("---\nbump: patch\n---\n\nBody.\n", { "Features", "Changes" })
 		end)
+
+		assert.eq(success, false)
+		assert.neq(string.find(tostring(err), "has no category. Expected one of: Features, Changes", 1, true), nil)
 	end)
 
 	suite:case("preserves multi-paragraph bodies", function(assert)
@@ -114,7 +109,7 @@ First paragraph.
 
 Second paragraph.
 ]]
-		local change = parseUnreleasedChange(text, { "Changes" })
+		local change = parseUnreleasedChange(text)
 
 		assert.eq(change.body, "First paragraph.\n\nSecond paragraph.")
 	end)
@@ -178,6 +173,13 @@ Add an embedded runtime.
 		assert.eq(#change.flags, 2)
 		assert.eq(change.flags[1], "deprecated")
 		assert.eq(change.flags[2], "security")
+	end)
+
+	suite:case("requires a kind once kinds are configured", function(assert)
+		local success, err = pcall(parseUnreleasedChange, "---\nbump: patch\n---\n\nBody.\n", nil, { "docs", "engine" })
+
+		assert.eq(success, false)
+		assert.neq(string.find(tostring(err), "has no kind. Expected one of: docs, engine", 1, true), nil)
 	end)
 
 	suite:case("rejects a kind changewrite.toml doesn't configure", function(assert)

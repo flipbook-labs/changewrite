@@ -9,8 +9,11 @@ type ParsedUnreleasedChange = types.ParsedUnreleasedChange
 
 local DEFAULT_CATEGORY = "Changes"
 
--- `kinds` lists the kinds `changewrite.toml` configures. A repo that configures
--- none can't use the field.
+-- `categories` and `kinds` are the lists `changewrite.toml` configures. Once a
+-- repo configures either list, every entry has to pick a value from it, so no
+-- entry renders without a heading or a chip. Without a `categories` list, an
+-- entry may leave out its category and lands under Changes. A repo that
+-- configures no kinds can't use the field.
 local function parseUnreleasedChange(text: string, categories: { string }?, kinds: { string }?): ParsedUnreleasedChange
 	local frontmatter = parseFrontmatter(text, "Unreleased change")
 	local fields = frontmatter.fields
@@ -19,7 +22,11 @@ local function parseUnreleasedChange(text: string, categories: { string }?, kind
 
 	local bump = parseVersionComponent(fields.bump)
 	local category = fields.category
-	if category == nil or category == "" then
+	local hasCategory = category ~= nil and category ~= ""
+	if categories then
+		assert(hasCategory, `Unreleased change has no category. Expected one of: {table.concat(categories, ", ")}`)
+	end
+	if not hasCategory then
 		category = DEFAULT_CATEGORY
 	end
 	if categories then
@@ -30,8 +37,14 @@ local function parseUnreleasedChange(text: string, categories: { string }?, kind
 	end
 
 	local kind: string? = nil
-	if fields.kind ~= nil and fields.kind ~= "" then
-		local configured = kinds or {}
+	local configuredKinds = kinds or {}
+	if fields.kind == nil or fields.kind == "" then
+		assert(
+			#configuredKinds == 0,
+			`Unreleased change has no kind. Expected one of: {table.concat(configuredKinds, ", ")}`
+		)
+	else
+		local configured = configuredKinds
 		assert(
 			table.find(configured, fields.kind) ~= nil,
 			if #configured == 0

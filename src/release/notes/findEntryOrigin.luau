@@ -30,7 +30,7 @@ local function findEntryOrigin(file: path.Path): EntryOrigin
 	end
 
 	local timestamp, subject = result.stdout:match("^(%d+) (.-)%s*$")
-	if timestamp == nil then
+	if timestamp == nil or subject == nil then
 		return {}
 	end
 	local number = subject:match("%(#(%d+)%)$")

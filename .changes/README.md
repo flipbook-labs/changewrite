@@ -16,12 +16,12 @@ Add support for Foo values so Bar can be Bazzed.
 ```
 
 - **`bump`** (required) — how much to move the version: `major`, `minor`, or `patch`.
-- **`category`** (optional) — the heading this entry appears under in the changelog. When `categories` is configured in `changewrite.toml`, the value must come from that list. Defaults to `Changes`.
+- **`category`** — the heading this entry appears under in the changelog. When `categories` is configured in `changewrite.toml`, every entry needs one from that list. Otherwise it's optional and defaults to `Changes`.
 - **Body** — everything below the frontmatter is the changelog text. Aim for one or two sentences; it can span multiple paragraphs if a change needs it.
 
 ### Release-notes fields
 
-These are optional. A release whose entries use none of them, with no `release.md` and no `collapsed` setting, renders the same plain notes as before.
+These are optional, except that `kind` is required once a repo configures kinds. A release whose entries use none of them, with no `release.md` and no `collapsed` setting, renders the same plain notes as before.
 
 ```markdown
 ---
@@ -34,7 +34,7 @@ highlight: Embedded runtime
 Add an embedded runtime so stories can be browsed inside a running experience.
 ```
 
-- **`kind`** — what the change touches, such as `docs` or `engine`, from the kinds configured in `changewrite.toml` (see Kinds and chips). It renders as a chip in front of the entry. Entries are listed in the order they merged, so kinds mix within a category.
+- **`kind`** — what the change touches, such as `docs` or `engine`, from the kinds configured in `changewrite.toml` (see Kinds and chips). Once a repo configures any kinds, every entry needs one. It renders as a chip in front of the entry. Entries are listed in the order they merged, so kinds mix within a category.
 - **`flags`** — what the change asks of readers: any of `breaking`, `deprecated`, and `security`, written as `flags: breaking, security`. Each renders as a chip after the kind chip. `breaking` entries are gathered under a Breaking changes heading near the top instead of under their category, and the release gets a banner asking readers to act. A `security` flag adds a banner recommending the update.
 - **`highlight`** — a short title for a change worth a headline. The entry's full body appears under Highlights, and its category lists it by title. Level 1 and 2 headings in a body render as level 4 so they nest under the release.
 - **`pr`** — the pull request number. Changewrite finds it from the squash commit that added the entry, so set it only when that commit doesn't name the right pull request.

@@ -11,6 +11,7 @@ local getCurrentBranch = require("@root/release/getCurrentBranch")
 local getUnreleasedChangesDir = require("@root/release/getUnreleasedChangesDir")
 local isPublishBranch = require("@root/release/isPublishBranch")
 local isSameRepositoryPullRequest = require("@root/release/isSameRepositoryPullRequest")
+local readCategories = require("@root/release/readCategories")
 local readChipLock = require("@root/chips/readChipLock")
 local readChipStyles = require("@root/chips/readChipStyles")
 local readCollapsedCategories = require("@root/release/readCollapsedCategories")
@@ -38,31 +39,40 @@ parser:add("help", "flag", {
 	help = "Show this help message",
 })
 
-local function formatChangelogTemplate(): string
-	return table.concat({
-		"---",
-		"bump: patch",
-		"category: Fixes",
-		"---",
-		"",
-		"One or two sentences describing the change, written for the changelog.",
-	}, "\n")
+local function formatChangelogTemplate(categories: { string }?, kinds: { string }): string
+	local category = if categories == nil or table.find(categories, "Fixes") then "Fixes" else categories[1]
+	local lines = { "---", "bump: patch", `category: {category}` }
+	if #kinds > 0 then
+		table.insert(lines, `kind: {kinds[1]}`)
+	end
+	table.insert(lines, "---")
+	table.insert(lines, "")
+	table.insert(lines, "One or two sentences describing the change, written for the changelog.")
+	return table.concat(lines, "\n")
 end
 
 local function printNoChangesError()
 	local dir = getUnreleasedChangesDir()
+	local categories = readCategories()
+	local kinds = readKindNames()
 
 	print(richterm.red("A changelog entry is required."))
 	print("")
 	print(`Add a markdown entry under {richterm.bold(tostring(dir))} describing this change:`)
 	print("")
 	print(richterm.bold("Template:"))
-	print(formatChangelogTemplate())
+	print(formatChangelogTemplate(categories, kinds))
 	print("")
 	print(richterm.bold("Guide:"))
 	print("  • bump (required): major, minor, or patch")
-	print("  • category (optional): Features, Fixes, Dependencies, Changes (default)")
-	print("  • kind (optional): one of the kinds configured in changewrite.toml")
+	if categories then
+		print(`  • category (required): one of {table.concat(categories, ", ")}`)
+	else
+		print("  • category (optional): the heading to list it under, Changes by default")
+	end
+	if #kinds > 0 then
+		print(`  • kind (required): one of {table.concat(kinds, ", ")}`)
+	end
 	print("  • flags (optional): any of breaking, deprecated, security")
 	print("  • highlight (optional): a short title for a headline change")
 	print("  • filename: name after the change (e.g., fix-release-permissions.md)")
