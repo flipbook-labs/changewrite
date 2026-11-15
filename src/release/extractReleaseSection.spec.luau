@@ -38,4 +38,19 @@ test.suite("extractReleaseSection", function(suite)
 			extractReleaseSection(CHANGELOG, "9.9.9")
 		end)
 	end)
+	suite:case("keeps a non-release level 2 line inside the section", function(assert)
+		local changelog = table.concat({
+			"## v1.0.0",
+			"",
+			"```sh",
+			"## install twice",
+			"```",
+			"",
+			"## v0.9.0",
+			"",
+			"- Older.",
+		}, "\n")
+
+		assert.eq(extractReleaseSection(changelog, "1.0.0"), "```sh\n## install twice\n```")
+	end)
 end)

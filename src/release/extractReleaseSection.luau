@@ -16,9 +16,12 @@ local function extractReleaseSection(changelog: string, version: string): string
 	end
 	assert(start, `Could not find a "{target}" section in CHANGELOG.md`)
 
+	-- Only another release heading ends the section. Changewrite writes every
+	-- release as `## v<version>`, so a `## ` line inside an entry's code example
+	-- stays part of the notes.
 	local body: { string } = {}
 	for index = start, #lines do
-		if lines[index]:match("^## ") then
+		if lines[index]:match("^## v%d") then
 			break
 		end
 		table.insert(body, lines[index])

@@ -1,3 +1,0 @@
-# Generated chips are compared byte for byte by `lute run chips --check`, so
-# line endings must never be converted on checkout.
-assets/chips/v1/** -text

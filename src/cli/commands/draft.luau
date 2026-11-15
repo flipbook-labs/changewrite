@@ -69,8 +69,9 @@ local function draft()
 	-- Same renderer the publish PR uses for its preview, so the drafted notes and
 	-- the previewed notes can't drift. The tag doesn't exist locally yet, so
 	-- renderReleaseNotes renders the unreleased commits under the prospective tag.
+	local notes = renderReleaseNotes(tag)
 	local notesPath = path.join(getTempDir(), "release-notes.md")
-	fs.writeStringToFile(notesPath, renderReleaseNotes(tag))
+	fs.writeStringToFile(notesPath, notes)
 
 	run(config.ghCmd, {
 		"release",

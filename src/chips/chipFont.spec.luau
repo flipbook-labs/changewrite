@@ -1,12 +1,21 @@
 local fs = require("@std/fs")
 local test = require("@std/test")
 
-local truetype = require("@libs/truetype")
+local base64 = require("@batteries/base64")
+
+local fontData = require("@root/chips/fontData")
+local getChipFont = require("@root/chips/getChipFont")
 
 local FONT_PATH = "assets/chips/font/SchibstedGrotesk-Bold.ttf"
 
 test.suite("chip font", function(suite)
-	local font = truetype.readTrueTypeFont(buffer.fromstring(fs.readFileToString(FONT_PATH)))
+	local font = getChipFont()
+
+	suite:case("embeds the font file byte for byte", function(assert)
+		-- Run `lute run embed-font` when this fails after replacing the font.
+		local embedded = buffer.tostring(base64.decode(buffer.fromstring(fontData)))
+		assert.eq(embedded == fs.readFileToString(FONT_PATH), true)
+	end)
 
 	suite:case("reads the font's em size and cap height", function(assert)
 		-- Values read independently from the font's head and OS/2 tables.
@@ -27,6 +36,13 @@ test.suite("chip font", function(suite)
 
 		assert.eq(#glyph.contours, 0)
 		assert.eq(glyph.advanceWidth > 0, true)
+	end)
+
+	suite:case("reads a letter the font builds from other glyphs", function(assert)
+		-- The font draws "i" as a dotless i plus a dot.
+		local glyph = font.getGlyph("i")
+
+		assert.eq(#glyph.contours, 2)
 	end)
 
 	suite:case("rejects a character the font doesn't cover", function(assert)

@@ -6,13 +6,21 @@ local richterm = require("@batteries/richterm")
 local chomp = require("@root/chomp")
 local config = require("@root/config")
 local detectAddedEntries = require("@root/release/detectAddedEntries")
+local findStaleChipAssets = require("@root/chips/findStaleChipAssets")
 local getCurrentBranch = require("@root/release/getCurrentBranch")
 local getUnreleasedChangesDir = require("@root/release/getUnreleasedChangesDir")
 local isPublishBranch = require("@root/release/isPublishBranch")
 local isSameRepositoryPullRequest = require("@root/release/isSameRepositoryPullRequest")
+local readCategories = require("@root/release/readCategories")
+local readChipLock = require("@root/chips/readChipLock")
+local readChipStyles = require("@root/chips/readChipStyles")
+local readCollapsedCategories = require("@root/release/readCollapsedCategories")
 local readGithubEvent = require("@root/release/readGithubEvent")
+local readKindNames = require("@root/release/readKindNames")
 local readPublishBranch = require("@root/release/readPublishBranch")
+local readReleaseSummary = require("@root/release/readReleaseSummary")
 local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
+local releaseTypes = require("@root/release/types")
 local resolveBaseBranch = require("@root/release/resolveBaseBranch")
 local splitLines = require("@root/release/splitLines")
 local types = require("@root/cli/types")
@@ -31,30 +39,42 @@ parser:add("help", "flag", {
 	help = "Show this help message",
 })
 
-local function formatChangelogTemplate(): string
-	return table.concat({
-		"---",
-		"bump: patch",
-		"category: Fixes",
-		"---",
-		"",
-		"One or two sentences describing the change, written for the changelog.",
-	}, "\n")
+local function formatChangelogTemplate(categories: { string }?, kinds: { string }): string
+	local category = if categories == nil or table.find(categories, "Fixes") then "Fixes" else categories[1]
+	local lines = { "---", "bump: patch", `category: {category}` }
+	if #kinds > 0 then
+		table.insert(lines, `kind: {kinds[1]}`)
+	end
+	table.insert(lines, "---")
+	table.insert(lines, "")
+	table.insert(lines, "One or two sentences describing the change, written for the changelog.")
+	return table.concat(lines, "\n")
 end
 
 local function printNoChangesError()
 	local dir = getUnreleasedChangesDir()
+	local categories = readCategories()
+	local kinds = readKindNames()
 
 	print(richterm.red("A changelog entry is required."))
 	print("")
 	print(`Add a markdown entry under {richterm.bold(tostring(dir))} describing this change:`)
 	print("")
 	print(richterm.bold("Template:"))
-	print(formatChangelogTemplate())
+	print(formatChangelogTemplate(categories, kinds))
 	print("")
 	print(richterm.bold("Guide:"))
 	print("  • bump (required): major, minor, or patch")
-	print("  • category (optional): Features, Fixes, Dependencies, Changes (default)")
+	if categories then
+		print(`  • category (required): one of {table.concat(categories, ", ")}`)
+	else
+		print("  • category (optional): the heading to list it under, Changes by default")
+	end
+	if #kinds > 0 then
+		print(`  • kind (required): one of {table.concat(kinds, ", ")}`)
+	end
+	print("  • flags (optional): any of breaking, deprecated, security")
+	print("  • highlight (optional): a short title for a headline change")
 	print("  • filename: name after the change (e.g., fix-release-permissions.md)")
 	print("  • body: changelog text, one or two sentences")
 	print("")
@@ -137,8 +157,42 @@ local function isPullRequestRun(): boolean
 	return headRef ~= nil and headRef ~= ""
 end
 
+-- Chips only matter to a repo that uses them: one that configures kinds, has
+-- entries with a kind or flags, or has generated chips before.
+local function usesChips(entries: { releaseTypes.UnreleasedChange }): boolean
+	if #readKindNames() > 0 or readChipLock() ~= nil then
+		return true
+	end
+	for _, entry in entries do
+		if entry.kind ~= nil or #entry.flags > 0 then
+			return true
+		end
+	end
+	return false
+end
+
+local function checkChips(entries: { releaseTypes.UnreleasedChange })
+	-- Reading the styles validates every [kind] and [flag] table, which matters
+	-- even in a repo that hasn't used a chip yet.
+	readChipStyles()
+	if not usesChips(entries) then
+		return
+	end
+	local stale = findStaleChipAssets()
+	if #stale > 0 then
+		print(richterm.red("Chips don't match changewrite.toml. Run `changewrite generate` and commit the result:"))
+		for _, line in stale do
+			print(`  • {line}`)
+		end
+		process.exit(1)
+	end
+end
+
 local function run()
-	readUnreleasedChanges()
+	local entries = readUnreleasedChanges()
+	readReleaseSummary()
+	readCollapsedCategories()
+	checkChips(entries)
 
 	local currentBranch = getCurrentBranch()
 	local publishBranch = parser:get("publish-branch")

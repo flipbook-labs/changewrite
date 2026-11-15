@@ -7,7 +7,13 @@ local types = require("@root/release/types")
 type UnreleasedChange = types.UnreleasedChange
 
 local function entry(bump: "major" | "minor" | "patch", category: string, body: string): UnreleasedChange
-	return { bump = bump, category = category, body = body, file = path.parse(body) }
+	return {
+		bump = bump,
+		category = category,
+		body = body,
+		flags = {},
+		file = path.parse(body),
+	}
 end
 
 test.suite("renderChangelogSection", function(suite)

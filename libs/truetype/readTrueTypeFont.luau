@@ -69,9 +69,7 @@ local function readCharacterMap(data: buffer, cmapOffset: number): (number) -> n
 	end
 end
 
--- Reads the outlines and advance widths of a static TrueType font. Composite
--- glyphs, such as accented letters built from parts, aren't supported, and
--- asking for one raises an error.
+-- Reads the outlines and advance widths of a static TrueType font.
 local function readTrueTypeFont(data: buffer): Font
 	local tables = readTables(data)
 	for _, required in { "head", "hhea", "hmtx", "maxp", "cmap", "loca", "glyf", "OS/2" } do
@@ -110,11 +108,27 @@ local function readTrueTypeFont(data: buffer): Font
 		return glyphIndex, tables.glyf + start
 	end
 
+	-- Composite glyphs can nest, so this stops at a depth no real font needs,
+	-- in case a broken font refers back to a glyph it's part of.
+	local MAX_COMPONENT_DEPTH = 8
+
+	local function readOutline(glyphIndex: number, offset: number, depth: number): { { GlyphPoint } }
+		assert(depth <= MAX_COMPONENT_DEPTH, "Composite glyph nests too deeply")
+		return readGlyphOutline(data, offset, function(componentIndex: number): { { GlyphPoint } }
+			assert(componentIndex < glyphCount, `Composite glyph refers to missing glyph {componentIndex}`)
+			local start = getLocation(componentIndex)
+			if start == getLocation(componentIndex + 1) then
+				return {}
+			end
+			return readOutline(componentIndex, tables.glyf + start, depth + 1)
+		end)
+	end
+
 	local function getGlyph(character: string): Glyph
 		local glyphIndex, offset = findGlyph(character)
 		local contours: { { GlyphPoint } } = {}
 		if offset then
-			local isOk, result = pcall(readGlyphOutline, data, offset)
+			local isOk, result = pcall(readOutline, glyphIndex, offset, 0)
 			assert(isOk, `Could not read the glyph for "{character}": {result}`)
 			contours = result
 		end

@@ -19,6 +19,8 @@ local MIRROR_MANIFESTS: { string } = {
 
 return {
 	CHANGELOG_FILE = "CHANGELOG.md",
+	-- Also the order of the allowed values named in validation errors.
+	CHANGE_FLAGS = { "breaking", "deprecated", "security" },
 	CONFIG_FILE = "changewrite.toml",
 	DEFAULT_CATEGORIES = {
 		"Features",
@@ -36,4 +38,8 @@ return {
 	-- The branch a release run regenerates the publish PR on when
 	-- `release.branch` is unset. Mirrors the action's `branch` input default.
 	PUBLISH_BRANCH = "publish-next-version",
+
+	-- An optional file in the unreleased-changes directory holding the release's
+	-- TL;DR. It is consumed with the entries but is not an entry itself.
+	RELEASE_SUMMARY_FILE = "release.md",
 }

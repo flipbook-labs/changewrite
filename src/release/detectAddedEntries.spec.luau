@@ -31,6 +31,12 @@ test.suite("detectAddedEntries", function(suite)
 		assert.eq(#entries, 0)
 	end)
 
+	suite:case("ignores the release summary in any letter case", function(assert)
+		local entries = detectAddedEntries({ ".changes/release.md", ".changes/Release.md" }, DIR)
+
+		assert.eq(#entries, 0)
+	end)
+
 	suite:case("ignores the directory's README", function(assert)
 		local entries = detectAddedEntries({ ".changes/README.md" }, DIR)
 
