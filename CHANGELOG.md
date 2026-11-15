@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.12.0
+
+Features 1 · Changes 1
+
+### Features
+
+1. <picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-cli-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-cli-light.svg"><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-cli-light.png" alt="CLI" height="18" align="texttop"></picture> Mirror a version into `pkg.luau` with `{ file = "pkg.luau" }`, and `changewrite init` picks `pkg.luau` over `loom.config.luau`. ([#89](https://github.com/flipbook-labs/changewrite/pull/89))
+
+### Changes
+
+1. <picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-docs-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-docs-light.svg"><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-docs-light.png" alt="Docs" height="18" align="texttop"></picture> Changewrite's own release notes now mark each entry with a kind chip, such as Notes, Chips, or Publishing. ([#86](https://github.com/flipbook-labs/changewrite/pull/86))
+
+
 ## v0.11.1
 
 ### Fixes
