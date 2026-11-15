@@ -35,8 +35,19 @@ color = "#2da44e"
 		local engine = find(styles, "kind", "engine")
 		assert.eq(engine.text, "Engine")
 		assert.eq(engine.colorMode.light.color, "#7c5cff")
-		assert.eq(engine.colorMode.dark.color, "#7c5cff")
 		assert.eq(engine.colorMode.light.textColor, nil)
+	end)
+
+	suite:case("derives the dark color from the light one when none is set", function(assert)
+		local styles = parseChipStyles([[
+[kind.sidebar]
+text = "Sidebar"
+color = "#0e7490"
+]])
+
+		local sidebar = find(styles, "kind", "sidebar")
+		assert.eq(sidebar.colorMode.light.color, "#0e7490")
+		assert.eq(sidebar.colorMode.dark.color, "#4ea5c2")
 	end)
 
 	suite:case("overrides a color for one color mode", function(assert)
@@ -67,7 +78,21 @@ text = "Heads up"
 		local breaking = find(styles, "flag", "breaking")
 		assert.eq(breaking.text, "Heads up")
 		assert.eq(breaking.colorMode.light.color, "#c8264b")
-		assert.eq(breaking.colorMode.dark.color, "#ff6b88")
+		assert.eq(breaking.colorMode.dark.color, "#ff647a")
+
+		local security = find(styles, "flag", "security")
+		assert.eq(security.colorMode.dark.color, "#ff8c46")
+	end)
+
+	suite:case("derives a dark color for a flag given a new color", function(assert)
+		local styles = parseChipStyles([[
+[flag.security]
+color = "#bc4c00"
+]])
+
+		local security = find(styles, "flag", "security")
+		assert.eq(security.colorMode.light.color, "#bc4c00")
+		assert.eq(security.colorMode.dark.color, "#f37e46")
 	end)
 
 	suite:case("gives every flag its built-in style with no config", function(assert)

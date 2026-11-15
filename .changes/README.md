@@ -41,13 +41,17 @@ Add an embedded runtime so stories can be browsed inside a running experience.
 
 ### Kinds and chips
 
-Each kind is a table in `changewrite.toml`. `text` is the chip's label, and `color` sets its border and dot. The label's color is a neutral that suits each color mode, and `textColor` overrides it. A `colorMode.light` or `colorMode.dark` table overrides `color` or `textColor` for that mode alone:
+Each kind is a table in `changewrite.toml`. `text` is the chip's label, and `color` sets its border and dot:
 
 ```toml
 [kind.engine]
 text = "Engine"
 color = "#7c5cff"
+```
 
+Pick `color` to read on a white page. The dark color mode gets a lighter version of it: the same hue and chroma, 0.16 lighter in OKLCH, with chroma reduced if the result is too saturated for sRGB. The label's color is a neutral that suits each color mode, and `textColor` overrides it. A `colorMode.light` or `colorMode.dark` table overrides `color` or `textColor` for that mode alone, such as a hand-picked dark color:
+
+```toml
 [kind.engine.colorMode.dark]
 color = "#a28bff"
 ```
