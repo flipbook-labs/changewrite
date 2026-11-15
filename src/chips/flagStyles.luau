@@ -1,9 +1,12 @@
+local deriveDarkColor = require("@root/chips/deriveDarkColor")
 local types = require("@root/chips/types")
 
 type ChipStyle = types.ChipStyle
 
 -- The flags' built-in styles. A `[flag.<name>]` table in changewrite.toml
--- overrides any of these fields.
+-- overrides any of these fields. Most dark colors come from deriveDarkColor.
+-- Security keeps its hand-picked one, because the derived color is 0.027 from
+-- it in OKLab, past the roughly 0.02 where a difference becomes noticeable.
 local flagStyles: { [string]: ChipStyle } = {
 	breaking = {
 		group = "flag",
@@ -11,7 +14,7 @@ local flagStyles: { [string]: ChipStyle } = {
 		text = "Breaking",
 		colorMode = {
 			light = { color = "#c8264b" },
-			dark = { color = "#ff6b88" },
+			dark = { color = deriveDarkColor("#c8264b") },
 		},
 	},
 	deprecated = {
@@ -20,7 +23,7 @@ local flagStyles: { [string]: ChipStyle } = {
 		text = "Deprecated",
 		colorMode = {
 			light = { color = "#6b7380" },
-			dark = { color = "#9aa3b0" },
+			dark = { color = deriveDarkColor("#6b7380") },
 		},
 	},
 	security = {
