@@ -2,6 +2,7 @@ local toml = require("@batteries/toml")
 
 local assertKnownFields = require("@root/release/assertKnownFields")
 local constants = require("@root/release/constants")
+local deriveDarkColor = require("@root/chips/deriveDarkColor")
 local flagStyles = require("@root/chips/flagStyles")
 local types = require("@root/chips/types")
 
@@ -36,8 +37,11 @@ local function readColor(value: toml.TomlValue?, context: string): string?
 end
 
 -- Lays a table's fields over a base style. Top-level `color` and `textColor`
--- apply to both color modes, and a `colorMode.light` or `colorMode.dark` table
--- overrides them for that mode alone.
+-- apply to the light color mode, and `textColor` to the dark one too. A
+-- `colorMode.light` or `colorMode.dark` table sets either field for that mode
+-- alone. When the table sets a light color but no dark one, the dark color
+-- comes from deriveDarkColor. A table that sets no color at all keeps the base
+-- style's colors.
 local function applyFields(base: ChipStyle, fields: TomlTable, context: string): ChipStyle
 	assertKnownFields(fields, STYLE_FIELDS, context)
 
@@ -48,30 +52,42 @@ local function applyFields(base: ChipStyle, fields: TomlTable, context: string):
 	local modes: TomlTable = if fields.colorMode ~= nil then asTable(fields.colorMode, `{context} colorMode`) else {}
 	assertKnownFields(modes, COLOR_MODE_FIELDS, `{context} colorMode`)
 
-	local function resolve(name: "light" | "dark"): ColorModeStyle
-		local inherited = if name == "light" then base.colorMode.light else base.colorMode.dark
-		local resolved: ColorModeStyle = {
-			color = color or inherited.color,
-			textColor = textColor or inherited.textColor,
-		}
-		if modes[name] ~= nil then
-			local modeContext = `{context} colorMode.{name}`
-			local mode = asTable(modes[name], modeContext)
-			assertKnownFields(mode, COLOR_MODE_STYLE_FIELDS, modeContext)
-			resolved.color = readColor(mode.color, `{modeContext} color`) or resolved.color
-			resolved.textColor = readColor(mode.textColor, `{modeContext} textColor`) or resolved.textColor
+	local function readMode(name: "light" | "dark"): (string?, string?)
+		if modes[name] == nil then
+			return nil, nil
 		end
-		assert(resolved.color ~= "", `{context} needs a color`)
-		return resolved
+		local modeContext = `{context} colorMode.{name}`
+		local mode = asTable(modes[name], modeContext)
+		assertKnownFields(mode, COLOR_MODE_STYLE_FIELDS, modeContext)
+		return readColor(mode.color, `{modeContext} color`), readColor(mode.textColor, `{modeContext} textColor`)
 	end
+
+	local lightColor, lightTextColor = readMode("light")
+	local darkColor, darkTextColor = readMode("dark")
+
+	local light: ColorModeStyle = {
+		color = lightColor or color or base.colorMode.light.color,
+		textColor = lightTextColor or textColor or base.colorMode.light.textColor,
+	}
+	assert(light.color ~= "", `{context} needs a color`)
+
+	-- Deriving here, rather than keeping the base style's dark color, matters
+	-- for flags: their built-in dark colors were picked for their built-in
+	-- light colors.
+	local setsLightColor = lightColor ~= nil or color ~= nil
+	local dark: ColorModeStyle = {
+		color = darkColor or if setsLightColor then deriveDarkColor(light.color) else base.colorMode.dark.color,
+		textColor = darkTextColor or textColor or base.colorMode.dark.textColor,
+	}
+	assert(dark.color ~= "", `{context} needs a color`)
 
 	return {
 		group = base.group,
 		name = base.name,
 		text = text,
 		colorMode = {
-			light = resolve("light"),
-			dark = resolve("dark"),
+			light = light,
+			dark = dark,
 		},
 	}
 end
