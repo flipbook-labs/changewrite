@@ -45,14 +45,14 @@ export type ChipStyle = {
 }
 
 export type ChipMetrics = {
-	height: number,
-	rimWidth: number,
-	paddingLeft: number,
-	dotDiameter: number,
-	dotGap: number,
-	paddingRight: number,
-	fontSize: number,
-	letterSpacing: number,
+	read height: number,
+	read rimWidth: number,
+	read paddingLeft: number,
+	read dotDiameter: number,
+	read dotGap: number,
+	read paddingRight: number,
+	read fontSize: number,
+	read letterSpacing: number,
 }
 
 -- The shapes that make up one chip, painted in order.
