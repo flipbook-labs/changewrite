@@ -1,7 +1,7 @@
 categories = ["Features", "Fixes", "Changes", "Dependencies"]
 
 [version]
-current = "0.10.0"
+current = "0.11.0"
 mirror = [
   { file = "loom.config.luau" },
 ]
