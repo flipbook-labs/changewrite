@@ -29,26 +29,28 @@ jobs:
         with:
           version: v1.2.0
 
-      # `lute compile` stores each bundled config file under its path from the
-      # folder shared by every bundled file. On Windows runners that folder
-      # doesn't exist, because the checkout is on D: and the Loom store in the
-      # home folder is on C:. Every config then lands at the bundle's root under
-      # the same name, and the binary fails to resolve its aliases. Lute finds
-      # the home folder through `USERPROFILE` on Windows, so pointing it at D:
-      # moves the store there too and gives everything a shared folder. The temp
-      # folder moves with it because `lute pkg install` downloads each package
-      # there before moving it into the store, and that move fails across drives.
-      - name: Put the Loom store on the checkout's drive
+      # `lute compile` bundles every file under its path from the deepest folder
+      # they all share, and inside the binary `~/` aliases like the ones in
+      # `.config.luau` resolve against that folder. So the build works only when
+      # the home folder, which holds the Loom store, is that shared folder. On
+      # Linux and macOS it already is. On Windows runners the checkout is on D:
+      # and the home folder on C:, so this points `USERPROFILE`, where Lute finds
+      # the home folder on Windows, at the folder two levels above the checkout.
+      # The temp folder moves to D: as well, because `lute pkg install` downloads
+      # each package there and then moves it into the store, and that move fails
+      # across drives.
+      - name: Put the Loom store beside the checkout
         if: matrix.os == 'windows'
         shell: bash
         run: |
           set -euo pipefail
-          base="$(cygpath -m "$RUNNER_TEMP")"
-          mkdir -p "$base/home" "$base/tmp"
+          home="$(dirname "$(dirname "$(cygpath -m "$GITHUB_WORKSPACE")")")"
+          tmp="$(cygpath -m "$RUNNER_TEMP")/tmp"
+          mkdir -p "$tmp"
           {
-            echo "USERPROFILE=$base/home"
-            echo "TEMP=$base/tmp"
-            echo "TMP=$base/tmp"
+            echo "USERPROFILE=$home"
+            echo "TEMP=$tmp"
+            echo "TMP=$tmp"
           } >> "$GITHUB_ENV"
 
       - name: Install dependencies
