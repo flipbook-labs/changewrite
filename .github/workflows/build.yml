@@ -35,11 +35,21 @@ jobs:
       # home folder is on C:. Every config then lands at the bundle's root under
       # the same name, and the binary fails to resolve its aliases. Lute finds
       # the home folder through `USERPROFILE` on Windows, so pointing it at D:
-      # moves the store there too and gives everything a shared folder.
+      # moves the store there too and gives everything a shared folder. The temp
+      # folder moves with it because `lute pkg install` downloads each package
+      # there before moving it into the store, and that move fails across drives.
       - name: Put the Loom store on the checkout's drive
         if: matrix.os == 'windows'
         shell: bash
-        run: echo "USERPROFILE=$(cygpath -m "$RUNNER_TEMP")/home" >> "$GITHUB_ENV"
+        run: |
+          set -euo pipefail
+          base="$(cygpath -m "$RUNNER_TEMP")"
+          mkdir -p "$base/home" "$base/tmp"
+          {
+            echo "USERPROFILE=$base/home"
+            echo "TEMP=$base/tmp"
+            echo "TMP=$base/tmp"
+          } >> "$GITHUB_ENV"
 
       - name: Install dependencies
         run: lute run install
