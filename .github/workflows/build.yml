@@ -33,12 +33,13 @@ jobs:
       # folder shared by every bundled file. On Windows runners that folder
       # doesn't exist, because the checkout is on D: and the Loom store in the
       # home folder is on C:. Every config then lands at the bundle's root under
-      # the same name, and the binary fails to resolve its aliases. Moving the
-      # home folder, and with it the store, onto D: gives them a shared folder.
+      # the same name, and the binary fails to resolve its aliases. Lute finds
+      # the home folder through `USERPROFILE` on Windows, so pointing it at D:
+      # moves the store there too and gives everything a shared folder.
       - name: Put the Loom store on the checkout's drive
         if: matrix.os == 'windows'
         shell: bash
-        run: echo "HOME=$(cygpath -m "$RUNNER_TEMP")/home" >> "$GITHUB_ENV"
+        run: echo "USERPROFILE=$(cygpath -m "$RUNNER_TEMP")/home" >> "$GITHUB_ENV"
 
       - name: Install dependencies
         run: lute run install
