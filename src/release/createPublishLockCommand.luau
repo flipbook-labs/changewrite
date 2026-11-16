@@ -1,13 +1,13 @@
 local cli = require("@batteries/cli")
 local process = require("@std/process")
 
+local applyUnlock = require("@root/release/applyUnlock")
 local buildStatusArgs = require("@root/release/buildStatusArgs")
 local chomp = require("@root/chomp")
 local config = require("@root/config")
 local constants = require("@root/release/constants")
 local readPublishBranch = require("@root/release/readPublishBranch")
 local resolveBaseBranch = require("@root/release/resolveBaseBranch")
-local resolveUnlockState = require("@root/release/resolveUnlockState")
 local types = require("@root/cli/types")
 
 local function describe(state: buildStatusArgs.State): string
@@ -122,29 +122,39 @@ local function createPublishLockCommand(options: {
 		local publishHead = if isExplicitSha then readBranchHead(publishBranch) else nil
 
 		local baseSha = getOption("base-sha")
-		local baseBranch, baseHead
+		local baseBranch: string? = nil
 		if baseSha then
 			baseBranch = getOption("base-branch") or resolveBaseBranch()
 			assert(baseBranch, "Could not determine the base branch. Pass it with --base-branch.")
-			baseHead = readBranchHead(baseBranch)
-			assert(baseHead, `The {baseBranch} base branch does not exist.`)
 		end
 
-		local state = resolveUnlockState({
+		local isPosted = false
+		applyUnlock({
 			sha = sha,
 			isExplicitSha = isExplicitSha,
 			publishHead = publishHead,
 			baseSha = baseSha,
-			baseHead = baseHead,
+			-- applyUnlock only reads the base when baseSha is set, which is
+			-- exactly when baseBranch was resolved above.
+			readBaseHead = function()
+				local branch = baseBranch :: string
+				local head = readBranchHead(branch)
+				assert(head, `The {branch} base branch does not exist.`)
+				return head
+			end,
+			post = function(state)
+				isPosted = true
+				if state == "failure" then
+					print(`{baseBranch} moved past {baseSha} since the refresh, locking.`)
+					post(sha, state, `{baseBranch} moved, waiting for the next release run`)
+				else
+					post(sha, state, describe(state))
+				end
+			end,
 		})
 
-		if state == nil then
+		if not isPosted then
 			print(`{sha} is the {publishBranch} head, which the release run owns, skipping.`)
-		elseif state == "failure" then
-			print(`{baseBranch} moved from {baseSha} to {baseHead} since the refresh, locking instead.`)
-			post(sha, state, `{baseBranch} moved, waiting for the next release run`)
-		else
-			post(sha, state, describe(state))
 		end
 	end
 
