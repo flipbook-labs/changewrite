@@ -15,7 +15,7 @@ local LOCKFILE_PATH = "pkg.lock.luau"
 -- and values are dependency names in `pkg.luau`.
 local DEPENDENCY_ALIASES: { [string]: string } = {
 	batteries = "Lute",
-	flipbookBatteries = "FlipbookBatteries",
+	["flipbook-batteries"] = "FlipbookBatteries",
 }
 
 type Lockfile = {
@@ -42,7 +42,11 @@ local config = fs.readFileToString(CONFIG_PATH)
 
 for alias, name in DEPENDENCY_ALIASES do
 	local storePath = getStorePath(lockfile, name)
-	local updated, count = config:gsub(`(%f[%w]{alias}%s*=%s*")[^"]*(")`, `%1{storePath}%2`)
+	-- An alias that isn't a plain identifier, like `flipbook-batteries`, is
+	-- written as a quoted key in `.config.luau`.
+	local escapedAlias = alias:gsub("%p", "%%%0")
+	local key = if alias:match("^[%a_][%w_]*$") then `%f[%w]{escapedAlias}` else `%["{escapedAlias}"%]`
+	local updated, count = config:gsub(`({key}%s*=%s*")[^"]*(")`, `%1{storePath}%2`)
 	assert(count == 1, `Expected one "{alias}" alias in {CONFIG_PATH}, found {count}`)
 	config = updated
 end

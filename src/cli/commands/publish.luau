@@ -1,4 +1,4 @@
-local FlipbookBatteries = require("@flipbookBatteries")
+local FlipbookBatteries = require("@flipbook-batteries")
 local cli = require("@batteries/cli")
 local process = require("@std/process")
 
