@@ -2,7 +2,9 @@ name: Changewrite Publish Lock
 description: >-
   Locks or unlocks the publish PR through its `publish-lock` commit status.
   Locking fails the check so the PR cannot merge while a release run regenerates
-  it. Unlocking passes the check so it can merge again.
+  it. Unlocking passes the check so it can merge again. Unlocking by `sha`
+  skips the publish branch's own head, since a release run owns that commit's
+  status.
 author: flipbook-labs
 
 inputs:
@@ -26,7 +28,27 @@ inputs:
     required: false
     default: ""
   sha:
-    description: Exact commit the status is posted to. Takes precedence over `branch`.
+    description: >-
+      Exact commit the status is posted to. Takes precedence over `branch`.
+      When unlocking, a `sha` that is the publish branch's head posts nothing.
+    required: false
+    default: ""
+  base-sha:
+    description: >-
+      Base-branch commit the release run refreshed the publish PR from, as a
+      full sha (e.g. `git rev-parse HEAD` before the release step). Only used
+      when unlocking. If the base branch has moved past it, the publish PR is
+      locked instead, and the newer release run unlocks it. This only holds
+      when release runs are serialized: give the release job a `concurrency`
+      group with `cancel-in-progress: false`, so a newer run queues behind an
+      older one instead of refreshing alongside it.
+    required: false
+    default: ""
+  base:
+    description: >-
+      Base branch `base-sha` belongs to. Defaults to the pull request's base
+      branch, or the repository's default branch, as the release action does.
+      Set it to match the release action's `base` input when that is set.
     required: false
     default: ""
   repo:
@@ -56,16 +78,23 @@ runs:
         SHA: ${{ inputs.sha }}
         REPO: ${{ inputs.repo }}
         URL: ${{ inputs.url }}
+        BASE_SHA: ${{ inputs.base-sha }}
+        BASE_BRANCH: ${{ inputs.base }}
       run: |
         set -euo pipefail
 
-        if [[ "$LOCKED" == "true" ]]; then
-          command=lock
-        else
-          command=unlock
-        fi
-
         # The CLI treats empty flags as unset, so forward them all and let it
         # resolve precedence (--sha over --branch) and defaults.
-        "$CHANGEWRITE_BIN" "$command" \
-          --branch "$BRANCH" --sha "$SHA" --repo "$REPO" --url "$URL"
+        args=(--branch "$BRANCH" --sha "$SHA" --repo "$REPO" --url "$URL")
+        if [[ "$LOCKED" == "true" ]]; then
+          "$CHANGEWRITE_BIN" lock "${args[@]}"
+          exit 0
+        fi
+
+        # The installer falls back to the latest release when this version has
+        # none yet, and binaries older than --base-sha reject it even when
+        # empty, so forward it only when set.
+        if [[ -n "$BASE_SHA" ]]; then
+          args+=(--base-sha "$BASE_SHA" --base-branch "$BASE_BRANCH")
+        fi
+        "$CHANGEWRITE_BIN" unlock "${args[@]}"
