@@ -95,6 +95,14 @@ jobs:
           chmod +x "$RUNNER_TEMP/changewrite"
           echo "CHANGEWRITE_BIN=$RUNNER_TEMP/changewrite" >> "$GITHUB_ENV"
 
+      # The unlock below compares this against main to catch a push that landed
+      # after the refresh.
+      - name: Record the refreshed base commit
+        id: base
+        run: |
+          set -euo pipefail
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       - id: changewrite
         uses: ./
         with:
@@ -135,4 +143,5 @@ jobs:
         uses: ./publish-lock
         with:
           locked: false
+          base-sha: ${{ steps.base.outputs.sha }}
           url: ${{ env.RUN_URL }}
