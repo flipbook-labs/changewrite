@@ -15,9 +15,10 @@ local system = require("@lute/system")
 -- home folder doesn't compile at all.
 --
 -- So this compiles from a stage folder inside `build/`. It copies the sources
--- there, and copies each store folder that `pkg.lock.luau` records into
--- `store/` beside them, under the same name. In every copied `.config.luau` and
--- `.luaurc`, `~/.loom/store` becomes the relative path to that `store/` folder.
+-- there, and copies each package that `pkg.lock.luau` records into `store/`
+-- beside them, at the same path it has in the store. In every copied
+-- `.config.luau` and `.luaurc`, `~/.loom/store` becomes the relative path to
+-- that `store/` folder.
 -- That covers the root aliases and any package whose own aliases point at
 -- another package in the store, so every require resolves inside the stage.
 local STAGE_PATH = path.join(project.BUILD_PATH, "stage")
@@ -27,6 +28,8 @@ local SOURCES = { "cli.luau", "src", "libs" }
 local CONFIG_FILES = { [".config.luau"] = true, [".luaurc"] = true }
 
 type Lockfile = {
+	dependencies: { [string]: string },
+	devDependencies: { [string]: string }?,
 	packages: { [string]: { installPath: string } },
 }
 
@@ -75,17 +78,27 @@ end
 local config = fs.readFileToString(".config.luau"):gsub("~/%.loom/store", "./store")
 fs.writeStringToFile(path.join(STAGE_PATH, ".config.luau"), config)
 
--- A package installed with a `target` records a subfolder of its store folder,
--- and two packages can share one store folder, so this copies each store
--- folder once and whole.
+-- Each package's store path comes from its `installPath`. A package installed
+-- with a `target` records only that subfolder of its store folder, like Lute's
+-- `batteries`, so only that part is copied. Copying all of Lute would also
+-- push some paths past Windows' 260-character limit. Dev dependencies aren't
+-- bundled, so they're skipped.
 local lockfile: Lockfile = luau.loadModule("pkg.lock.luau")
-local storeFolders: { [string]: true } = {}
-for _, package in lockfile.packages do
-	local folder = package.installPath:match("^@pkg/([^/]+)")
-	storeFolders[assert(folder, `unexpected installPath {package.installPath}`)] = true
+local devOnly: { [string]: boolean } = {}
+for _, key in lockfile.devDependencies or {} do
+	devOnly[key] = true
 end
-for folder in storeFolders do
-	copyDirectory(path.join(STORE_PATH, folder), path.join(STAGED_STORE_PATH, folder), "..")
+for _, key in lockfile.dependencies do
+	devOnly[key] = nil
+end
+
+for key, package in lockfile.packages do
+	if not devOnly[key] then
+		local relative = package.installPath:gsub("^@pkg/", ""):gsub("/%.$", "")
+		local _, depth = relative:gsub("/", "")
+		local storeFromHere = string.rep("../", depth) .. ".."
+		copyDirectory(path.join(STORE_PATH, relative), path.join(STAGED_STORE_PATH, relative), storeFromHere)
+	end
 end
 
 local result = process.run({
