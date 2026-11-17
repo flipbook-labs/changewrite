@@ -14,7 +14,7 @@ lute run build     # compile the changewrite binary into build/
 lute test          # run the *.spec.luau test suite
 ```
 
-`lute run install` fetches the dependencies into the Loom store, `~/.loom/store`, and writes their paths into the aliases in `.config.luau`, which `lute compile` follows to bundle them into the binary. It also fetches the shared [agent-skills](https://github.com/flipbook-labs/agent-skills) library that [`AGENTS.md`](AGENTS.md) routes agents to. That library is a dev dependency, so it lands in the store but is not bundled into the binary.
+`lute run install` fetches the dependencies into the Loom store, `~/.loom/store`, and writes their paths into the aliases in `.config.luau`. `lute run build` copies them into `build/` and bundles them into the binary from there. It also fetches the shared [agent-skills](https://github.com/flipbook-labs/agent-skills) library that [`AGENTS.md`](AGENTS.md) routes agents to. That library is a dev dependency, so it lands in the store but is not bundled into the binary.
 
 ## License
 
