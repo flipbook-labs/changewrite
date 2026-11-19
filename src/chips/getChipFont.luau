@@ -1,4 +1,4 @@
-local base64 = require("@batteries/base64")
+local base64 = require("@lpm/batteries@v1.0.1-nightly.20261115/base64")
 local truetype = require("@libs/truetype")
 
 local fontData = require("@root/chips/fontData")

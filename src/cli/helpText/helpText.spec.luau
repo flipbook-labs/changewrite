@@ -1,6 +1,6 @@
 local test = require("@std/test")
 
-local cli = require("@batteries/cli")
+local cli = require("@lpm/batteries@v1.0.1-nightly.20261115/cli")
 local helpText = require("@root/cli/helpText")
 
 local function makeParser()

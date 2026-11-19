@@ -1,4 +1,4 @@
-local toml = require("@batteries/toml")
+local toml = require("@lpm/batteries@v1.0.1-nightly.20261115/toml")
 
 local assertKnownFields = require("@root/release/assertKnownFields")
 local validateVersionTargetFields = require("@root/release/validateVersionTargetFields")

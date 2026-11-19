@@ -3,7 +3,7 @@
 -- file; a spec fails while the two differ.
 local fs = require("@std/fs")
 
-local base64 = require("@batteries/base64")
+local base64 = require("@lpm/batteries@v1.0.1-nightly.20261115/base64")
 
 local FONT_PATH = "assets/chips/font/SchibstedGrotesk-Bold.ttf"
 local OUTPUT_PATH = "src/chips/fontData.luau"
