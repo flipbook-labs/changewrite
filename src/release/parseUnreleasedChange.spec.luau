@@ -21,7 +21,7 @@ return {
 
 		assert.eq(change.bump, "minor")
 		assert.eq(change.category, "Features")
-		assert.eq(change.body, "Add support for unreleased changes.")
+		assert.eq(change.summary, "Add support for unreleased changes.")
 	end)
 
 	suite:case("reads a table returned through an annotated local", function(assert)
@@ -38,16 +38,16 @@ return entry
 		local change = parseUnreleasedChange(source)
 
 		assert.eq(change.bump, "patch")
-		assert.eq(change.body, "Fix a thing.")
+		assert.eq(change.summary, "Fix a thing.")
 	end)
 
 	suite:case("decodes escapes in quoted strings", function(assert)
 		local change = parseUnreleasedChange('return {\n\tbump = "patch",\n\tsummary = "Quote \\"this\\".",\n}\n')
 
-		assert.eq(change.body, 'Quote "this".')
+		assert.eq(change.summary, 'Quote "this".')
 	end)
 
-	suite:case("joins the summary and description with a blank line", function(assert)
+	suite:case("reads the description without the block string's surrounding newlines", function(assert)
 		local source = [==[
 return {
 	bump = "patch",
@@ -61,7 +61,8 @@ See the README.
 ]==]
 		local change = parseUnreleasedChange(source)
 
-		assert.eq(change.body, "Fix a thing.\n\nIt needs a newer Lute.\n\nSee the README.")
+		assert.eq(change.summary, "Fix a thing.")
+		assert.eq(change.description, "It needs a newer Lute.\n\nSee the README.")
 	end)
 
 	suite:case("defaults the category to Changes when no categories are configured", function(assert)
@@ -125,6 +126,7 @@ See the README.
 	suite:case("leaves the release-notes fields empty when they are not set", function(assert)
 		local change = parseUnreleasedChange('return {\n\tbump = "patch",\n\tsummary = "Fix a thing.",\n}\n')
 
+		assert.eq(change.description, nil)
 		assert.eq(change.kind, nil)
 		assert.eq(#change.flags, 0)
 		assert.eq(change.highlight, nil)

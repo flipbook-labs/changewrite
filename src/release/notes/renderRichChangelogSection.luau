@@ -33,7 +33,8 @@ local function renderRichChangelogSection(
 	local demotedEntries: { UnreleasedChange } = {}
 	for _, entry in entries do
 		local copy = table.clone(entry)
-		copy.body = demoteHeadings(entry.body)
+		copy.summary = demoteHeadings(entry.summary)
+		copy.description = if entry.description then demoteHeadings(entry.description) else nil
 		table.insert(demotedEntries, copy)
 	end
 	entries = demotedEntries

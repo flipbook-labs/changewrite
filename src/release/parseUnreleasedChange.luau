@@ -144,12 +144,12 @@ local function parseUnreleasedChange(
 	end
 
 	local description = chomp(strings.description or "")
-	local body = if description == "" then summary else `{summary}\n\n{description}`
 
 	return {
 		bump = bump,
 		category = category or DEFAULT_CATEGORY,
-		body = body,
+		summary = summary,
+		description = if description == "" then nil else description,
 		kind = kind,
 		flags = flags,
 		highlight = highlight,

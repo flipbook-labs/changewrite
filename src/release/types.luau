@@ -9,7 +9,8 @@ export type ChangeFlag = "breaking" | "deprecated" | "security"
 export type ParsedUnreleasedChange = {
 	bump: VersionComponent,
 	category: string,
-	body: string,
+	summary: string,
+	description: string?,
 	kind: string?,
 	flags: { ChangeFlag },
 	highlight: string?,

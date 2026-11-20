@@ -6,20 +6,20 @@ local types = require("@root/release/types")
 
 type UnreleasedChange = types.UnreleasedChange
 
-local function entry(body: string): UnreleasedChange
+local function entry(summary: string): UnreleasedChange
 	return {
 		bump = "patch",
 		category = "Changes",
-		body = body,
+		summary = summary,
 		flags = {},
-		file = path.parse(`{body}.md`),
+		file = path.parse(`{summary}.luau`),
 	}
 end
 
 local function bodies(entries: { UnreleasedChange }): string
 	local names: { string } = {}
 	for _, change in entries do
-		table.insert(names, change.body)
+		table.insert(names, change.summary)
 	end
 	return table.concat(names, ",")
 end

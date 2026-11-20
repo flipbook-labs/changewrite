@@ -1,6 +1,5 @@
 local notesTypes = require("@root/release/notes/types")
 local renderEntryText = require("@root/release/notes/renderEntryText")
-local renderNumberedList = require("@root/release/notes/renderNumberedList")
 local types = require("@root/release/types")
 
 type UnreleasedChange = types.UnreleasedChange
@@ -13,11 +12,11 @@ local function renderCategory(
 ): string
 	local items: { string } = {}
 	for _, entry in entries do
-		-- A highlighted entry's full body is under Highlights, so here it is
-		-- listed by title to keep the category scannable.
+		-- A highlighted entry's summary and description are under Highlights, so
+		-- here it is listed by title to keep the category scannable.
 		table.insert(items, renderEntryText(entry, context, true))
 	end
-	local list = renderNumberedList(items)
+	local list = table.concat(items, "\n\n")
 
 	if isCollapsed then
 		return table.concat({

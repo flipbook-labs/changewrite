@@ -10,7 +10,7 @@ local function plainEntry(): UnreleasedChange
 	return {
 		bump = "patch",
 		category = "Changes",
-		body = "Fix a thing.",
+		summary = "Fix a thing.",
 		flags = {},
 		file = path.parse("fix.md"),
 	}

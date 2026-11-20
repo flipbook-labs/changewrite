@@ -41,8 +41,8 @@ end
 
 -- Converts a Markdown entry to the Luau format. The first paragraph of the
 -- body becomes the summary, joined onto one line, and the rest becomes the
--- description. Markdown renders both the same way, so the entry's text in the
--- changelog doesn't change.
+-- description. A wrapped paragraph renders as one line in Markdown, so joining
+-- it doesn't change the summary's text.
 local function convertMarkdownEntry(text: string): string
 	local frontmatter = parseFrontmatter(text, "Markdown entry")
 	local fields = frontmatter.fields
