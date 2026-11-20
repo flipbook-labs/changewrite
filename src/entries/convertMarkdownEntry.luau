@@ -62,9 +62,7 @@ local function convertMarkdownEntry(text: string): string
 	local summary = chomp((summaryLines :: string):gsub("%s*\n%s*", " "))
 
 	local lines = {
-		'local types = require("./types")',
-		"",
-		"local entry: types.Entry = {",
+		"return {",
 	}
 	for _, name in STRING_FIELDS do
 		local value = fields[name]
@@ -90,8 +88,6 @@ local function convertMarkdownEntry(text: string): string
 		table.insert(lines, `\tdescription = {renderBlockString(chomp(description))},`)
 	end
 	table.insert(lines, "}")
-	table.insert(lines, "")
-	table.insert(lines, "return entry")
 	table.insert(lines, "")
 	return table.concat(lines, "\n")
 end

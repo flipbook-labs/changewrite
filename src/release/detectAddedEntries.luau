@@ -4,8 +4,7 @@
 	entries under `dir`.
 
 	What counts as an entry matches what `readUnreleasedChanges` consumes at
-	release time: a Luau file directly inside the unreleased-changes directory,
-	other than the generated entry types.
+	release time: a Luau file directly inside the unreleased-changes directory.
 ]]
 
 local path = require("@std/path")

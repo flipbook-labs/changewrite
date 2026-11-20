@@ -49,12 +49,6 @@ test.suite("detectAddedEntries", function(suite)
 		assert.eq(#entries, 0)
 	end)
 
-	suite:case("ignores the generated entry types in any letter case", function(assert)
-		local entries = detectAddedEntries({ ".changes/types.luau", ".changes/Types.luau" }, DIR)
-
-		assert.eq(#entries, 0)
-	end)
-
 	suite:case("keeps only the entries added under the directory", function(assert)
 		local entries = detectAddedEntries({
 			"src/main.luau",

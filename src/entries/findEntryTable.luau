@@ -16,8 +16,8 @@ local function unwrapExpr(expr: syntax.CstExpr): syntax.CstExpr
 	end
 end
 
--- Finds the value a local was declared with, so an entry can annotate a local
--- with its type and return the local.
+-- Finds the value a local was declared with, so an entry can return a local,
+-- such as one annotated with a type, instead of the table itself.
 local function findLocalValue(block: syntax.CstStatBlock, target: syntax.CstLocal): syntax.CstExpr?
 	for _, statement in block.statements do
 		local declaration = utils.isStatLocal(statement)

@@ -24,11 +24,9 @@ return {
 		assert.eq(change.body, "Add support for unreleased changes.")
 	end)
 
-	suite:case("reads a table returned through an annotated local", function(assert)
+	suite:case("reads a table returned through a local", function(assert)
 		local source = [[
-local types = require("./types")
-
-local entry: types.Entry = {
+local entry = {
 	bump = "patch",
 	summary = "Fix a thing.",
 }
