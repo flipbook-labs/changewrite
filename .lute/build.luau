@@ -16,7 +16,7 @@ if not fs.exists(project.BUILD_PATH) then
 	fs.createDirectory(project.BUILD_PATH, { makeParents = true })
 end
 
-process.run({
+local result = process.run({
 	"lute",
 	"compile",
 	"cli.luau",
@@ -27,3 +27,9 @@ process.run({
 }, {
 	stdio = "inherit",
 })
+assert(result.ok, "lute compile failed")
+
+-- A binary missing a package still compiles but fails on its first require,
+-- so this runs it once to catch that.
+local smoke = process.run({ outputPath, "--help" })
+assert(smoke.ok, `{outputPath} failed to start: {smoke.stderr}`)

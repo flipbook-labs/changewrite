@@ -1,5 +1,5 @@
 local process = require("@std/process")
-local richterm = require("@batteries/richterm")
+local richterm = require("@lpm/batteries@v1.0.1-nightly.20261115/richterm")
 
 local helpText = require("@root/cli/helpText")
 local types = require("@root/cli/types")

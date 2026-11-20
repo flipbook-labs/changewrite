@@ -1,4 +1,4 @@
-local toml = require("@batteries/toml")
+local toml = require("@lpm/batteries@v1.0.1-nightly.20261115/toml")
 
 -- The names of the kinds changewrite.toml configures, which entries may use in
 -- their `kind` field. `parseChipStyles` validates each kind's fields.

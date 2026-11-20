@@ -1,8 +1,8 @@
-local cli = require("@batteries/cli")
+local cli = require("@lpm/batteries@v1.0.1-nightly.20261115/cli")
 local fs = require("@std/fs")
 local path = require("@std/path")
 local process = require("@std/process")
-local richterm = require("@batteries/richterm")
+local richterm = require("@lpm/batteries@v1.0.1-nightly.20261115/richterm")
 
 local chomp = require("@root/chomp")
 local config = require("@root/config")

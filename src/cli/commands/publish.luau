@@ -1,5 +1,5 @@
-local FlipbookBatteries = require("@pkg/flipbook-batteries@v0.12.0")
-local cli = require("@batteries/cli")
+local FlipbookBatteries = require("@lpm/flipbook-batteries@v0.13.1")
+local cli = require("@lpm/batteries@v1.0.1-nightly.20261115/cli")
 local process = require("@std/process")
 
 local chomp = require("@root/chomp")

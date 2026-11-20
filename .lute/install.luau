@@ -1,33 +1,11 @@
-local fs = require("@std/fs")
-local path = require("@std/path")
 local process = require("@std/process")
 
-local storeDir = path.join(process.homedir(), ".loom/store")
-local packagesDir = path.resolve("packages")
-
-if not fs.exists(packagesDir) then
-	fs.createDirectory(packagesDir)
-end
-
-process.run({
-	"lute",
-	"pkg",
-	"install",
-}, {
-	stdio = "inherit",
-})
-
-local lock = require("@repo/loom.lock")
-
-process.run({ "rm", "-rf", tostring(packagesDir) }, { stdio = "inherit" })
-fs.createDirectory(packagesDir)
-
--- Lute doesn't seem able to bundle `~/.loom/store` yet, so we need to copy the
--- packages into our project directory to allow them to be part of the bundle.
-for packageId in lock.packages do
-	local src = path.join(storeDir, packageId)
-	local dst = path.join(packagesDir, packageId)
-	if not fs.exists(dst) then
-		process.run({ "cp", "-r", tostring(src), tostring(dst) }, { stdio = "inherit" })
-	end
-end
+-- Installs the dependencies in `pkg.luau`. `--vendor` copies each one into a
+-- `.lpm/<key>@<rev>` folder, and the `lpm` alias in `.config.luau` points at
+-- `.lpm`. When a vendored package requires through `@lpm`, the require uses
+-- the `lpm` alias of whichever project vendored it. So any project that
+-- vendors such a package has to define the same alias.
+-- The following issue tracks removing that requirement:
+-- https://github.com/flipbook-labs/flipbook/issues/694
+local result = process.run({ "lute", "pkg", "install", "--vendor" }, { stdio = "inherit" })
+assert(result.ok, "lute pkg install failed")

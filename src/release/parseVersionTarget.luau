@@ -1,5 +1,5 @@
 local path = require("@std/path")
-local toml = require("@batteries/toml")
+local toml = require("@lpm/batteries@v1.0.1-nightly.20261115/toml")
 
 local readTomlString = require("@root/release/readTomlString")
 local types = require("@root/release/types")

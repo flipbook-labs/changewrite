@@ -1,5 +1,5 @@
 local path = require("@std/path")
-local toml = require("@batteries/toml")
+local toml = require("@lpm/batteries@v1.0.1-nightly.20261115/toml")
 
 local constants = require("@root/release/constants")
 local parseVersionTarget = require("@root/release/parseVersionTarget")

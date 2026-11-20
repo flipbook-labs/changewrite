@@ -1,4 +1,4 @@
-local toml = require("@batteries/toml")
+local toml = require("@lpm/batteries@v1.0.1-nightly.20261115/toml")
 
 local function parseCategories(text: string): { string }?
 	local value = toml.deserialize(text).categories

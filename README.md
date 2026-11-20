@@ -8,13 +8,13 @@ Changewrite uses [Rokit](https://github.com/rojo-rbx/rokit) for toolchain manage
 
 ```sh
 rokit install
-lute run install   # install Loom dependencies and vendor them into packages/
+lute run install   # vendor dependencies into .lpm/
 lute run analyze   # run the stylua and luau-lsp checks
 lute run build     # compile the changewrite binary into build/
 lute test          # run the *.spec.luau test suite
 ```
 
-`lute run install` fetches the Loom dependencies and vendors them into `packages/` so they can be bundled into the compiled binary. It also fetches the shared [agent-skills](https://github.com/flipbook-labs/agent-skills) library that [`AGENTS.md`](AGENTS.md) routes agents to. That library is a dev dependency, so it installs into `~/.loom/store` but is not bundled into the binary.
+`lute run install` copies the dependencies into `.lpm/<key>@<rev>` folders, and code requires them through the `lpm` alias in `.config.luau`, which `lute compile` bundles into the binary. It also fetches the shared [agent-skills](https://github.com/flipbook-labs/agent-skills) library that [`AGENTS.md`](AGENTS.md) routes agents to. That library is a dev dependency, so it lands in `.lpm/` but is not bundled into the binary.
 
 ## License
 
