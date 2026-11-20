@@ -4,22 +4,18 @@ local convertMarkdownEntry = require("@root/entries/convertMarkdownEntry")
 local parseUnreleasedChange = require("@root/release/parseUnreleasedChange")
 
 test.suite("convertMarkdownEntry", function(suite)
-	suite:case("writes an annotated entry with the frontmatter fields and summary", function(assert)
+	suite:case("writes an entry with the frontmatter fields and summary", function(assert)
 		local source = convertMarkdownEntry("---\nbump: patch\ncategory: Fixes\nkind: cli\n---\n\nFix a thing.\n")
 
 		assert.eq(
 			source,
 			table.concat({
-				'local types = require("./types")',
-				"",
-				"local entry: types.Entry = {",
+				"return {",
 				'\tbump = "patch",',
 				'\tcategory = "Fixes",',
 				'\tkind = "cli",',
 				'\tsummary = "Fix a thing.",',
 				"}",
-				"",
-				"return entry",
 				"",
 			}, "\n")
 		)

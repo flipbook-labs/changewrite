@@ -7,9 +7,7 @@ This folder holds the unreleased changes for the next release. Each file describ
 Create a Luau file in this folder that returns the entry's fields. The filename is up to you — it only exists to make entries easy to browse — so name it after the change, e.g. `fix-release-permissions.luau`:
 
 ```luau
-local types = require("./types")
-
-local entry: types.Entry = {
+return {
 	bump = "minor",
 	category = "Features",
 	summary = "Add support for Foo values so Bar can be Bazzed.",
@@ -17,8 +15,6 @@ local entry: types.Entry = {
 Foo values need Bar 2.0 or newer.
 ]],
 }
-
-return entry
 ```
 
 - **`bump`** (required) — how much to move the version: `"major"`, `"minor"`, or `"patch"`.
@@ -26,28 +22,20 @@ return entry
 - **`summary`** (required) — one short sentence for the changelog, at most 140 characters, written as a quoted string.
 - **`description`** — more detail for readers who want it, written as a block string. It renders in a collapsed `<details>` block under the summary, so the list stays scannable. Under Highlights and Breaking changes it renders open.
 
-Changewrite reads the table without running the file, so every value has to be a literal. `changewrite check` rejects a field it doesn't know.
-
-### The `Entry` type
-
-`types.luau` in this folder holds the `Entry` type, generated from `changewrite.toml` by `changewrite generate`. It lists the categories and kinds the repo allows, so luau-lsp flags a value outside them while the entry is open in an editor. Add this folder to the paths you run `luau-lsp analyze` on to check it in CI too. `changewrite check` fails while `types.luau` doesn't match `changewrite.toml`.
+Changewrite reads the table without running the file, so every value has to be a literal. `changewrite check` rejects a field it doesn't know, and a category, kind, or flag outside the lists it allows.
 
 ### Release-notes fields
 
 These are optional, except that `kind` is required once a repo configures kinds. A release whose entries use none of them, with no `release.md` and no `collapsed` setting, renders the same plain notes as before.
 
 ```luau
-local types = require("./types")
-
-local entry: types.Entry = {
+return {
 	bump = "minor",
 	category = "Features",
 	kind = "engine",
 	highlight = "Embedded runtime",
 	summary = "Add an embedded runtime so stories can be browsed inside a running experience.",
 }
-
-return entry
 ```
 
 - **`kind`** — what the change touches, such as `docs` or `engine`, from the kinds configured in `changewrite.toml` (see Kinds and chips). Once a repo configures any kinds, every entry needs one. It renders as a chip in front of the entry. The chips mark where each entry starts, so release notes list entries without numbers, and an entry without a chip gets a bullet. Entries are listed in the order they merged, so kinds mix within a category.
@@ -106,7 +94,7 @@ return {
 
 ### Converting Markdown entries
 
-Changewrite reads only Luau entries. `changewrite check --fix` converts each Markdown entry in this folder to Luau and writes `types.luau`. The first paragraph of a Markdown body becomes the summary and the rest becomes the description. A converted summary can still be too long, and `check` reports it.
+Changewrite reads only Luau entries. `changewrite check --fix` converts each Markdown entry in this folder to Luau. The first paragraph of a Markdown body becomes the summary and the rest becomes the description. A converted summary can still be too long, and `check` reports it.
 
 ### Release summary
 
@@ -133,7 +121,7 @@ The next version is the largest bump across all pending entries: a single `major
 
 ## Notes
 
-- `README.md` (this file), `types.luau`, and the `assets/` folder are ignored, so they're safe to keep here.
+- `README.md` (this file) and the `assets/` folder are ignored, so they're safe to keep here.
 - Entries are deleted once they're released; they live in this folder only while unreleased.
 - The folder location is configurable via `unreleased_changes` in `changewrite.toml` (it defaults to `./.changes/`).
 - Run `changewrite check` to validate every pending entry before enforcing that a pull request adds an entry.

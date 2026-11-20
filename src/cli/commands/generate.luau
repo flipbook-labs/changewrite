@@ -10,13 +10,11 @@ local generateChips = require("@root/chips/generateChips")
 local getAssetsDir = require("@root/chips/getAssetsDir")
 local getChipFont = require("@root/chips/getChipFont")
 local planChips = require("@root/chips/planChips")
-local planEntryTypes = require("@root/entries/planEntryTypes")
 local readChipStyles = require("@root/chips/readChipStyles")
 local types = require("@root/cli/types")
-local writeEntryTypes = require("@root/entries/writeEntryTypes")
 
 local title = "generate"
-local summary = "Write the entry types and draw the release-notes chips from changewrite.toml."
+local summary = "Draw the release-notes chips for the kinds and flags in changewrite.toml."
 
 local parser = cli.parser()
 parser:add("check", "flag", {
@@ -28,17 +26,11 @@ parser:add("help", "flag", {
 
 local function check()
 	local stale = findStaleChipAssets()
-	local entryTypes = planEntryTypes()
-	if not entryTypes.isCurrent then
-		table.insert(stale, `{entryTypes.file} is out of date`)
-	end
 	if #stale == 0 then
-		print("Entry types and chips match changewrite.toml.")
+		print("Chips match changewrite.toml.")
 		return
 	end
-	print(
-		richterm.red("Generated files don't match changewrite.toml. Run `changewrite generate` and commit the result:")
-	)
+	print(richterm.red("Chips don't match changewrite.toml. Run `changewrite generate` and commit the result:"))
 	for _, line in stale do
 		print(`  • {line}`)
 	end
@@ -51,11 +43,6 @@ local function generate()
 	if parser:has("check") then
 		check()
 		return
-	end
-
-	local writtenTypes = writeEntryTypes()
-	if writtenTypes then
-		print(`Wrote {writtenTypes}.`)
 	end
 
 	local planned = planChips(readChipStyles())

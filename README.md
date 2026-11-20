@@ -4,7 +4,7 @@ Changewrite is a CLI tool and GitHub Action for release automation: it creates r
 
 ## Changelog entries
 
-Each change is a Luau file in `.changes/` that returns its fields, and Changewrite assembles them into `CHANGELOG.md` and the release notes. [`.changes/README.md`](.changes/README.md) describes the format, the generated `Entry` type, and the lint rules that `changewrite check` and `lute lint` run over every entry.
+Each change is a Luau file in `.changes/` that returns its fields, and Changewrite assembles them into `CHANGELOG.md` and the release notes. [`.changes/README.md`](.changes/README.md) describes the format and the lint rules that `changewrite check` and `lute lint` run over every entry.
 
 ## Development
 

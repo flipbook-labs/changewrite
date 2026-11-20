@@ -15,7 +15,6 @@ local getCurrentBranch = require("@root/release/getCurrentBranch")
 local getUnreleasedChangesDir = require("@root/release/getUnreleasedChangesDir")
 local isPublishBranch = require("@root/release/isPublishBranch")
 local isSameRepositoryPullRequest = require("@root/release/isSameRepositoryPullRequest")
-local planEntryTypes = require("@root/entries/planEntryTypes")
 local readCategories = require("@root/release/readCategories")
 local readChipStyles = require("@root/chips/readChipStyles")
 local readCollapsedCategories = require("@root/release/readCollapsedCategories")
@@ -30,7 +29,6 @@ local resolveBaseBranch = require("@root/release/resolveBaseBranch")
 local runEntryRules = require("@root/entries/runEntryRules")
 local splitLines = require("@root/release/splitLines")
 local types = require("@root/cli/types")
-local writeEntryTypes = require("@root/entries/writeEntryTypes")
 
 local title = "check"
 local summary = "Validate the unreleased changelog entries for the current branch."
@@ -43,7 +41,7 @@ parser:add("publish-branch", "option", {
 	help = "Pass on this publish branch instead of `release.branch` from changewrite.toml.",
 })
 parser:add("fix", "flag", {
-	help = "Convert Markdown entries to Luau and write the entry types before checking.",
+	help = "Convert Markdown entries to Luau before checking.",
 })
 parser:add("help", "flag", {
 	help = "Show this help message",
@@ -52,9 +50,7 @@ parser:add("help", "flag", {
 local function formatChangelogTemplate(categories: { string }?, kinds: { string }): string
 	local category = if categories == nil or table.find(categories, "Fixes") then "Fixes" else categories[1]
 	local lines = {
-		'local types = require("./types")',
-		"",
-		"local entry: types.Entry = {",
+		"return {",
 		'\tbump = "patch",',
 		`\tcategory = "{category}",`,
 	}
@@ -63,8 +59,6 @@ local function formatChangelogTemplate(categories: { string }?, kinds: { string 
 	end
 	table.insert(lines, '\tsummary = "One short sentence describing the change, written for the changelog.",')
 	table.insert(lines, "}")
-	table.insert(lines, "")
-	table.insert(lines, "return entry")
 	return table.concat(lines, "\n")
 end
 
@@ -216,11 +210,6 @@ local function fixEntries()
 		fs.remove(file)
 		print(`Converted {file} to {target}.`)
 	end
-
-	local written = writeEntryTypes()
-	if written then
-		print(`Wrote {written}.`)
-	end
 end
 
 local function checkMarkdownEntries()
@@ -233,21 +222,6 @@ local function checkMarkdownEntries()
 		print(`  • {file}`)
 	end
 	process.exit(1)
-end
-
-local function checkEntryTypes()
-	if not fs.exists(getUnreleasedChangesDir()) then
-		return
-	end
-	local plan = planEntryTypes()
-	if not plan.isCurrent then
-		print(
-			richterm.red(
-				`{plan.file} doesn't match changewrite.toml. Run \`changewrite generate\` and commit the result.`
-			)
-		)
-		process.exit(1)
-	end
 end
 
 local function checkEntryRules(entries: { releaseTypes.UnreleasedChange })
@@ -276,7 +250,6 @@ local function run()
 	local entries = readUnreleasedChanges()
 	readReleaseSummary()
 	readCollapsedCategories()
-	checkEntryTypes()
 	checkEntryRules(entries)
 	checkChips(entries)
 
