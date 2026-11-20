@@ -31,6 +31,10 @@ return {
 		"Dependencies",
 	},
 	DEFAULT_PATTERNS = DEFAULT_PATTERNS,
+	-- The file in the unreleased-changes directory that `changewrite generate`
+	-- writes the `Entry` type to. Entries require it for the type, but it isn't
+	-- an entry itself.
+	ENTRY_TYPES_FILE = "types.luau",
 	DEFAULT_UNRELEASED_CHANGES_DIR = "./.changes/",
 	MIRROR_MANIFESTS = MIRROR_MANIFESTS,
 	-- Maps a manifest to the newer manifest that replaces it. Lute reads

@@ -6,13 +6,16 @@ local richterm = require("@lpm/batteries@v1.0.1-nightly.20261115/richterm")
 
 local chomp = require("@root/chomp")
 local config = require("@root/config")
+local convertMarkdownEntry = require("@root/entries/convertMarkdownEntry")
 local detectAddedEntries = require("@root/release/detectAddedEntries")
+local findMarkdownEntries = require("@root/release/findMarkdownEntries")
 local findStaleChipAssets = require("@root/chips/findStaleChipAssets")
 local getAssetsDir = require("@root/chips/getAssetsDir")
 local getCurrentBranch = require("@root/release/getCurrentBranch")
 local getUnreleasedChangesDir = require("@root/release/getUnreleasedChangesDir")
 local isPublishBranch = require("@root/release/isPublishBranch")
 local isSameRepositoryPullRequest = require("@root/release/isSameRepositoryPullRequest")
+local planEntryTypes = require("@root/entries/planEntryTypes")
 local readCategories = require("@root/release/readCategories")
 local readChipStyles = require("@root/chips/readChipStyles")
 local readCollapsedCategories = require("@root/release/readCollapsedCategories")
@@ -20,11 +23,14 @@ local readGithubEvent = require("@root/release/readGithubEvent")
 local readKindNames = require("@root/release/readKindNames")
 local readPublishBranch = require("@root/release/readPublishBranch")
 local readReleaseSummary = require("@root/release/readReleaseSummary")
+local readRuleConfigs = require("@root/entries/readRuleConfigs")
 local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local releaseTypes = require("@root/release/types")
 local resolveBaseBranch = require("@root/release/resolveBaseBranch")
+local runEntryRules = require("@root/entries/runEntryRules")
 local splitLines = require("@root/release/splitLines")
 local types = require("@root/cli/types")
+local writeEntryTypes = require("@root/entries/writeEntryTypes")
 
 local title = "check"
 local summary = "Validate the unreleased changelog entries for the current branch."
@@ -36,19 +42,29 @@ parser:add("base", "option", {
 parser:add("publish-branch", "option", {
 	help = "Pass on this publish branch instead of `release.branch` from changewrite.toml.",
 })
+parser:add("fix", "flag", {
+	help = "Convert Markdown entries to Luau and write the entry types before checking.",
+})
 parser:add("help", "flag", {
 	help = "Show this help message",
 })
 
 local function formatChangelogTemplate(categories: { string }?, kinds: { string }): string
 	local category = if categories == nil or table.find(categories, "Fixes") then "Fixes" else categories[1]
-	local lines = { "---", "bump: patch", `category: {category}` }
+	local lines = {
+		'local types = require("./types")',
+		"",
+		"local entry: types.Entry = {",
+		'\tbump = "patch",',
+		`\tcategory = "{category}",`,
+	}
 	if #kinds > 0 then
-		table.insert(lines, `kind: {kinds[1]}`)
+		table.insert(lines, `\tkind = "{kinds[1]}",`)
 	end
-	table.insert(lines, "---")
+	table.insert(lines, '\tsummary = "One short sentence describing the change, written for the changelog.",')
+	table.insert(lines, "}")
 	table.insert(lines, "")
-	table.insert(lines, "One or two sentences describing the change, written for the changelog.")
+	table.insert(lines, "return entry")
 	return table.concat(lines, "\n")
 end
 
@@ -59,7 +75,7 @@ local function printNoChangesError()
 
 	print(richterm.red("A changelog entry is required."))
 	print("")
-	print(`Add a markdown entry under {richterm.bold(tostring(dir))} describing this change:`)
+	print(`Add a Luau entry under {richterm.bold(tostring(dir))} describing this change:`)
 	print("")
 	print(richterm.bold("Template:"))
 	print(formatChangelogTemplate(categories, kinds))
@@ -74,10 +90,11 @@ local function printNoChangesError()
 	if #kinds > 0 then
 		print(`  • kind (required): one of {table.concat(kinds, ", ")}`)
 	end
-	print("  • flags (optional): any of breaking, deprecated, security")
+	print("  • flags (optional): a list of any of breaking, deprecated, security")
 	print("  • highlight (optional): a short title for a headline change")
-	print("  • filename: name after the change (e.g., fix-release-permissions.md)")
-	print("  • body: changelog text, one or two sentences")
+	print("  • summary (required): one short sentence, at most 140 characters")
+	print("  • description (optional): more detail, as a block string")
+	print("  • filename: name after the change (e.g., fix-release-permissions.luau)")
 	print("")
 	print(`See {path.join(dir, "README.md")} for details.`)
 end
@@ -189,10 +206,78 @@ local function checkChips(entries: { releaseTypes.UnreleasedChange })
 	end
 end
 
+local function fixEntries()
+	for _, file in findMarkdownEntries() do
+		local target = path.parse(path.format(file):gsub("%.[mM][dD]$", ".luau"))
+		assert(not fs.exists(target), `Can't convert {file}: {target} already exists`)
+		local success, converted = pcall(convertMarkdownEntry, fs.readFileToString(file))
+		assert(success, `{file}: {converted}`)
+		fs.writeStringToFile(target, converted)
+		fs.remove(file)
+		print(`Converted {file} to {target}.`)
+	end
+
+	local written = writeEntryTypes()
+	if written then
+		print(`Wrote {written}.`)
+	end
+end
+
+local function checkMarkdownEntries()
+	local files = findMarkdownEntries()
+	if #files == 0 then
+		return
+	end
+	print(richterm.red("Changelog entries are written in Luau. Run `changewrite check --fix` to convert these:"))
+	for _, file in files do
+		print(`  • {file}`)
+	end
+	process.exit(1)
+end
+
+local function checkEntryTypes()
+	if not fs.exists(getUnreleasedChangesDir()) then
+		return
+	end
+	local plan = planEntryTypes()
+	if not plan.isCurrent then
+		print(
+			richterm.red(
+				`{plan.file} doesn't match changewrite.toml. Run \`changewrite generate\` and commit the result.`
+			)
+		)
+		process.exit(1)
+	end
+end
+
+local function checkEntryRules(entries: { releaseTypes.UnreleasedChange })
+	local ruleConfigs = readRuleConfigs()
+	local count = 0
+	for _, entry in entries do
+		for _, violation in runEntryRules(fs.readFileToString(entry.file), entry.file, ruleConfigs) do
+			local location = violation.location
+			print(
+				`{entry.file}:{location.beginLine}:{location.beginColumn}: {violation.message} ({violation.lintname})`
+			)
+			count += 1
+		end
+	end
+	if count > 0 then
+		print(richterm.red(`Found {count} problem{if count == 1 then "" else "s"} in changelog entries.`))
+		process.exit(1)
+	end
+end
+
 local function run()
+	if parser:has("fix") then
+		fixEntries()
+	end
+	checkMarkdownEntries()
 	local entries = readUnreleasedChanges()
 	readReleaseSummary()
 	readCollapsedCategories()
+	checkEntryTypes()
+	checkEntryRules(entries)
 	checkChips(entries)
 
 	local currentBranch = getCurrentBranch()

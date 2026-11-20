@@ -6,10 +6,10 @@ local DIR = "./.changes/"
 
 test.suite("detectAddedEntries", function(suite)
 	suite:case("finds a new entry added on the branch", function(assert)
-		local entries = detectAddedEntries({ ".changes/fix-thing.md" }, DIR)
+		local entries = detectAddedEntries({ ".changes/fix-thing.luau" }, DIR)
 
 		assert.eq(#entries, 1)
-		assert.eq(entries[1], ".changes/fix-thing.md")
+		assert.eq(entries[1], ".changes/fix-thing.luau")
 	end)
 
 	suite:case("returns nothing when no files were added", function(assert)
@@ -19,10 +19,10 @@ test.suite("detectAddedEntries", function(suite)
 	end)
 
 	suite:case("ignores empty paths from a trailing newline in the diff", function(assert)
-		local entries = detectAddedEntries({ ".changes/fix-thing.md", "" }, DIR)
+		local entries = detectAddedEntries({ ".changes/fix-thing.luau", "" }, DIR)
 
 		assert.eq(#entries, 1)
-		assert.eq(entries[1], ".changes/fix-thing.md")
+		assert.eq(entries[1], ".changes/fix-thing.luau")
 	end)
 
 	suite:case("ignores changes that were not added under the directory", function(assert)
@@ -43,8 +43,14 @@ test.suite("detectAddedEntries", function(suite)
 		assert.eq(#entries, 0)
 	end)
 
-	suite:case("ignores non-markdown files inside the directory", function(assert)
-		local entries = detectAddedEntries({ ".changes/notes.txt", ".changes/.gitkeep" }, DIR)
+	suite:case("ignores files inside the directory that aren't Luau entries", function(assert)
+		local entries = detectAddedEntries({ ".changes/notes.txt", ".changes/.gitkeep", ".changes/fix-thing.md" }, DIR)
+
+		assert.eq(#entries, 0)
+	end)
+
+	suite:case("ignores the generated entry types in any letter case", function(assert)
+		local entries = detectAddedEntries({ ".changes/types.luau", ".changes/Types.luau" }, DIR)
 
 		assert.eq(#entries, 0)
 	end)
@@ -53,47 +59,47 @@ test.suite("detectAddedEntries", function(suite)
 		local entries = detectAddedEntries({
 			"src/main.luau",
 			".changes/README.md",
-			".changes/add-feature.md",
-			".changes/fix-bug.md",
+			".changes/add-feature.luau",
+			".changes/fix-bug.luau",
 		}, DIR)
 
 		assert.eq(#entries, 2)
-		assert.eq(entries[1], ".changes/add-feature.md")
-		assert.eq(entries[2], ".changes/fix-bug.md")
+		assert.eq(entries[1], ".changes/add-feature.luau")
+		assert.eq(entries[2], ".changes/fix-bug.luau")
 	end)
 
 	suite:case("drops duplicate paths from unioned git listings", function(assert)
 		local entries = detectAddedEntries({
-			".changes/add-feature.md",
-			".changes/add-feature.md",
+			".changes/add-feature.luau",
+			".changes/add-feature.luau",
 		}, DIR)
 
 		assert.eq(#entries, 1)
-		assert.eq(entries[1], ".changes/add-feature.md")
+		assert.eq(entries[1], ".changes/add-feature.luau")
 	end)
 
 	suite:case("ignores entries nested below the directory's top level", function(assert)
 		-- `readUnreleasedChanges` lists the directory non-recursively, so a nested
 		-- entry would pass `check` but be dropped at release time.
-		local entries = detectAddedEntries({ ".changes/subdir/fix.md" }, DIR)
+		local entries = detectAddedEntries({ ".changes/subdir/fix.luau" }, DIR)
 
 		assert.eq(#entries, 0)
 	end)
 
 	suite:case("normalizes ./ prefixes on both the file and the directory", function(assert)
-		local entries = detectAddedEntries({ "./.changes/fix-thing.md" }, "./.changes/")
+		local entries = detectAddedEntries({ "./.changes/fix-thing.luau" }, "./.changes/")
 
 		assert.eq(#entries, 1)
-		assert.eq(entries[1], "./.changes/fix-thing.md")
+		assert.eq(entries[1], "./.changes/fix-thing.luau")
 	end)
 
 	suite:case("honors a custom unreleased-changes directory", function(assert)
 		local entries = detectAddedEntries({
-			".changes/ignored.md",
-			"changelog.d/counts.md",
+			".changes/ignored.luau",
+			"changelog.d/counts.luau",
 		}, "changelog.d/")
 
 		assert.eq(#entries, 1)
-		assert.eq(entries[1], "changelog.d/counts.md")
+		assert.eq(entries[1], "changelog.d/counts.luau")
 	end)
 end)
