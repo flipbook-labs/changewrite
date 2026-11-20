@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.13.0
+
+Features 1 · Changes 1
+
+### Features
+
+1. <picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-publishing-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-publishing-light.svg"><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-publishing-light.png" alt="Publishing" height="18" align="texttop"></picture> `publish-lock` no longer unlocks the publish branch's head by `sha`, and its new `base-sha` input locks instead when the base branch moved since the refresh. ([#91](https://github.com/flipbook-labs/changewrite/pull/91))
+
+### Changes
+
+1. <picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-tooling-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-tooling-light.svg"><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-tooling-light.png" alt="Tooling" height="18" align="texttop"></picture> Build Changewrite from a `pkg.luau` manifest on Lute 1.0.1-nightly.20261117, with dependencies vendored into `.lpm/` and required through one `@lpm` alias. ([#93](https://github.com/flipbook-labs/changewrite/pull/93))
+
+
 ## v0.12.0
 
 Features 1 · Changes 1

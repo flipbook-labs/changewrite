@@ -1,7 +1,7 @@
 return {
 	package = {
 		name = "changewrite",
-		version = "0.12.0",
+		version = "0.13.0",
 		dependencies = {
 			["flipbook-batteries"] = {
 				rev = "v0.13.1",
