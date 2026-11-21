@@ -1,10 +1,10 @@
 local png = require("@png")
 local truetype = require("@truetype")
 
-local buildChipLayers = require("./buildChipLayers")
-local rasterizeChip = require("./rasterizeChip")
-local renderChipSvg = require("./renderChipSvg")
-local types = require("./types")
+local buildChipLayers = require("@root/chips/buildChipLayers")
+local rasterizeChip = require("@root/chips/rasterizeChip")
+local renderChipSvg = require("@root/chips/renderChipSvg")
+local types = require("@root/chips/types")
 
 type ChipMetrics = types.ChipMetrics
 type ChipSpec = types.ChipSpec

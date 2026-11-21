@@ -1,11 +1,9 @@
-local chips = require("@chips")
 local test = require("@std/test")
 
+local planChips = require("@root/chips/planChips")
 local renderChip = require("@root/release/notes/renderChip")
 
-local planChips = chips.planChips
-
-local function chip(text: string): chips.PlannedChip
+local function chip(text: string): planChips.PlannedChip
 	return planChips({
 		{
 			group = "kind",

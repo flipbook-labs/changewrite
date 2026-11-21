@@ -2,7 +2,6 @@ return {
   version = 5,
   dependencies = {
     changewrite = "changewrite",
-    chips = "chips",
     png = "png",
     semver = "semver",
     truetype = "truetype",
@@ -36,20 +35,9 @@ return {
       sourceKind = "path",
       dependencies = {
         batteries = "batteries@v1.0.1-nightly.20261115",
-        chips = "chips",
         ["flipbook-batteries"] = "flipbook-batteries@v0.13.1",
-        semver = "semver",
-      },
-      devDependencies = {},
-    },
-    chips = {
-      installPath = "workspace/chips",
-      name = "chips",
-      source = "workspace/chips",
-      sourceKind = "path",
-      dependencies = {
-        batteries = "batteries@v1.0.1-nightly.20261115",
         png = "png",
+        semver = "semver",
         truetype = "truetype",
         vector = "vector",
       },

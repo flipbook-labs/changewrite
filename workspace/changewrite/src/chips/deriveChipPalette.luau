@@ -1,4 +1,4 @@
-local types = require("./types")
+local types = require("@root/chips/types")
 
 type ChipPalette = types.ChipPalette
 type ColorModeName = types.ColorModeName

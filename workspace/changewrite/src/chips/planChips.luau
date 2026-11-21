@@ -1,5 +1,5 @@
-local deriveChipPalette = require("./deriveChipPalette")
-local types = require("./types")
+local deriveChipPalette = require("@root/chips/deriveChipPalette")
+local types = require("@root/chips/types")
 
 type ChipSpec = types.ChipSpec
 type ChipStyle = types.ChipStyle
@@ -11,7 +11,7 @@ export type ChipFiles = {
 }
 
 export type PlannedChip = {
-	-- `<group>/<name>`, which identifies the chip.
+	-- `kind/<name>` or `flag/<name>`, the key release notes look a chip up by.
 	key: string,
 	text: string,
 	files: ChipFiles,
@@ -19,9 +19,9 @@ export type PlannedChip = {
 }
 
 -- Works out each chip's light and dark colors and its filenames, without
--- drawing it. A chip's filenames come from its group and name alone, so
--- restyling it rewrites the same files, and anything that links to them shows
--- the new look.
+-- drawing it. A chip's filenames come from its group (`kind` or `flag`) and
+-- name alone, so restyling it rewrites the same files and every release that
+-- links to them shows the new look.
 local function planChips(styles: { ChipStyle }): { PlannedChip }
 	local planned: { PlannedChip } = {}
 	for _, style in styles do

@@ -1,7 +1,7 @@
 local test = require("@std/test")
 
-local renderChipSvg = require("./renderChipSvg")
-local types = require("./types")
+local renderChipSvg = require("@root/chips/renderChipSvg")
+local types = require("@root/chips/types")
 
 type ChipPalette = types.ChipPalette
 

@@ -1,7 +1,7 @@
 local test = require("@std/test")
 
-local planChips = require("./planChips")
-local types = require("./types")
+local planChips = require("@root/chips/planChips")
+local types = require("@root/chips/types")
 
 type ChipStyle = types.ChipStyle
 

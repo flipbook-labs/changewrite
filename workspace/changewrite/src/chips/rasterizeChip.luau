@@ -1,7 +1,7 @@
 local png = require("@png")
 local vector = require("@vector")
 
-local types = require("./types")
+local types = require("@root/chips/types")
 
 type ChipLayers = types.ChipLayers
 type ChipPalette = types.ChipPalette

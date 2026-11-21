@@ -1,6 +1,6 @@
 local test = require("@std/test")
 
-local deriveDarkColor = require("./deriveDarkColor")
+local deriveDarkColor = require("@root/chips/deriveDarkColor")
 
 test.suite("deriveDarkColor", function(suite)
 	suite:case("keeps the hue and chroma and raises the lightness", function(assert)

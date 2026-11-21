@@ -14,7 +14,6 @@ return {
 	package = {
 		dependencies = {
 			changewrite = member("changewrite"),
-			chips = member("chips"),
 			png = member("png"),
 			semver = member("semver"),
 			truetype = member("truetype"),

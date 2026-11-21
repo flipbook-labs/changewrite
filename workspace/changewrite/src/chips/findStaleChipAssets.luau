@@ -1,15 +1,13 @@
-local chips = require("@chips")
 local fs = require("@std/fs")
 local path = require("@std/path")
 
+local chipDrawing = require("@root/chips/chipDrawing")
 local findStaleChips = require("@root/chips/findStaleChips")
+local generateChips = require("@root/chips/generateChips")
 local getAssetsDir = require("@root/chips/getAssetsDir")
+local getChipFont = require("@root/chips/getChipFont")
+local planChips = require("@root/chips/planChips")
 local readChipStyles = require("@root/chips/readChipStyles")
-
-local chipDrawing = chips.chipDrawing
-local generateChips = chips.generateChips
-local getChipFont = chips.getChipFont
-local planChips = chips.planChips
 
 -- Draws the chips changewrite.toml describes and returns a line for each one
 -- whose files in the assets folder are missing or different. `generate --check`

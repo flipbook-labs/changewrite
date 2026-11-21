@@ -1,7 +1,7 @@
 local truetype = require("@truetype")
 local vector = require("@vector")
 
-local types = require("./types")
+local types = require("@root/chips/types")
 
 type ChipLayers = types.ChipLayers
 type ChipMetrics = types.ChipMetrics

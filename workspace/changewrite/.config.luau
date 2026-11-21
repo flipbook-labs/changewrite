@@ -2,8 +2,10 @@ return {
 	luau = {
 		aliases = {
 			root = "./src",
-			chips = "../chips",
+			png = "../png",
 			semver = "../semver",
+			truetype = "../truetype",
+			vector = "../vector",
 		},
 	},
 }

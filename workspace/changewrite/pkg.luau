@@ -3,8 +3,10 @@ return {
 		name = "changewrite",
 		version = "0.13.0",
 		dependencies = {
-			chips = { sourceKind = "path", source = "../chips" },
+			png = { sourceKind = "path", source = "../png" },
 			semver = { sourceKind = "path", source = "../semver" },
+			truetype = { sourceKind = "path", source = "../truetype" },
+			vector = { sourceKind = "path", source = "../vector" },
 			["flipbook-batteries"] = {
 				rev = "v0.13.1",
 				sourceKind = "github",

@@ -1,6 +1,6 @@
 local test = require("@std/test")
 
-local escapeXmlAttribute = require("./escapeXmlAttribute")
+local escapeXmlAttribute = require("@root/chips/escapeXmlAttribute")
 
 test.suite("escapeXmlAttribute", function(suite)
 	suite:case("escapes every character that's special in an attribute", function(assert)

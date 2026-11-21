@@ -35,11 +35,10 @@ export type ColorModeStyle = {
 	textColor: string?,
 }
 
--- A chip before its colors are worked out. Chips are named by a group and a
--- name, such as Changewrite's `kind/notes` or `flag/breaking`, so two groups can
--- reuse a name.
+-- A chip as `changewrite.toml` describes it: a kind the repo configures, or one
+-- of the flags, which have built-in styles a repo can override.
 export type ChipStyle = {
-	group: string,
+	group: "kind" | "flag",
 	name: string,
 	text: string,
 	colorMode: ByColorMode<ColorModeStyle>,

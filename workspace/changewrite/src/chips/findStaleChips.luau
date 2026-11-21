@@ -1,6 +1,6 @@
-local chips = require("@chips")
+local planChips = require("@root/chips/planChips")
 
-type PlannedChip = chips.PlannedChip
+type PlannedChip = planChips.PlannedChip
 
 -- Compares the files `changewrite generate` would write with the ones on disk,
 -- and returns one line for each chip that's out of date. `drawn` maps each

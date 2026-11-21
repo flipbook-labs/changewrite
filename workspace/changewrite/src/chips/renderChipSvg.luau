@@ -1,7 +1,7 @@
 local vector = require("@vector")
 
-local escapeXmlAttribute = require("./escapeXmlAttribute")
-local types = require("./types")
+local escapeXmlAttribute = require("@root/chips/escapeXmlAttribute")
+local types = require("@root/chips/types")
 
 type ChipLayers = types.ChipLayers
 type ChipPalette = types.ChipPalette

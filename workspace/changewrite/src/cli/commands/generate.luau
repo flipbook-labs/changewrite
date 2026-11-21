@@ -1,19 +1,17 @@
-local chips = require("@chips")
 local cli = require("@lpm/batteries@v1.0.1-nightly.20261115/cli")
 local fs = require("@std/fs")
 local path = require("@std/path")
 local process = require("@std/process")
 local richterm = require("@lpm/batteries@v1.0.1-nightly.20261115/richterm")
 
+local chipDrawing = require("@root/chips/chipDrawing")
 local findStaleChipAssets = require("@root/chips/findStaleChipAssets")
+local generateChips = require("@root/chips/generateChips")
 local getAssetsDir = require("@root/chips/getAssetsDir")
+local getChipFont = require("@root/chips/getChipFont")
+local planChips = require("@root/chips/planChips")
 local readChipStyles = require("@root/chips/readChipStyles")
 local types = require("@root/cli/types")
-
-local chipDrawing = chips.chipDrawing
-local generateChips = chips.generateChips
-local getChipFont = chips.getChipFont
-local planChips = chips.planChips
 
 local title = "generate"
 local summary = "Draw the release-notes chips for the kinds and flags in changewrite.toml."

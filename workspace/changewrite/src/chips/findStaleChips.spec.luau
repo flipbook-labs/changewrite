@@ -1,11 +1,10 @@
-local chips = require("@chips")
 local test = require("@std/test")
 
 local findStaleChips = require("@root/chips/findStaleChips")
+local planChips = require("@root/chips/planChips")
+local types = require("@root/chips/types")
 
-local planChips = chips.planChips
-
-type ChipStyle = chips.ChipStyle
+type ChipStyle = types.ChipStyle
 
 local function style(name: string): ChipStyle
 	return {
@@ -20,7 +19,7 @@ local function style(name: string): ChipStyle
 end
 
 -- Stands in for the drawn files: each file's contents are its own name.
-local function draw(planned: { chips.PlannedChip }): { [string]: string }
+local function draw(planned: { planChips.PlannedChip }): { [string]: string }
 	local drawn: { [string]: string } = {}
 	for _, chip in planned do
 		for _, file in { chip.files.light, chip.files.dark, chip.files.fallback } do
