@@ -4,6 +4,8 @@ categories = ["Features", "Fixes", "Changes", "Dependencies"]
 current = "0.13.0"
 mirror = [
   { file = "pkg.luau" },
+  { file = "README.md", pattern = "\n%- uses: flipbook%-labs/changewrite@v([%d%.]+)" },
+  { file = "README.md", pattern = "\n +%- uses: flipbook%-labs/changewrite@v([%d%.]+)" },
 ]
 
 [kind]
