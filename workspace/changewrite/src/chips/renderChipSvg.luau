@@ -1,4 +1,4 @@
-local vector = require("@vector")
+local vector = require("@workspace/vector")
 
 local escapeXmlAttribute = require("@root/chips/escapeXmlAttribute")
 local types = require("@root/chips/types")

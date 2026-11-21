@@ -1,6 +1,6 @@
 local cli = require("@lpm/batteries@v1.0.1-nightly.20261115/cli")
 local json = require("@std/json")
-local semver = require("@semver")
+local semver = require("@workspace/semver")
 
 local getCurrentVersion = require("@root/release/getCurrentVersion")
 local prepareReleaseFiles = require("@root/release/prepareReleaseFiles")

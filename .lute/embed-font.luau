@@ -5,7 +5,7 @@ local fs = require("@std/fs")
 
 local base64 = require("@lpm/batteries@v1.0.1-nightly.20261115/base64")
 
-local FONT_PATH = "workspace/changewrite/assets/chips/font/SchibstedGrotesk-Bold.ttf"
+local FONT_PATH = "workspace/changewrite/src/chips/font/SchibstedGrotesk-Bold.ttf"
 local OUTPUT_PATH = "workspace/changewrite/src/chips/fontData.luau"
 
 local encoded = buffer.tostring(base64.encode(buffer.fromstring(fs.readFileToString(FONT_PATH))))

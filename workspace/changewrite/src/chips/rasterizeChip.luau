@@ -1,5 +1,5 @@
-local png = require("@png")
-local vector = require("@vector")
+local png = require("@workspace/png")
+local vector = require("@workspace/vector")
 
 local types = require("@root/chips/types")
 

@@ -1,4 +1,4 @@
-local semver = require("@semver")
+local semver = require("@workspace/semver")
 
 type VersionComponent = semver.VersionComponent
 

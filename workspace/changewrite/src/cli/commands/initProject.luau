@@ -2,7 +2,7 @@ local cli = require("@lpm/batteries@v1.0.1-nightly.20261115/cli")
 local fs = require("@std/fs")
 local path = require("@std/path")
 local richterm = require("@lpm/batteries@v1.0.1-nightly.20261115/richterm")
-local semver = require("@semver")
+local semver = require("@workspace/semver")
 
 local constants = require("@root/release/constants")
 local readOptionalVersion = require("@root/release/readOptionalVersion")

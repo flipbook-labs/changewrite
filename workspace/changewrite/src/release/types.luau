@@ -1,5 +1,5 @@
 local path = require("@std/path")
-local semver = require("@semver")
+local semver = require("@workspace/semver")
 
 type VersionComponent = semver.VersionComponent
 

@@ -1,5 +1,5 @@
-local png = require("@png")
-local truetype = require("@truetype")
+local png = require("@workspace/png")
+local truetype = require("@workspace/truetype")
 
 local buildChipLayers = require("@root/chips/buildChipLayers")
 local rasterizeChip = require("@root/chips/rasterizeChip")

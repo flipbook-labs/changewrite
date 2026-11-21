@@ -1,4 +1,4 @@
-local semver = require("@semver")
+local semver = require("@workspace/semver")
 
 local constants = require("@root/release/constants")
 local parseFrontmatter = require("@root/release/parseFrontmatter")

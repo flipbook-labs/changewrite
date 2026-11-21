@@ -1,4 +1,4 @@
-local vector = require("@vector")
+local vector = require("@workspace/vector")
 
 type Path = vector.Path
 

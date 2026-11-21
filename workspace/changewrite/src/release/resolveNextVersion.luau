@@ -1,4 +1,4 @@
-local semver = require("@semver")
+local semver = require("@workspace/semver")
 
 local getNextVersion = semver.getNextVersion
 

@@ -1,5 +1,5 @@
 local base64 = require("@lpm/batteries@v1.0.1-nightly.20261115/base64")
-local truetype = require("@truetype")
+local truetype = require("@workspace/truetype")
 
 local fontData = require("@root/chips/fontData")
 

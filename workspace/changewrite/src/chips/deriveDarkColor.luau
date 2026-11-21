@@ -1,4 +1,4 @@
-local vector = require("@vector")
+local vector = require("@workspace/vector")
 
 local parseHexColor = vector.parseHexColor
 

@@ -1,5 +1,5 @@
-local truetype = require("@truetype")
-local vector = require("@vector")
+local truetype = require("@workspace/truetype")
+local vector = require("@workspace/vector")
 
 local types = require("@root/chips/types")
 
