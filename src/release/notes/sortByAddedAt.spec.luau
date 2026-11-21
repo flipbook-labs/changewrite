@@ -10,6 +10,7 @@ local function entry(body: string): UnreleasedChange
 	return {
 		bump = "patch",
 		category = "Changes",
+		summary = body,
 		body = body,
 		flags = {},
 		file = path.parse(`{body}.md`),

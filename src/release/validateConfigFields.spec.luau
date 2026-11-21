@@ -16,6 +16,19 @@ current = "1.2.3"
 		end)
 	end)
 
+	suite:case("accepts the summary length limit", function(assert)
+		local text = [[
+max_summary_length = 120
+
+[version]
+current = "1.2.3"
+]]
+
+		assert.never.throws(function()
+			validateConfigFields(text)
+		end)
+	end)
+
 	suite:case("accepts the release branch", function(assert)
 		local text = [[
 [release]

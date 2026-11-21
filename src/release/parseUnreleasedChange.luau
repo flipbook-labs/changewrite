@@ -1,7 +1,7 @@
+local chomp = require("@root/chomp")
 local constants = require("@root/release/constants")
-local parseFrontmatter = require("@root/release/parseFrontmatter")
 local parseVersionComponent = require("@root/semver/parseVersionComponent")
-local stripQuotes = require("@root/release/stripQuotes")
+local runEntry = require("@root/entries/runEntry")
 local types = require("@root/release/types")
 
 type ChangeFlag = types.ChangeFlag
@@ -9,63 +9,32 @@ type ParsedUnreleasedChange = types.ParsedUnreleasedChange
 
 local DEFAULT_CATEGORY = "Changes"
 
--- `categories` and `kinds` are the lists `changewrite.toml` configures. Once a
--- repo configures either list, every entry has to pick a value from it, so no
--- entry renders without a heading or a chip. Without a `categories` list, an
--- entry may leave out its category and lands under Changes. A repo that
--- configures no kinds can't use the field.
-local function parseUnreleasedChange(text: string, categories: { string }?, kinds: { string }?): ParsedUnreleasedChange
-	local frontmatter = parseFrontmatter(text, "Unreleased change")
-	local fields = frontmatter.fields
-	local body = frontmatter.body
-	assert(body ~= "", "Unreleased change has no body")
+local FIELDS = {
+	"bump",
+	"category",
+	"kind",
+	"flags",
+	"highlight",
+	"pr",
+	"summary",
+	"description",
+}
 
-	local bump = parseVersionComponent(fields.bump)
-	local category = fields.category
-	local hasCategory = category ~= nil and category ~= ""
-	if categories then
-		assert(hasCategory, `Unreleased change has no category. Expected one of: {table.concat(categories, ", ")}`)
-	end
-	if not hasCategory then
-		category = DEFAULT_CATEGORY
-	end
-	if categories then
-		assert(
-			table.find(categories, category) ~= nil,
-			`Unreleased change category "{category}" is not configured. Expected one of: {table.concat(categories, ", ")}`
-		)
-	end
+local function readString(fields: { [string]: unknown }, name: string): string?
+	local value = fields[name]
+	assert(value == nil or typeof(value) == "string", `Unreleased change {name} must be a string`)
+	return value :: string?
+end
 
-	local kind: string? = nil
-	local configuredKinds = kinds or {}
-	if fields.kind == nil or fields.kind == "" then
-		assert(
-			#configuredKinds == 0,
-			`Unreleased change has no kind. Expected one of: {table.concat(configuredKinds, ", ")}`
-		)
-	else
-		local configured = configuredKinds
-		assert(
-			table.find(configured, fields.kind) ~= nil,
-			if #configured == 0
-				then `Unreleased change kind "{fields.kind}" is not configured. Add a [kind.{fields.kind}] table to changewrite.toml`
-				else `Unreleased change kind "{fields.kind}" is not configured. Expected one of: {table.concat(
-					configured,
-					", "
-				)}`
-		)
-		kind = fields.kind
+local function readFlags(value: unknown): { ChangeFlag }
+	if value == nil then
+		return {}
 	end
+	assert(typeof(value) == "table", `Unreleased change flags must be a list, such as \{ "breaking" \}`)
 
-	-- Flags are written as a comma-separated list, with or without the square
-	-- brackets of a YAML flow sequence: `flags: breaking, security` or `flags: [breaking]`.
 	local flags: { ChangeFlag } = {}
-	local flagList = (fields.flags or ""):match("^%[(.*)%]$") or fields.flags or ""
-	for _, rawFlag in flagList:split(",") do
-		local flag = stripQuotes((rawFlag:gsub("^%s+", ""):gsub("%s+$", "")))
-		if flag == "" then
-			continue
-		end
+	for _, flag in value :: { unknown } do
+		assert(typeof(flag) == "string", "Unreleased change flags must be a list of strings")
 		assert(
 			table.find(constants.CHANGE_FLAGS, flag) ~= nil,
 			`Unreleased change flag "{flag}" is not supported. Expected any of: {table.concat(
@@ -77,27 +46,92 @@ local function parseUnreleasedChange(text: string, categories: { string }?, kind
 			table.insert(flags, flag :: ChangeFlag)
 		end
 	end
+	return flags
+end
 
-	local highlight = fields.highlight
+local function readPullRequest(value: unknown): number?
+	assert(
+		value == nil or (typeof(value) == "number" and value >= 1 and value % 1 == 0),
+		"Unreleased change pr must be a pull request number"
+	)
+	return value :: number?
+end
+
+-- An entry is a Luau file that returns a table of its fields. `runEntry` runs
+-- it with a limited set of globals, so a value can be computed, such as a
+-- description joined from paragraphs.
+--
+-- `categories` and `kinds` are the lists `changewrite.toml` configures. Once a
+-- repo configures either list, every entry has to pick a value from it, so no
+-- entry renders without a heading or a chip. Without a `categories` list, an
+-- entry may leave out its category and lands under Changes. A repo that
+-- configures no kinds can't use the field.
+local function parseUnreleasedChange(
+	source: string,
+	categories: { string }?,
+	kinds: { string }?
+): ParsedUnreleasedChange
+	local entry = runEntry(source)
+	assert(typeof(entry) == "table", "Unreleased change must return a table of its fields")
+
+	for name in entry :: { [unknown]: unknown } do
+		assert(typeof(name) == "string", "Unreleased change fields must be written as `name = value`")
+		assert(
+			table.find(FIELDS, name) ~= nil,
+			`Unreleased change has an unknown field "{name}". Expected any of: {table.concat(FIELDS, ", ")}`
+		)
+	end
+	local fields = entry :: { [string]: unknown }
+
+	local summary = chomp(readString(fields, "summary") or "")
+	assert(summary ~= "", "Unreleased change has no summary")
+
+	local bump = parseVersionComponent(readString(fields, "bump"))
+	local category = readString(fields, "category")
+	if categories then
+		assert(category, `Unreleased change has no category. Expected one of: {table.concat(categories, ", ")}`)
+		assert(
+			table.find(categories, category) ~= nil,
+			`Unreleased change category "{category}" is not configured. Expected one of: {table.concat(categories, ", ")}`
+		)
+	end
+
+	local kind = readString(fields, "kind")
+	local configuredKinds = kinds or {}
+	if kind == nil then
+		assert(
+			#configuredKinds == 0,
+			`Unreleased change has no kind. Expected one of: {table.concat(configuredKinds, ", ")}`
+		)
+	else
+		assert(
+			table.find(configuredKinds, kind) ~= nil,
+			if #configuredKinds == 0
+				then `Unreleased change kind "{kind}" is not configured. Add a [kind.{kind}] table to changewrite.toml`
+				else `Unreleased change kind "{kind}" is not configured. Expected one of: {table.concat(
+					configuredKinds,
+					", "
+				)}`
+		)
+	end
+
+	local highlight = readString(fields, "highlight")
 	if highlight == "" then
 		highlight = nil
 	end
 
-	local pr: number? = nil
-	if fields.pr ~= nil and fields.pr ~= "" then
-		local digits = fields.pr:match("^#?(%d+)$")
-		assert(digits, `Unreleased change pr "{fields.pr}" must be a pull request number`)
-		pr = tonumber(digits)
-	end
+	local description = chomp(readString(fields, "description") or "")
+	local body = if description == "" then summary else `{summary}\n\n{description}`
 
 	return {
 		bump = bump,
-		category = category,
+		category = category or DEFAULT_CATEGORY,
+		summary = summary,
 		body = body,
 		kind = kind,
-		flags = flags,
+		flags = readFlags(fields.flags),
 		highlight = highlight,
-		pr = pr,
+		pr = readPullRequest(fields.pr),
 	}
 end
 

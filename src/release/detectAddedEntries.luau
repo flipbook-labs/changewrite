@@ -1,15 +1,15 @@
 --[[
-	Filter the files git reports as added between a base ref and HEAD down to the
-	ones that count as unreleased change entries under `dir`.
+	Filter the files git reports as added on this branch, whether committed,
+	staged, or untracked, down to the ones that count as unreleased change
+	entries under `dir`.
 
 	What counts as an entry matches what `readUnreleasedChanges` consumes at
-	release time: a markdown file directly inside the unreleased-changes
-	directory, excluding the directory's `README.md` and the release summary.
+	release time: a Luau file directly inside the unreleased-changes directory.
 ]]
 
 local path = require("@std/path")
 
-local constants = require("@root/release/constants")
+local isEntryFileName = require("@root/release/isEntryFileName")
 
 local function isEntryFile(file: path.Path, dir: path.Path): boolean
 	local relative = path.relative(path.normalize(dir), path.normalize(file))
@@ -22,15 +22,7 @@ local function isEntryFile(file: path.Path, dir: path.Path): boolean
 		return false
 	end
 
-	local name = relative.parts[1]
-	if path.extname(name) ~= ".md" then
-		return false
-	end
-
-	-- The release summary adds a TL;DR but no version bump, so it can't stand in
-	-- for an entry.
-	local lowerName = name:lower()
-	return lowerName ~= "readme.md" and lowerName ~= constants.RELEASE_SUMMARY_FILE
+	return isEntryFileName(relative.parts[1])
 end
 
 local function detectAddedEntries(addedFiles: { string }, dir: path.Pathlike): { string }
