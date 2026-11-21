@@ -53,4 +53,37 @@ test.suite("extractReleaseSection", function(suite)
 
 		assert.eq(extractReleaseSection(changelog, "1.0.0"), "```sh\n## install twice\n```")
 	end)
+
+	suite:case("keeps a release heading inside fenced code as part of the section", function(assert)
+		local changelog = table.concat({
+			"## v1.0.0",
+			"",
+			"Write the heading like this:",
+			"",
+			"```markdown",
+			"## v0.9.0",
+			"```",
+			"",
+			"~~~",
+			"## v0.8.0",
+			"~~~",
+			"",
+			"> ```",
+			"> ## v0.7.0",
+			"> ```",
+			"",
+			"- Last line.",
+			"",
+			"## v0.9.0",
+			"",
+			"- Older.",
+		}, "\n")
+
+		local section = extractReleaseSection(changelog, "1.0.0")
+		assert.strContains(section, "```markdown\n## v0.9.0\n```")
+		assert.strContains(section, "~~~\n## v0.8.0\n~~~")
+		assert.strContains(section, "> ## v0.7.0")
+		assert.strContains(section, "- Last line.")
+		assert.strNotContains(section, "- Older.")
+	end)
 end)
