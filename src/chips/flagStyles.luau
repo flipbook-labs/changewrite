@@ -3,7 +3,7 @@ local types = require("@root/chips/types")
 
 type ChipStyle = types.ChipStyle
 
--- The flags' built-in styles. A `[flag.<name>]` table in changewrite.toml
+-- The flags' built-in styles. A `flag.<name>` table in changewrite.luau
 -- overrides any of these fields. Most dark colors come from deriveDarkColor.
 -- Security keeps its hand-picked one, because the derived color is 0.027 from
 -- it in OKLab, past the roughly 0.02 where a difference becomes noticeable.

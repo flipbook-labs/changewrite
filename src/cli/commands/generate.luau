@@ -14,11 +14,11 @@ local readChipStyles = require("@root/chips/readChipStyles")
 local types = require("@root/cli/types")
 
 local title = "generate"
-local summary = "Draw the release-notes chips for the kinds and flags in changewrite.toml."
+local summary = "Draw the release-notes chips for the kinds and flags in changewrite.luau."
 
 local parser = cli.parser()
 parser:add("check", "flag", {
-	help = "Fail if the generated files don't match changewrite.toml, instead of writing them.",
+	help = "Fail if the generated files don't match changewrite.luau, instead of writing them.",
 })
 parser:add("help", "flag", {
 	help = "Show this help message",
@@ -27,17 +27,17 @@ parser:add("help", "flag", {
 local function check()
 	local stale = findStaleChipAssets()
 	if #stale == 0 then
-		print("Chips match changewrite.toml.")
+		print("Chips match changewrite.luau.")
 		return
 	end
-	print(richterm.red("Chips don't match changewrite.toml. Run `changewrite generate` and commit the result:"))
+	print(richterm.red("Chips don't match changewrite.luau. Run `changewrite generate` and commit the result:"))
 	for _, line in stale do
 		print(`  • {line}`)
 	end
 	process.exit(1)
 end
 
--- A chip removed from changewrite.toml keeps its files, because past releases
+-- A chip removed from changewrite.luau keeps its files, because past releases
 -- still link to them.
 local function generate()
 	if parser:has("check") then

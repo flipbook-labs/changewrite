@@ -4,18 +4,20 @@ local test = require("@std/test")
 local renderInitConfig = require("@root/release/renderInitConfig")
 
 test.suite("renderInitConfig", function(suite)
-	suite:case("renders mirrors as an array of inline tables", function(assert)
+	suite:case("renders each mirror as a table in a list", function(assert)
 		assert.eq(
 			renderInitConfig("0.3.0", { path.parse("wally.toml"), path.parse("Cargo.toml") }),
 			table.concat({
-				'categories = ["Features", "Fixes", "Changes", "Dependencies"]',
-				"",
-				"[version]",
-				'current = "0.3.0"',
-				"mirror = [",
-				'  { file = "wally.toml" },',
-				'  { file = "Cargo.toml" },',
-				"]",
+				"return {",
+				'\tcategories = { "Features", "Fixes", "Changes", "Dependencies" },',
+				"\tversion = {",
+				'\t\tcurrent = "0.3.0",',
+				"\t\tmirror = {",
+				'\t\t\t{ file = "wally.toml" },',
+				'\t\t\t{ file = "Cargo.toml" },',
+				"\t\t},",
+				"\t},",
+				"}",
 				"",
 			}, "\n")
 		)
@@ -25,10 +27,10 @@ test.suite("renderInitConfig", function(suite)
 		assert.eq(
 			renderInitConfig("0.1.0", {}),
 			table.concat({
-				'categories = ["Features", "Fixes", "Changes", "Dependencies"]',
-				"",
-				"[version]",
-				'current = "0.1.0"',
+				"return {",
+				'\tcategories = { "Features", "Fixes", "Changes", "Dependencies" },',
+				'\tversion = { current = "0.1.0" },',
+				"}",
 				"",
 			}, "\n")
 		)

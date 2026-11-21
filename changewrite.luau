@@ -1,0 +1,17 @@
+return {
+	categories = { "Features", "Fixes", "Changes", "Dependencies" },
+	version = {
+		current = "0.13.0",
+		mirror = {
+			{ file = "pkg.luau" },
+		},
+	},
+	kind = {
+		chips = { text = "Chips", color = "#d6409f" },
+		cli = { text = "CLI", color = "#1f883d" },
+		docs = { text = "Docs", color = "#bf8700" },
+		notes = { text = "Notes", color = "#7c5cff" },
+		publishing = { text = "Publishing", color = "#2f81f7" },
+		tooling = { text = "Tooling", color = "#6e7781" },
+	},
+}

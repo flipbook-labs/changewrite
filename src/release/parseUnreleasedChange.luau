@@ -1,7 +1,7 @@
 local chomp = require("@root/chomp")
 local constants = require("@root/release/constants")
 local parseVersionComponent = require("@root/semver/parseVersionComponent")
-local runEntry = require("@root/entries/runEntry")
+local runSandboxed = require("@root/runSandboxed")
 local types = require("@root/release/types")
 
 type ChangeFlag = types.ChangeFlag
@@ -57,11 +57,11 @@ local function readPullRequest(value: unknown): number?
 	return value :: number?
 end
 
--- An entry is a Luau file that returns a table of its fields. `runEntry` runs
--- it with a limited set of globals, so a value can be computed, such as a
+-- An entry is a Luau file that returns a table of its fields. `runSandboxed`
+-- runs it with a limited set of globals, so a value can be computed, such as a
 -- description joined from paragraphs.
 --
--- `categories` and `kinds` are the lists `changewrite.toml` configures. Once a
+-- `categories` and `kinds` are the lists `changewrite.luau` configures. Once a
 -- repo configures either list, every entry has to pick a value from it, so no
 -- entry renders without a heading or a chip. Without a `categories` list, an
 -- entry may leave out its category and lands under Changes. A repo that
@@ -71,7 +71,7 @@ local function parseUnreleasedChange(
 	categories: { string }?,
 	kinds: { string }?
 ): ParsedUnreleasedChange
-	local entry = runEntry(source)
+	local entry = runSandboxed(source, "Unreleased change")
 	assert(typeof(entry) == "table", "Unreleased change must return a table of its fields")
 
 	for name in entry :: { [unknown]: unknown } do
@@ -107,7 +107,7 @@ local function parseUnreleasedChange(
 		assert(
 			table.find(configuredKinds, kind) ~= nil,
 			if #configuredKinds == 0
-				then `Unreleased change kind "{kind}" is not configured. Add a [kind.{kind}] table to changewrite.toml`
+				then `Unreleased change kind "{kind}" is not configured. Add \`kind.{kind}\` to changewrite.luau`
 				else `Unreleased change kind "{kind}" is not configured. Expected one of: {table.concat(
 					configuredKinds,
 					", "

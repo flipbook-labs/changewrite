@@ -1,13 +1,8 @@
-local fs = require("@std/fs")
-local path = require("@std/path")
-
-local constants = require("@root/release/constants")
 local parseCategories = require("@root/release/parseCategories")
+local readConfig = require("@root/release/readConfig")
 
 local function readCategories(): { string }?
-	local configPath = path.resolve(constants.CONFIG_FILE)
-	assert(fs.exists(configPath), `Could not find {constants.CONFIG_FILE} in the current directory`)
-	return parseCategories(fs.readFileToString(configPath))
+	return parseCategories(readConfig())
 end
 
 return readCategories

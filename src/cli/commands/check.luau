@@ -6,7 +6,9 @@ local richterm = require("@lpm/batteries@v1.0.1-nightly.20261115/richterm")
 
 local chomp = require("@root/chomp")
 local config = require("@root/config")
+local constants = require("@root/release/constants")
 local convertMarkdownEntry = require("@root/entries/convertMarkdownEntry")
+local convertTomlConfig = require("@root/release/convertTomlConfig")
 local detectAddedEntries = require("@root/release/detectAddedEntries")
 local findMarkdownEntries = require("@root/release/findMarkdownEntries")
 local findStaleChipAssets = require("@root/chips/findStaleChipAssets")
@@ -16,6 +18,7 @@ local getCurrentBranch = require("@root/release/getCurrentBranch")
 local getUnreleasedChangesDir = require("@root/release/getUnreleasedChangesDir")
 local isPublishBranch = require("@root/release/isPublishBranch")
 local isSameRepositoryPullRequest = require("@root/release/isSameRepositoryPullRequest")
+local parseConfig = require("@root/release/parseConfig")
 local readCategories = require("@root/release/readCategories")
 local readChipStyles = require("@root/chips/readChipStyles")
 local readCollapsedCategories = require("@root/release/readCollapsedCategories")
@@ -38,10 +41,10 @@ parser:add("base", "option", {
 	help = "Base ref to diff against when detecting a newly added entry. Defaults to the pull request's base branch on GitHub Actions, otherwise the repository's default branch.",
 })
 parser:add("publish-branch", "option", {
-	help = "Pass on this publish branch instead of `release.branch` from changewrite.toml.",
+	help = "Pass on this publish branch instead of `release.branch` from changewrite.luau.",
 })
 parser:add("fix", "flag", {
-	help = "Convert Markdown entries to Luau before checking.",
+	help = "Convert changewrite.toml and Markdown entries to Luau before checking.",
 })
 parser:add("help", "flag", {
 	help = "Show this help message",
@@ -184,7 +187,7 @@ local function usesChips(entries: { releaseTypes.UnreleasedChange }): boolean
 end
 
 local function checkChips(entries: { releaseTypes.UnreleasedChange })
-	-- Reading the styles validates every [kind] and [flag] table, which matters
+	-- Reading the styles validates every kind and flag, which matters
 	-- even in a repo that hasn't used a chip yet.
 	readChipStyles()
 	if not usesChips(entries) then
@@ -192,12 +195,36 @@ local function checkChips(entries: { releaseTypes.UnreleasedChange })
 	end
 	local stale = findStaleChipAssets()
 	if #stale > 0 then
-		print(richterm.red("Chips don't match changewrite.toml. Run `changewrite generate` and commit the result:"))
+		print(richterm.red("Chips don't match changewrite.luau. Run `changewrite generate` and commit the result:"))
 		for _, line in stale do
 			print(`  • {line}`)
 		end
 		process.exit(1)
 	end
+end
+
+-- Converts a changewrite.toml to changewrite.luau. It runs before anything
+-- reads the config, since every reader fails while changewrite.toml is there.
+local function fixConfig()
+	local legacyPath = path.resolve(constants.LEGACY_CONFIG_FILE)
+	if not fs.exists(legacyPath) then
+		return
+	end
+	local target = path.resolve(constants.CONFIG_FILE)
+	assert(
+		not fs.exists(target),
+		`Can't convert {constants.LEGACY_CONFIG_FILE}: {constants.CONFIG_FILE} already exists. Delete whichever is out of date.`
+	)
+
+	local converted = convertTomlConfig(fs.readFileToString(legacyPath))
+	-- Loading the result catches a setting Changewrite doesn't read before the
+	-- TOML file is gone.
+	local success, err = pcall(parseConfig, converted)
+	assert(success, `Can't convert {constants.LEGACY_CONFIG_FILE}: {err}`)
+
+	fs.writeStringToFile(target, converted)
+	fs.remove(legacyPath)
+	print(`Converted {constants.LEGACY_CONFIG_FILE} to {constants.CONFIG_FILE}. Comments in it weren't carried over.`)
 end
 
 local function fixEntries()
@@ -241,6 +268,7 @@ end
 
 local function run()
 	if parser:has("fix") then
+		fixConfig()
 		fixEntries()
 	end
 	checkMarkdownEntries()

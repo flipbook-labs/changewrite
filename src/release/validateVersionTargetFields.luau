@@ -1,5 +1,3 @@
-local toml = require("@lpm/batteries@v1.0.1-nightly.20261115/toml")
-
 local assertKnownFields = require("@root/release/assertKnownFields")
 
 local TARGET_FIELDS: { [string]: boolean } = {
@@ -7,9 +5,9 @@ local TARGET_FIELDS: { [string]: boolean } = {
 	pattern = true,
 }
 
-local function validateVersionTargetFields(value: toml.TomlValue, context: string): ()
+local function validateVersionTargetFields(value: unknown, context: string): ()
 	if typeof(value) == "table" then
-		assertKnownFields(value :: { [string]: toml.TomlValue }, TARGET_FIELDS, context)
+		assertKnownFields(value :: { [string]: unknown }, TARGET_FIELDS, context)
 	end
 end
 

@@ -1,16 +1,16 @@
-local toml = require("@lpm/batteries@v1.0.1-nightly.20261115/toml")
+local types = require("@root/release/types")
 
--- The names of the kinds changewrite.toml configures, which entries may use in
+-- The names of the kinds changewrite.luau configures, which entries may use in
 -- their `kind` field. `parseChipStyles` validates each kind's fields.
-local function parseKindNames(text: string): { string }
-	local kinds = toml.deserialize(text).kind
+local function parseKindNames(config: types.Config): { string }
+	local kinds = config.kind
 	if kinds == nil then
 		return {}
 	end
-	assert(typeof(kinds) == "table", "`kind` must be a table of [kind.<name>] tables")
+	assert(typeof(kinds) == "table", "`kind` must be a table of kinds, keyed by name")
 
 	local names: { string } = {}
-	for name in kinds :: { [string]: toml.TomlValue } do
+	for name in kinds :: { [string]: unknown } do
 		table.insert(names, name)
 	end
 	table.sort(names)

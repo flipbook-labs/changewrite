@@ -6,7 +6,7 @@ type PlannedChip = planChips.PlannedChip
 -- and returns one line for each chip that's out of date. `drawn` maps each
 -- filename to the contents just drawn for it, and `readFile` returns a file's
 -- contents on disk, or nil when it's missing. Chips removed from
--- changewrite.toml aren't reported, since their files stay for past releases.
+-- changewrite.luau aren't reported, since their files stay for past releases.
 local function findStaleChips(
 	planned: { PlannedChip },
 	drawn: { [string]: string },
@@ -27,7 +27,7 @@ local function findStaleChips(
 		if missing then
 			table.insert(stale, `{chip.key} is missing {missing}`)
 		elseif changed then
-			table.insert(stale, `{chip.key} changed in changewrite.toml`)
+			table.insert(stale, `{chip.key} changed in changewrite.luau`)
 		end
 	end
 	return stale

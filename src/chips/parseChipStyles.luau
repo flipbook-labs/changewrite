@@ -1,25 +1,24 @@
-local toml = require("@lpm/batteries@v1.0.1-nightly.20261115/toml")
-
 local assertKnownFields = require("@root/release/assertKnownFields")
 local constants = require("@root/release/constants")
 local deriveDarkColor = require("@root/chips/deriveDarkColor")
 local flagStyles = require("@root/chips/flagStyles")
+local releaseTypes = require("@root/release/types")
 local types = require("@root/chips/types")
 
 type ChipStyle = types.ChipStyle
 type ColorModeStyle = types.ColorModeStyle
-type TomlTable = { [string]: toml.TomlValue }
+type ConfigTable = { [string]: unknown }
 
 local STYLE_FIELDS = { text = true, color = true, textColor = true, colorMode = true }
 local COLOR_MODE_FIELDS = { light = true, dark = true }
 local COLOR_MODE_STYLE_FIELDS = { color = true, textColor = true }
 
-local function asTable(value: unknown, context: string): TomlTable
+local function asTable(value: unknown, context: string): ConfigTable
 	assert(typeof(value) == "table", `{context} must be a table`)
 	return value :: any
 end
 
-local function readString(value: toml.TomlValue?, context: string): string?
+local function readString(value: unknown, context: string): string?
 	if value == nil then
 		return nil
 	end
@@ -27,7 +26,7 @@ local function readString(value: toml.TomlValue?, context: string): string?
 	return value :: string
 end
 
-local function readColor(value: toml.TomlValue?, context: string): string?
+local function readColor(value: unknown, context: string): string?
 	local color = readString(value, context)
 	if color then
 		assert(color:match("^#%x%x%x%x%x%x$"), `{context} must be a hex color such as "#7c5cff"`)
@@ -42,14 +41,14 @@ end
 -- alone. When the table sets a light color but no dark one, the dark color
 -- comes from deriveDarkColor. A table that sets no color at all keeps the base
 -- style's colors.
-local function applyFields(base: ChipStyle, fields: TomlTable, context: string): ChipStyle
+local function applyFields(base: ChipStyle, fields: ConfigTable, context: string): ChipStyle
 	assertKnownFields(fields, STYLE_FIELDS, context)
 
 	local text = readString(fields.text, `{context} text`) or base.text
 	local color = readColor(fields.color, `{context} color`)
 	local textColor = readColor(fields.textColor, `{context} textColor`)
 
-	local modes: TomlTable = if fields.colorMode ~= nil then asTable(fields.colorMode, `{context} colorMode`) else {}
+	local modes: ConfigTable = if fields.colorMode ~= nil then asTable(fields.colorMode, `{context} colorMode`) else {}
 	assertKnownFields(modes, COLOR_MODE_FIELDS, `{context} colorMode`)
 
 	local function readMode(name: "light" | "dark"): (string?, string?)
@@ -92,7 +91,7 @@ local function applyFields(base: ChipStyle, fields: TomlTable, context: string):
 	}
 end
 
-local function sortedKeys(value: TomlTable): { string }
+local function sortedKeys(value: ConfigTable): { string }
 	local keys: { string } = {}
 	for key in value do
 		table.insert(keys, key)
@@ -101,22 +100,24 @@ local function sortedKeys(value: TomlTable): { string }
 	return keys
 end
 
--- Reads every chip changewrite.toml describes: each configured kind, in
+-- Reads every chip changewrite.luau describes: each configured kind, in
 -- alphabetical order, then every flag in its usual order.
-local function parseChipStyles(text: string): { ChipStyle }
-	local parsed = toml.deserialize(text)
+local function parseChipStyles(config: releaseTypes.Config): { ChipStyle }
 	local styles: { ChipStyle } = {}
 
-	if parsed.kind ~= nil then
-		local kinds = asTable(parsed.kind, "`kind`")
+	if config.kind ~= nil then
+		local kinds = asTable(config.kind, "`kind`")
 		-- A kind's chip files are named after it, and some filesystems ignore
 		-- case, so kinds named `App` and `app` would overwrite each other's files.
 		local seen: { [string]: string } = {}
 		for _, name in sortedKeys(kinds) do
-			local context = `[kind.{name}]`
+			local context = `\`kind.{name}\``
 			assert(name:match("^[%w_-]+$"), `{context} must be named with letters, digits, "-", or "_"`)
 			local other = seen[name:lower()]
-			assert(other == nil, `{context} and [kind.{other}] differ only by case, so their chip files would collide`)
+			assert(
+				other == nil,
+				`{context} and \`kind.{other}\` differ only by case, so their chip files would collide`
+			)
 			seen[name:lower()] = name
 			local fields = asTable(kinds[name], context)
 			assert(fields.text ~= nil, `{context} needs a text`)
@@ -136,17 +137,17 @@ local function parseChipStyles(text: string): { ChipStyle }
 		end
 	end
 
-	local flags: TomlTable = if parsed.flag ~= nil then asTable(parsed.flag, "`flag`") else {}
+	local flags: ConfigTable = if config.flag ~= nil then asTable(config.flag, "`flag`") else {}
 	for name in flags do
 		assert(
 			flagStyles[name] ~= nil,
-			`[flag.{name}] is not a flag. Expected one of: {table.concat(constants.CHANGE_FLAGS, ", ")}`
+			`\`flag.{name}\` is not a flag. Expected one of: {table.concat(constants.CHANGE_FLAGS, ", ")}`
 		)
 	end
 	for _, name in constants.CHANGE_FLAGS do
 		local base = flagStyles[name]
 		if flags[name] ~= nil then
-			local context = `[flag.{name}]`
+			local context = `\`flag.{name}\``
 			table.insert(styles, applyFields(base, asTable(flags[name], context), context))
 		else
 			table.insert(styles, base)

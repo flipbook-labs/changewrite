@@ -1,7 +1,5 @@
-local toml = require("@lpm/batteries@v1.0.1-nightly.20261115/toml")
-
 local function assertKnownFields(
-	value: { [string]: toml.TomlValue },
+	value: { [string]: unknown },
 	allowedFields: { [string]: boolean },
 	context: string
 ): ()

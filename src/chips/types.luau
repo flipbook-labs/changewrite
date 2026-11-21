@@ -35,7 +35,7 @@ export type ColorModeStyle = {
 	textColor: string?,
 }
 
--- A chip as `changewrite.toml` describes it: a kind the repo configures, or one
+-- A chip as `changewrite.luau` describes it: a kind the repo configures, or one
 -- of the flags, which have built-in styles a repo can override.
 export type ChipStyle = {
 	group: "kind" | "flag",

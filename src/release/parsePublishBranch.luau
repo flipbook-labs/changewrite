@@ -1,14 +1,13 @@
-local toml = require("@lpm/batteries@v1.0.1-nightly.20261115/toml")
-
 local constants = require("@root/release/constants")
+local types = require("@root/release/types")
 
-local function parsePublishBranch(config: { [string]: toml.TomlValue }): string
+local function parsePublishBranch(config: types.Config): string
 	local release = config.release
 	if typeof(release) ~= "table" then
 		return constants.PUBLISH_BRANCH
 	end
 
-	local branch = (release :: { [string]: toml.TomlValue }).branch
+	local branch = (release :: { [string]: unknown }).branch
 	if branch == nil then
 		return constants.PUBLISH_BRANCH
 	end

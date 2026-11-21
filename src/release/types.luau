@@ -4,6 +4,10 @@ local semverTypes = require("@root/semver/types")
 
 type VersionComponent = semverTypes.VersionComponent
 
+-- changewrite.luau's table, as the file returned it. `validateConfigFields`
+-- checks its field names, and each parse module reads and checks one setting.
+export type Config = { [string]: unknown }
+
 export type ChangeFlag = "breaking" | "deprecated" | "security"
 
 export type ParsedUnreleasedChange = {

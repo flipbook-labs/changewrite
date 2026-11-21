@@ -9,7 +9,7 @@ local getChipFont = require("@root/chips/getChipFont")
 local planChips = require("@root/chips/planChips")
 local readChipStyles = require("@root/chips/readChipStyles")
 
--- Draws the chips changewrite.toml describes and returns a line for each one
+-- Draws the chips changewrite.luau describes and returns a line for each one
 -- whose files in the assets folder are missing or different. `generate --check`
 -- and `check` print these.
 local function findStaleChipAssets(): { string }
