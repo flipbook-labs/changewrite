@@ -58,4 +58,33 @@ color = "#6e7781"
 
 		assert.neq((config.kind :: any).dev_tools, nil)
 	end)
+
+	suite:case("points a version target at the new file when it named changewrite.toml", function(assert)
+		local config = parseConfig(convertTomlConfig([[
+[version]
+current = "1.0.0"
+file = "changewrite.toml"
+pattern = 'current = "([^"]+)"'
+mirror = [
+  { file = "wally.toml" },
+  { file = "changewrite.toml", pattern = 'current = "([^"]+)"' },
+]
+]])) :: any
+
+		assert.eq(config.version.file, "changewrite.luau")
+		assert.eq(config.version.pattern, nil)
+		assert.eq(config.version.mirror[1].file, "wally.toml")
+		assert.eq(config.version.mirror[2].file, "changewrite.luau")
+		assert.eq(config.version.mirror[2].pattern, nil)
+	end)
+
+	suite:case("points a single mirror table at the new file", function(assert)
+		local config = parseConfig(convertTomlConfig([[
+[version]
+file = "wally.toml"
+mirror = { file = "changewrite.toml" }
+]])) :: any
+
+		assert.eq(config.version.mirror.file, "changewrite.luau")
+	end)
 end)
