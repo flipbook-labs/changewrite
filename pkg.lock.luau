@@ -2,6 +2,11 @@ return {
   version = 5,
   dependencies = {
     changewrite = "changewrite",
+    chips = "chips",
+    png = "png",
+    semver = "semver",
+    truetype = "truetype",
+    vector = "vector",
   },
   devDependencies = {
     ["agent-skills"] = "agent-skills@v0.7.0",
@@ -31,7 +36,22 @@ return {
       sourceKind = "path",
       dependencies = {
         batteries = "batteries@v1.0.1-nightly.20261115",
+        chips = "chips",
         ["flipbook-batteries"] = "flipbook-batteries@v0.13.1",
+        semver = "semver",
+      },
+      devDependencies = {},
+    },
+    chips = {
+      installPath = "workspace/chips",
+      name = "chips",
+      source = "workspace/chips",
+      sourceKind = "path",
+      dependencies = {
+        batteries = "batteries@v1.0.1-nightly.20261115",
+        png = "png",
+        truetype = "truetype",
+        vector = "vector",
       },
       devDependencies = {},
     },
@@ -44,6 +64,38 @@ return {
       dependencies = {
         batteries = "batteries@v1.0.1-nightly.20261115",
       },
+    },
+    png = {
+      installPath = "workspace/png",
+      name = "png",
+      source = "workspace/png",
+      sourceKind = "path",
+      dependencies = {},
+      devDependencies = {},
+    },
+    semver = {
+      installPath = "workspace/semver",
+      name = "semver",
+      source = "workspace/semver",
+      sourceKind = "path",
+      dependencies = {},
+      devDependencies = {},
+    },
+    truetype = {
+      installPath = "workspace/truetype",
+      name = "truetype",
+      source = "workspace/truetype",
+      sourceKind = "path",
+      dependencies = {},
+      devDependencies = {},
+    },
+    vector = {
+      installPath = "workspace/vector",
+      name = "vector",
+      source = "workspace/vector",
+      sourceKind = "path",
+      dependencies = {},
+      devDependencies = {},
     },
   },
 }

@@ -2,15 +2,17 @@ local cli = require("@lpm/batteries@v1.0.1-nightly.20261115/cli")
 local fs = require("@std/fs")
 local path = require("@std/path")
 local richterm = require("@lpm/batteries@v1.0.1-nightly.20261115/richterm")
+local semver = require("@semver")
 
 local constants = require("@root/release/constants")
-local parseVersion = require("@root/semver/parseVersion")
-local pickHighestVersion = require("@root/semver/pickHighestVersion")
 local readOptionalVersion = require("@root/release/readOptionalVersion")
 local renderInitConfig = require("@root/release/renderInitConfig")
 local selectMirrorManifests = require("@root/release/selectMirrorManifests")
 local stringifyPaths = require("@root/stringifyPaths")
 local types = require("@root/cli/types")
+
+local parseVersion = semver.parseVersion
+local pickHighestVersion = semver.pickHighestVersion
 
 local title = "init"
 local summary = "Scaffold a changewrite.toml, wiring up mirrors for the manifests it detects."

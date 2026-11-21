@@ -1,13 +1,14 @@
+local chips = require("@chips")
 local toml = require("@lpm/batteries@v1.0.1-nightly.20261115/toml")
 
 local assertKnownFields = require("@root/release/assertKnownFields")
 local constants = require("@root/release/constants")
-local deriveDarkColor = require("@root/chips/deriveDarkColor")
 local flagStyles = require("@root/chips/flagStyles")
-local types = require("@root/chips/types")
 
-type ChipStyle = types.ChipStyle
-type ColorModeStyle = types.ColorModeStyle
+local deriveDarkColor = chips.deriveDarkColor
+
+type ChipStyle = chips.ChipStyle
+type ColorModeStyle = chips.ColorModeStyle
 type TomlTable = { [string]: toml.TomlValue }
 
 local STYLE_FIELDS = { text = true, color = true, textColor = true, colorMode = true }

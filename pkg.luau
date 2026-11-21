@@ -14,6 +14,11 @@ return {
 	package = {
 		dependencies = {
 			changewrite = member("changewrite"),
+			chips = member("chips"),
+			png = member("png"),
+			semver = member("semver"),
+			truetype = member("truetype"),
+			vector = member("vector"),
 		},
 		dev_dependencies = {
 			["agent-skills"] = {

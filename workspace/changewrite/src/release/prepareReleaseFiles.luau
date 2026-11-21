@@ -1,3 +1,4 @@
+local chips = require("@chips")
 local fs = require("@std/fs")
 local path = require("@std/path")
 
@@ -7,7 +8,6 @@ local findPullRequestTimes = require("@root/release/notes/findPullRequestTimes")
 local getAssetsDir = require("@root/chips/getAssetsDir")
 local getChipAssetsUrl = require("@root/release/notes/getChipAssetsUrl")
 local getRepositoryUrl = require("@root/release/notes/getRepositoryUrl")
-local planChips = require("@root/chips/planChips")
 local prependSection = require("@root/release/prependSection")
 local readCategories = require("@root/release/readCategories")
 local readChipStyles = require("@root/chips/readChipStyles")
@@ -22,6 +22,8 @@ local sortByAddedAt = require("@root/release/notes/sortByAddedAt")
 local types = require("@root/release/types")
 local usesRichNotes = require("@root/release/notes/usesRichNotes")
 local writeVersion = require("@root/release/writeVersion")
+
+local planChips = chips.planChips
 
 type UnreleasedChange = types.UnreleasedChange
 
@@ -70,7 +72,7 @@ local function prepareReleaseFiles(nextVersion: string, changes: { UnreleasedCha
 		-- An entry that uses any other chip fails to render with a message
 		-- naming that command, instead of linking an image that doesn't exist.
 		-- Files that exist but are out of date are `check`'s job to catch.
-		local generated: { planChips.PlannedChip } = {}
+		local generated: { chips.PlannedChip } = {}
 		for _, chip in planChips(readChipStyles()) do
 			if fs.exists(path.join(assetsDir, chip.files.fallback)) then
 				table.insert(generated, chip)

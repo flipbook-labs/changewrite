@@ -1,8 +1,7 @@
 local path = require("@std/path")
+local semver = require("@semver")
 
-local semverTypes = require("@root/semver/types")
-
-type VersionComponent = semverTypes.VersionComponent
+type VersionComponent = semver.VersionComponent
 
 export type ChangeFlag = "breaking" | "deprecated" | "security"
 

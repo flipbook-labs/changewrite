@@ -1,13 +1,15 @@
 local cli = require("@lpm/batteries@v1.0.1-nightly.20261115/cli")
 local json = require("@std/json")
+local semver = require("@semver")
 
 local getCurrentVersion = require("@root/release/getCurrentVersion")
-local getNextVersion = require("@root/semver/getNextVersion")
-local parseVersion = require("@root/semver/parseVersion")
 local prepareReleaseFiles = require("@root/release/prepareReleaseFiles")
 local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local stringifyPaths = require("@root/stringifyPaths")
 local types = require("@root/cli/types")
+
+local getNextVersion = semver.getNextVersion
+local parseVersion = semver.parseVersion
 
 local title = "bump"
 local summary = "Move the version (and changelog) forward, e.g. to step past a tag that can't be published."

@@ -1,7 +1,8 @@
-local getNextVersion = require("@root/semver/getNextVersion")
-local types = require("@root/semver/types")
+local semver = require("@semver")
 
-type VersionComponent = types.VersionComponent
+local getNextVersion = semver.getNextVersion
+
+type VersionComponent = semver.VersionComponent
 
 -- Decide which version a release PR should target. A tagged current version
 -- steps forward by the pending bump. An untagged one is the first release for

@@ -2,7 +2,8 @@ return {
 	luau = {
 		aliases = {
 			root = "./src",
-			libs = "./libs",
+			chips = "../chips",
+			semver = "../semver",
 		},
 	},
 }

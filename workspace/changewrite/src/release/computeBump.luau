@@ -1,6 +1,6 @@
-local types = require("@root/semver/types")
+local semver = require("@semver")
 
-type VersionComponent = types.VersionComponent
+type VersionComponent = semver.VersionComponent
 
 local RANK: { [VersionComponent]: number } = {
 	patch = 1,

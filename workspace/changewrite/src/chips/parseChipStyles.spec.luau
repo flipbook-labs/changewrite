@@ -1,9 +1,9 @@
+local chips = require("@chips")
 local test = require("@std/test")
 
 local parseChipStyles = require("@root/chips/parseChipStyles")
-local types = require("@root/chips/types")
 
-type ChipStyle = types.ChipStyle
+type ChipStyle = chips.ChipStyle
 
 local function find(styles: { ChipStyle }, group: string, name: string): ChipStyle
 	for _, style in styles do

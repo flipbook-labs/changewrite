@@ -1,7 +1,8 @@
-local deriveDarkColor = require("@root/chips/deriveDarkColor")
-local types = require("@root/chips/types")
+local chips = require("@chips")
 
-type ChipStyle = types.ChipStyle
+local deriveDarkColor = chips.deriveDarkColor
+
+type ChipStyle = chips.ChipStyle
 
 -- The flags' built-in styles. A `[flag.<name>]` table in changewrite.toml
 -- overrides any of these fields. Most dark colors come from deriveDarkColor.

@@ -8,5 +8,9 @@ run("luau-lsp", {
 	"analyze",
 	"--settings=./.vscode/settings.json",
 	"workspace/changewrite/src",
-	"workspace/changewrite/libs",
+	"workspace/chips",
+	"workspace/png",
+	"workspace/semver",
+	"workspace/truetype",
+	"workspace/vector",
 })

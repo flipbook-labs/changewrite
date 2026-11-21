@@ -1,8 +1,11 @@
+local semver = require("@semver")
+
 local constants = require("@root/release/constants")
 local parseFrontmatter = require("@root/release/parseFrontmatter")
-local parseVersionComponent = require("@root/semver/parseVersionComponent")
 local stripQuotes = require("@root/release/stripQuotes")
 local types = require("@root/release/types")
+
+local parseVersionComponent = semver.parseVersionComponent
 
 type ChangeFlag = types.ChangeFlag
 type ParsedUnreleasedChange = types.ParsedUnreleasedChange
