@@ -7,6 +7,12 @@ local luau = require("@std/luau")
 -- reading secrets from the environment, or running commands. Lute's library
 -- tables are read-only, so a file can't change them for the code that runs
 -- after it either.
+--
+-- The sandbox doesn't limit time, since Lute has no way to stop a running
+-- chunk. A file that loops forever hangs the command until someone stops it,
+-- or on CI until the job's timeout. Building a huge string can likewise run
+-- the process out of memory. Either way the run stalls or fails, but the file
+-- still can't reach anything outside it.
 local ALLOWED_GLOBALS: { [string]: unknown } = {
 	assert = assert,
 	error = error,

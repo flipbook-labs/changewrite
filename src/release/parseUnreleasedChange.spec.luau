@@ -172,6 +172,27 @@ return {
 		assert.strContains(err, "fields must be written as `name = value`")
 	end)
 
+	suite:case("rejects a field set twice", function(assert)
+		local source =
+			'return {\n\tbump = "patch",\n\tsummary = "Fix a thing.",\n\tsummary = "Fix another thing.",\n}\n'
+		local err = getError(source)
+
+		assert.strContains(err, 'Unreleased change sets "summary" more than once (line 4)')
+	end)
+
+	suite:case("rejects a field set twice when one uses a bracketed key", function(assert)
+		local source = 'return {\n\tbump = "patch",\n\tsummary = "Fix a thing.",\n\t["bump"] = "minor",\n}\n'
+
+		assert.strContains(getError(source), 'sets "bump" more than once')
+	end)
+
+	suite:case("rejects a key repeated in a table the entry builds", function(assert)
+		local source =
+			'local parts = { first = "Fix", first = "Add" }\n\nreturn {\n\tbump = "patch",\n\tsummary = parts.first,\n}\n'
+
+		assert.strContains(getError(source), 'sets "first" more than once (line 1)')
+	end)
+
 	suite:case("rejects a string field set to another type", function(assert)
 		local err = getError('return {\n\tbump = "patch",\n\tsummary = 42,\n}\n')
 

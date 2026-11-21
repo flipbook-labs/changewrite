@@ -1,5 +1,6 @@
 local chomp = require("@root/chomp")
 local constants = require("@root/release/constants")
+local findRepeatedKey = require("@root/entries/findRepeatedKey")
 local parseVersionComponent = require("@root/semver/parseVersionComponent")
 local runSandboxed = require("@root/runSandboxed")
 local types = require("@root/release/types")
@@ -73,6 +74,14 @@ local function parseUnreleasedChange(
 ): ParsedUnreleasedChange
 	local entry = runSandboxed(source, "Unreleased change")
 	assert(typeof(entry) == "table", "Unreleased change must return a table of its fields")
+
+	local repeated = findRepeatedKey(source)
+	if repeated then
+		error(
+			`Unreleased change sets "{repeated.name}" more than once (line {repeated.line}). Luau keeps only the last value, so remove one`,
+			0
+		)
+	end
 
 	for name in entry :: { [unknown]: unknown } do
 		assert(typeof(name) == "string", "Unreleased change fields must be written as `name = value`")
