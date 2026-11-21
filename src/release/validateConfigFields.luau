@@ -8,6 +8,7 @@ local TOP_LEVEL_FIELDS: { [string]: boolean } = {
 	collapsed = true,
 	flag = true,
 	kind = true,
+	max_summary_length = true,
 	release = true,
 	unreleased_changes = true,
 	version = true,

@@ -39,6 +39,7 @@ local function readUnreleasedChanges(): { UnreleasedChange }
 		table.insert(changes, {
 			bump = parsed.bump,
 			category = parsed.category,
+			summary = parsed.summary,
 			body = parsed.body,
 			kind = parsed.kind,
 			flags = parsed.flags,

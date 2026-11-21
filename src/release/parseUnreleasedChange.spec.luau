@@ -21,6 +21,7 @@ return {
 
 		assert.eq(change.bump, "minor")
 		assert.eq(change.category, "Features")
+		assert.eq(change.summary, "Add support for unreleased changes.")
 		assert.eq(change.body, "Add support for unreleased changes.")
 	end)
 
@@ -39,10 +40,19 @@ return entry
 		assert.eq(change.body, "Fix a thing.")
 	end)
 
-	suite:case("decodes escapes in quoted strings", function(assert)
-		local change = parseUnreleasedChange('return {\n\tbump = "patch",\n\tsummary = "Quote \\"this\\".",\n}\n')
+	suite:case("reads a value computed from a local", function(assert)
+		local source = [[
+local bump = "patch"
 
-		assert.eq(change.body, 'Quote "this".')
+return {
+	bump = bump,
+	summary = "Fix " .. "a thing.",
+}
+]]
+		local change = parseUnreleasedChange(source)
+
+		assert.eq(change.bump, "patch")
+		assert.eq(change.summary, "Fix a thing.")
 	end)
 
 	suite:case("joins the summary and description with a blank line", function(assert)
@@ -62,17 +72,73 @@ See the README.
 		assert.eq(change.body, "Fix a thing.\n\nIt needs a newer Lute.\n\nSee the README.")
 	end)
 
+	suite:case("builds a description from paragraphs joined with table.concat", function(assert)
+		local source = [[
+return {
+	bump = "patch",
+	summary = "Fix a thing.",
+	description = table.concat({
+		"It needs a newer Lute.",
+		"See the README.",
+	}, "\n\n"),
+}
+]]
+		local change = parseUnreleasedChange(source)
+
+		assert.eq(change.body, "Fix a thing.\n\nIt needs a newer Lute.\n\nSee the README.")
+	end)
+
+	suite:case("rejects an entry that requires a module", function(assert)
+		local source = 'local fs = require("@std/fs")\n\nreturn {\n\tbump = "patch",\n\tsummary = "Fix a thing.",\n}\n'
+		local err = getError(source)
+
+		assert.strContains(err, "Unreleased change failed to run")
+		assert.strContains(err, "attempt to call a nil value")
+	end)
+
+	suite:case("rejects an entry that reaches for os", function(assert)
+		local source = 'return {\n\tbump = "patch",\n\tsummary = `Fixed at {os.time()}.`,\n}\n'
+
+		assert.strContains(getError(source), "Unreleased change failed to run")
+	end)
+
+	suite:case("names the globals an entry can use when it fails to run", function(assert)
+		local err = getError('return {\n\tbump = "patch",\n\tsummary = process.env.HOME,\n}\n')
+
+		assert.strContains(err, "math, select, string, table")
+	end)
+
+	suite:case("keeps a global one entry sets from reaching the next", function(assert)
+		local first =
+			parseUnreleasedChange('shared = "Fix a thing."\n\nreturn {\n\tbump = "patch",\n\tsummary = shared,\n}\n')
+		local err = getError('return {\n\tbump = "patch",\n\tsummary = shared,\n}\n')
+
+		assert.eq(first.summary, "Fix a thing.")
+		assert.strContains(err, "has no summary")
+	end)
+
+	suite:case("keeps an entry from changing a library for the entries after it", function(assert)
+		local err = getError(
+			'string.upper = function()\n\treturn "changed"\nend\n\nreturn {\n\tbump = "patch",\n\tsummary = "Fix a thing.",\n}\n'
+		)
+		local next =
+			parseUnreleasedChange('return {\n\tbump = "patch",\n\tsummary = string.upper("fix a thing."),\n}\n')
+
+		assert.strContains(err, "Unreleased change failed to run")
+		assert.eq(next.summary, "FIX A THING.")
+	end)
+
 	suite:case("defaults the category to Changes when no categories are configured", function(assert)
 		local change = parseUnreleasedChange('return {\n\tbump = "patch",\n\tsummary = "Fix a thing.",\n}\n')
 
 		assert.eq(change.category, "Changes")
 	end)
 
-	suite:case("errors on a category outside the configured list, naming its line", function(assert)
+	suite:case("errors on a category outside the configured list", function(assert)
 		local source = 'return {\n\tbump = "patch",\n\tcategory = "Misc",\n\tsummary = "Fix a thing.",\n}\n'
 		local err = getError(source, { "Features", "Fixes" })
 
-		assert.strContains(err, 'line 3: Unreleased change category "Misc" is not configured')
+		assert.strContains(err, 'Unreleased change category "Misc" is not configured')
 		assert.strContains(err, "Features, Fixes")
 	end)
 
@@ -94,22 +160,22 @@ See the README.
 		assert.strContains(err, "has no summary")
 	end)
 
-	suite:case("rejects a field it doesn't know, naming its line", function(assert)
+	suite:case("rejects a field it doesn't know", function(assert)
 		local err = getError('return {\n\tbump = "patch",\n\tsummary = "Fix a thing.",\n\ttype = "fix",\n}\n')
 
-		assert.strContains(err, 'line 4: Unreleased change has an unknown field "type"')
+		assert.strContains(err, 'Unreleased change has an unknown field "type"')
 	end)
 
-	suite:case("rejects a field set twice", function(assert)
-		local err = getError('return {\n\tbump = "patch",\n\tbump = "minor",\n\tsummary = "Fix a thing.",\n}\n')
+	suite:case("rejects a value written without a field name", function(assert)
+		local err = getError('return {\n\tbump = "patch",\n\tsummary = "Fix a thing.",\n\t"Extra text.",\n}\n')
 
-		assert.strContains(err, "line 3: Unreleased change sets bump more than once")
+		assert.strContains(err, "fields must be written as `name = value`")
 	end)
 
-	suite:case("rejects a value that isn't a literal", function(assert)
-		local err = getError('local bump = "patch"\n\nreturn {\n\tbump = bump,\n\tsummary = "Fix a thing.",\n}\n')
+	suite:case("rejects a string field set to another type", function(assert)
+		local err = getError('return {\n\tbump = "patch",\n\tsummary = 42,\n}\n')
 
-		assert.strContains(err, "line 4: Unreleased change bump must be a string")
+		assert.strContains(err, "Unreleased change summary must be a string")
 	end)
 
 	suite:case("rejects a file that doesn't return a table", function(assert)
@@ -160,7 +226,7 @@ return {
 		local source = 'return {\n\tbump = "patch",\n\tkind = "added",\n\tsummary = "Fix a thing.",\n}\n'
 		local err = getError(source, nil, { "engine" })
 
-		assert.strContains(err, 'line 3: Unreleased change kind "added" is not configured. Expected one of: engine')
+		assert.strContains(err, 'Unreleased change kind "added" is not configured. Expected one of: engine')
 	end)
 
 	suite:case("points at changewrite.toml when no kinds are configured", function(assert)

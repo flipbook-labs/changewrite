@@ -11,18 +11,30 @@ return {
 	bump = "minor",
 	category = "Features",
 	summary = "Add support for Foo values so Bar can be Bazzed.",
-	description = [[
-Foo values need Bar 2.0 or newer.
-]],
+	description = "Foo values need Bar 2.0 or newer.",
 }
 ```
 
 - **`bump`** (required) — how much to move the version: `"major"`, `"minor"`, or `"patch"`.
 - **`category`** — the heading this entry appears under in the changelog. When `categories` is configured in `changewrite.toml`, every entry needs one from that list. Otherwise it's optional and defaults to `Changes`.
-- **`summary`** (required) — one short sentence for the changelog, at most 140 characters, written as a quoted string.
-- **`description`** — more detail for readers who want it, written as a block string. It renders after the summary.
+- **`summary`** (required) — one short sentence for the changelog, on one line and at most 140 characters (see Summary checks).
+- **`description`** — more detail for readers who want it, written in Markdown. It renders after the summary.
 
-Changewrite reads the table without running the file, so every value has to be a literal. `changewrite check` rejects a field it doesn't know, and a category, kind, or flag outside the lists it allows.
+Changewrite runs the file to read its fields, so a field's value can be computed instead of written out. Write a description in whatever form reads best: a quoted string, a block string, or paragraphs joined with `table.concat` so they stay indented with the rest of the table:
+
+```luau
+return {
+	bump = "patch",
+	category = "Fixes",
+	summary = "List every entry in a category, including the last one.",
+	description = table.concat({
+		"A category's last entry was missing from the release notes.",
+		"Notes for releases published before this fix stay as they are.",
+	}, "\n\n"),
+}
+```
+
+An entry can use the `string`, `table`, `math`, and `utf8` libraries and a few basic functions such as `tostring`. It can't `require` other modules or reach `os`, `io`, or `process`, because `changewrite check` runs entries from pull requests, including ones from forks. `changewrite check` also rejects a field it doesn't know, and a category, kind, or flag outside the lists it allows.
 
 ### Release-notes fields
 
@@ -64,32 +76,12 @@ The `breaking`, `deprecated`, and `security` flags have built-in chips, and a `[
 
 Chips are images, because GitHub strips CSS from release notes. Run `changewrite generate` after changing kinds or flag styles, and commit the images it writes to `assets/` in this folder. Each chip's files are named after it, such as `kind-engine-light.svg`, so restyling a chip rewrites the same files and past releases show the new look too. A chip removed from `changewrite.toml` keeps its files, because past releases still link to them. `changewrite check` fails while the chips don't match `changewrite.toml`.
 
-### Lint rules
+### Summary checks
 
-`changewrite check` runs these rules over every entry:
+A summary is one line in a long list of changes, so `changewrite check` fails when a summary spans more than one line or runs past 140 characters. Set `max_summary_length` in `changewrite.toml` to change the limit:
 
-- `changewrite_summary_length` — the summary is at most 140 characters. Its `max_length` option changes the limit.
-- `changewrite_summary_string` — the summary is a plain quoted string on one line, not a block string or an interpolated one.
-- `changewrite_description_string` — the description, when there is one, is a block string.
-
-The same rules run under `lute lint`, so a repo can run them next to its other lint rules. Add Changewrite to `pkg.luau` as a dev dependency, run `lute pkg install --vendor`, then point `lute lint` at the rules folder in `.lpm`:
-
-```sh
-lute lint --rules .lpm/changewrite@<rev>/src/entries/rules .changes
-```
-
-A Lute script can require the package and pass `ENTRY_RULES_PATH` instead of writing out the folder. Set rule options and turn rules off in `.config.luau`, where `changewrite check` reads them too:
-
-```luau
-return {
-	lute = {
-		lint = {
-			ruleconfigs = {
-				changewrite_summary_length = { options = { max_length = 120 } },
-			},
-		},
-	},
-}
+```toml
+max_summary_length = 120
 ```
 
 ### Converting Markdown entries

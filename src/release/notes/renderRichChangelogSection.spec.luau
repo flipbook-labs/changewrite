@@ -33,6 +33,7 @@ local function entry(body: string, fields: EntryFields): UnreleasedChange
 	return {
 		bump = "patch",
 		category = fields.category or "Changes",
+		summary = body,
 		body = body,
 		kind = fields.kind,
 		flags = fields.flags or {},

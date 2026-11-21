@@ -10,6 +10,7 @@ local convertMarkdownEntry = require("@root/entries/convertMarkdownEntry")
 local detectAddedEntries = require("@root/release/detectAddedEntries")
 local findMarkdownEntries = require("@root/release/findMarkdownEntries")
 local findStaleChipAssets = require("@root/chips/findStaleChipAssets")
+local findSummaryProblems = require("@root/entries/findSummaryProblems")
 local getAssetsDir = require("@root/chips/getAssetsDir")
 local getCurrentBranch = require("@root/release/getCurrentBranch")
 local getUnreleasedChangesDir = require("@root/release/getUnreleasedChangesDir")
@@ -20,13 +21,12 @@ local readChipStyles = require("@root/chips/readChipStyles")
 local readCollapsedCategories = require("@root/release/readCollapsedCategories")
 local readGithubEvent = require("@root/release/readGithubEvent")
 local readKindNames = require("@root/release/readKindNames")
+local readMaxSummaryLength = require("@root/release/readMaxSummaryLength")
 local readPublishBranch = require("@root/release/readPublishBranch")
 local readReleaseSummary = require("@root/release/readReleaseSummary")
-local readRuleConfigs = require("@root/entries/readRuleConfigs")
 local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local releaseTypes = require("@root/release/types")
 local resolveBaseBranch = require("@root/release/resolveBaseBranch")
-local runEntryRules = require("@root/entries/runEntryRules")
 local splitLines = require("@root/release/splitLines")
 local types = require("@root/cli/types")
 
@@ -86,8 +86,8 @@ local function printNoChangesError()
 	end
 	print("  • flags (optional): a list of any of breaking, deprecated, security")
 	print("  • highlight (optional): a short title for a headline change")
-	print("  • summary (required): one short sentence, at most 140 characters")
-	print("  • description (optional): more detail, as a block string")
+	print(`  • summary (required): one short sentence, at most {readMaxSummaryLength()} characters`)
+	print("  • description (optional): more detail, rendered after the summary")
 	print("  • filename: name after the change (e.g., fix-release-permissions.luau)")
 	print("")
 	print(`See {path.join(dir, "README.md")} for details.`)
@@ -224,15 +224,12 @@ local function checkMarkdownEntries()
 	process.exit(1)
 end
 
-local function checkEntryRules(entries: { releaseTypes.UnreleasedChange })
-	local ruleConfigs = readRuleConfigs()
+local function checkSummaries(entries: { releaseTypes.UnreleasedChange })
+	local maxLength = readMaxSummaryLength()
 	local count = 0
 	for _, entry in entries do
-		for _, violation in runEntryRules(fs.readFileToString(entry.file), entry.file, ruleConfigs) do
-			local location = violation.location
-			print(
-				`{entry.file}:{location.beginLine}:{location.beginColumn}: {violation.message} ({violation.lintname})`
-			)
+		for _, problem in findSummaryProblems(entry.summary, maxLength) do
+			print(`{entry.file}: {problem}`)
 			count += 1
 		end
 	end
@@ -250,7 +247,7 @@ local function run()
 	local entries = readUnreleasedChanges()
 	readReleaseSummary()
 	readCollapsedCategories()
-	checkEntryRules(entries)
+	checkSummaries(entries)
 	checkChips(entries)
 
 	local currentBranch = getCurrentBranch()
