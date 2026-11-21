@@ -19,7 +19,7 @@ end
 local result = process.run({
 	"lute",
 	"compile",
-	"cli.luau",
+	tostring(project.CHANGEWRITE_ENTRY),
 	"--output",
 	outputPath,
 	"--bundle-stats",

@@ -6,8 +6,6 @@ return {
 			std = "~/.lute/typedefs/1.0.1/std",
 			lpm = "./.lpm",
 			repo = ".",
-			root = "./src",
-			libs = "./libs",
 		},
 	},
 }

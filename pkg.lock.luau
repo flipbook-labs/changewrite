@@ -1,8 +1,7 @@
 return {
   version = 5,
   dependencies = {
-    batteries = "batteries@v1.0.1-nightly.20261115",
-    ["flipbook-batteries"] = "flipbook-batteries@v0.13.1",
+    changewrite = "changewrite",
   },
   devDependencies = {
     ["agent-skills"] = "agent-skills@v0.7.0",
@@ -24,6 +23,17 @@ return {
       sourceKind = "github",
       target = "batteries",
       dependencies = {},
+    },
+    changewrite = {
+      installPath = "workspace/changewrite",
+      name = "changewrite",
+      source = "workspace/changewrite",
+      sourceKind = "path",
+      dependencies = {
+        batteries = "batteries@v1.0.1-nightly.20261115",
+        ["flipbook-batteries"] = "flipbook-batteries@v0.13.1",
+      },
+      devDependencies = {},
     },
     ["flipbook-batteries@v0.13.1"] = {
       installPath = "@pkg/flipbook-batteries--github-cd561061b96224c3881d0f76944a9bb8bad2d09ff72e9e09eb3cfaa2e62b6613@2d93695b49e4bf001597267620df22e26d5d15ad61c54a3bb66b60826b4f1c47/.",

@@ -1,4 +1,5 @@
 local fs = require("@std/fs")
+local path = require("@std/path")
 local test = require("@std/test")
 
 local base64 = require("@lpm/batteries@v1.0.1-nightly.20261115/base64")
@@ -6,7 +7,12 @@ local base64 = require("@lpm/batteries@v1.0.1-nightly.20261115/base64")
 local fontData = require("@root/chips/fontData")
 local getChipFont = require("@root/chips/getChipFont")
 
-local FONT_PATH = "assets/chips/font/SchibstedGrotesk-Bold.ttf"
+-- The font lives in `workspace/changewrite/assets`, two folders up from this
+-- spec's own `src/chips` folder.
+-- The path starts from this file rather than the working folder, so the spec
+-- finds the font whichever folder `lute test` runs from.
+local SPEC_DIR = path.dirname(path.resolve(debug.info(1, "s")))
+local FONT_PATH = path.join(SPEC_DIR, "..", "..", "assets", "chips", "font", "SchibstedGrotesk-Bold.ttf")
 
 test.suite("chip font", function(suite)
 	local font = getChipFont()
