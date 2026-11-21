@@ -1,7 +1,7 @@
 ---
-bump: patch
-category: Changes
+bump: minor
+category: Features
 kind: tooling
 ---
 
-Changewrite's source lives in a Lute package workspace, as the `workspace/changewrite` member.
+Publish `semver`, `png`, `truetype`, and `vector` as packages, installed from this repository with `target = "workspace/<name>"`.
