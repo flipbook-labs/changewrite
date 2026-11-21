@@ -1,12 +1,7 @@
-local parser = require("@std/syntax/parser")
-local syntax = require("@std/syntax")
-local utils = require("@std/syntax/utils")
-
 local chomp = require("@root/chomp")
 local constants = require("@root/release/constants")
-local evaluateLiteral = require("@root/entries/evaluateLiteral")
-local findEntryTable = require("@root/entries/findEntryTable")
 local parseVersionComponent = require("@root/semver/parseVersionComponent")
+local runEntry = require("@root/entries/runEntry")
 local types = require("@root/release/types")
 
 type ChangeFlag = types.ChangeFlag
@@ -25,23 +20,24 @@ local FIELDS = {
 	"description",
 }
 
-local function readString(name: string, value: syntax.CstExpr, line: number): string
-	local text = evaluateLiteral(value)
-	assert(typeof(text) == "string", `line {line}: Unreleased change {name} must be a string`)
-	return text
+local function readString(fields: { [string]: unknown }, name: string): string?
+	local value = fields[name]
+	assert(value == nil or typeof(value) == "string", `Unreleased change {name} must be a string`)
+	return value :: string?
 end
 
-local function readFlags(value: syntax.CstExpr, line: number): { ChangeFlag }
-	local list = utils.isExprTable(value)
-	assert(list, `line {line}: Unreleased change flags must be a list, such as \{ "breaking" \}`)
+local function readFlags(value: unknown): { ChangeFlag }
+	if value == nil then
+		return {}
+	end
+	assert(typeof(value) == "table", `Unreleased change flags must be a list, such as \{ "breaking" \}`)
 
 	local flags: { ChangeFlag } = {}
-	for _, item in list.entries do
-		local flag = if item.kind == "list" then evaluateLiteral(item.value) else nil
-		assert(typeof(flag) == "string", `line {line}: Unreleased change flags must be a list of strings`)
+	for _, flag in value :: { unknown } do
+		assert(typeof(flag) == "string", "Unreleased change flags must be a list of strings")
 		assert(
 			table.find(constants.CHANGE_FLAGS, flag) ~= nil,
-			`line {line}: Unreleased change flag "{flag}" is not supported. Expected any of: {table.concat(
+			`Unreleased change flag "{flag}" is not supported. Expected any of: {table.concat(
 				constants.CHANGE_FLAGS,
 				", "
 			)}`
@@ -53,9 +49,17 @@ local function readFlags(value: syntax.CstExpr, line: number): { ChangeFlag }
 	return flags
 end
 
--- An entry is a Luau file that returns a table of its fields. Changewrite
--- reads the table from the syntax tree instead of running the file, so an
--- entry can only hold literal values.
+local function readPullRequest(value: unknown): number?
+	assert(
+		value == nil or (typeof(value) == "number" and value >= 1 and value % 1 == 0),
+		"Unreleased change pr must be a pull request number"
+	)
+	return value :: number?
+end
+
+-- An entry is a Luau file that returns a table of its fields. `runEntry` runs
+-- it with a limited set of globals, so a value can be computed, such as a
+-- description joined from paragraphs.
 --
 -- `categories` and `kinds` are the lists `changewrite.toml` configures. Once a
 -- repo configures either list, every entry has to pick a value from it, so no
@@ -67,59 +71,32 @@ local function parseUnreleasedChange(
 	categories: { string }?,
 	kinds: { string }?
 ): ParsedUnreleasedChange
-	local parsed, block = pcall(parser.parseBlock, source)
-	assert(parsed, `Unreleased change is not valid Luau: {block}`)
-	local entry = findEntryTable(block)
-	assert(entry, "Unreleased change must return a table of its fields")
+	local entry = runEntry(source)
+	assert(typeof(entry) == "table", "Unreleased change must return a table of its fields")
 
-	local strings: { [string]: string } = {}
-	local lines: { [string]: number } = {}
-	local flags: { ChangeFlag } = {}
-	local pr: number? = nil
-	for _, item in entry.entries do
-		local line = item.location.beginLine
-		if item.kind ~= "record" then
-			error(`line {line}: Unreleased change fields must be written as \`name = value\``, 0)
-		end
-		local name = item.key.text
+	for name in entry :: { [unknown]: unknown } do
+		assert(typeof(name) == "string", "Unreleased change fields must be written as `name = value`")
 		assert(
 			table.find(FIELDS, name) ~= nil,
-			`line {line}: Unreleased change has an unknown field "{name}". Expected any of: {table.concat(FIELDS, ", ")}`
+			`Unreleased change has an unknown field "{name}". Expected any of: {table.concat(FIELDS, ", ")}`
 		)
-		assert(lines[name] == nil, `line {line}: Unreleased change sets {name} more than once`)
-		lines[name] = line
-
-		if name == "flags" then
-			flags = readFlags(item.value, line)
-		elseif name == "pr" then
-			local number = evaluateLiteral(item.value)
-			assert(
-				typeof(number) == "number" and number >= 1 and number % 1 == 0,
-				`line {line}: Unreleased change pr must be a pull request number`
-			)
-			pr = number
-		else
-			strings[name] = readString(name, item.value, line)
-		end
 	end
+	local fields = entry :: { [string]: unknown }
 
-	local summary = chomp(strings.summary or "")
+	local summary = chomp(readString(fields, "summary") or "")
 	assert(summary ~= "", "Unreleased change has no summary")
 
-	local bump = parseVersionComponent(strings.bump)
-	local category = strings.category
+	local bump = parseVersionComponent(readString(fields, "bump"))
+	local category = readString(fields, "category")
 	if categories then
 		assert(category, `Unreleased change has no category. Expected one of: {table.concat(categories, ", ")}`)
 		assert(
 			table.find(categories, category) ~= nil,
-			`line {lines.category}: Unreleased change category "{category}" is not configured. Expected one of: {table.concat(
-				categories,
-				", "
-			)}`
+			`Unreleased change category "{category}" is not configured. Expected one of: {table.concat(categories, ", ")}`
 		)
 	end
 
-	local kind = strings.kind
+	local kind = readString(fields, "kind")
 	local configuredKinds = kinds or {}
 	if kind == nil then
 		assert(
@@ -130,20 +107,20 @@ local function parseUnreleasedChange(
 		assert(
 			table.find(configuredKinds, kind) ~= nil,
 			if #configuredKinds == 0
-				then `line {lines.kind}: Unreleased change kind "{kind}" is not configured. Add a [kind.{kind}] table to changewrite.toml`
-				else `line {lines.kind}: Unreleased change kind "{kind}" is not configured. Expected one of: {table.concat(
+				then `Unreleased change kind "{kind}" is not configured. Add a [kind.{kind}] table to changewrite.toml`
+				else `Unreleased change kind "{kind}" is not configured. Expected one of: {table.concat(
 					configuredKinds,
 					", "
 				)}`
 		)
 	end
 
-	local highlight = strings.highlight
+	local highlight = readString(fields, "highlight")
 	if highlight == "" then
 		highlight = nil
 	end
 
-	local description = chomp(strings.description or "")
+	local description = chomp(readString(fields, "description") or "")
 
 	return {
 		bump = bump,
@@ -151,9 +128,9 @@ local function parseUnreleasedChange(
 		summary = summary,
 		description = if description == "" then nil else description,
 		kind = kind,
-		flags = flags,
+		flags = readFlags(fields.flags),
 		highlight = highlight,
-		pr = pr,
+		pr = readPullRequest(fields.pr),
 	}
 end
 
