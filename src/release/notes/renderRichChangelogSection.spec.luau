@@ -14,6 +14,7 @@ type EntryFields = {
 	flags: { ChangeFlag }?,
 	highlight: string?,
 	pr: number?,
+	description: string?,
 }
 
 local REPO = "https://github.com/acme/widget"
@@ -29,17 +30,17 @@ local CHIPS: notesTypes.ChipMarkup = {
 	["flag/security"] = "[security]",
 }
 
-local function entry(body: string, fields: EntryFields): UnreleasedChange
+local function entry(summary: string, fields: EntryFields): UnreleasedChange
 	return {
 		bump = "patch",
 		category = fields.category or "Changes",
-		summary = body,
-		body = body,
+		summary = summary,
+		description = fields.description,
 		kind = fields.kind,
 		flags = fields.flags or {},
 		highlight = fields.highlight,
 		pr = fields.pr,
-		file = path.parse(body),
+		file = path.parse(summary),
 	}
 end
 
@@ -52,14 +53,21 @@ test.suite("renderRichChangelogSection", function(suite)
 				flags = { "breaking" },
 				highlight = "A new loader",
 				pr = 9,
+				description = "Call the new loader instead.",
 			}),
 			entry("Add an embedded runtime.", {
 				category = "Features",
 				kind = "engine",
 				highlight = "Embedded runtime",
 				pr = 5,
+				description = "It runs inside a live experience.",
 			}),
-			entry("Add a docs page.", { category = "Features", kind = "docs", pr = 6 }),
+			entry("Add a docs page.", {
+				category = "Features",
+				kind = "docs",
+				pr = 6,
+				description = "It covers the embedded runtime.",
+			}),
 			entry("Fix a crash on reload.", { category = "Fixes", kind = "ui", pr = 7 }),
 			entry("Restructure CI.", { category = "Internal", pr = 3 }),
 		}, {
@@ -87,9 +95,11 @@ test.suite("renderRichChangelogSection", function(suite)
 				"",
 				"### Breaking changes",
 				"",
-				"1. [engine] [breaking] **A new loader**",
+				"[engine] [breaking] **A new loader**",
 				"",
-				`   Remove the old loader. ([#9]({REPO}/pull/9))`,
+				`Remove the old loader. ([#9]({REPO}/pull/9))`,
+				"",
+				"Call the new loader instead.",
 				"",
 				"### Highlights",
 				"",
@@ -100,20 +110,30 @@ test.suite("renderRichChangelogSection", function(suite)
 				"> [engine] **Embedded runtime**",
 				">",
 				`> Add an embedded runtime. ([#5]({REPO}/pull/5))`,
+				">",
+				"> It runs inside a live experience.",
 				"",
 				"### Features",
 				"",
-				`1. [engine] Embedded runtime ([#5]({REPO}/pull/5))`,
-				`2. [docs] Add a docs page. ([#6]({REPO}/pull/6))`,
+				`[engine] Embedded runtime ([#5]({REPO}/pull/5))`,
+				"",
+				`[docs] Add a docs page. ([#6]({REPO}/pull/6))`,
+				"",
+				"<details>",
+				"<summary>Details</summary>",
+				"",
+				"It covers the embedded runtime.",
+				"",
+				"</details>",
 				"",
 				"### Fixes",
 				"",
-				`1. [ui] Fix a crash on reload. ([#7]({REPO}/pull/7))`,
+				`[ui] Fix a crash on reload. ([#7]({REPO}/pull/7))`,
 				"",
 				"<details>",
 				"<summary>Internal (1)</summary>",
 				"",
-				`1. Restructure CI. ([#3]({REPO}/pull/3))`,
+				`- Restructure CI. ([#3]({REPO}/pull/3))`,
 				"",
 				"</details>",
 			}, "\n")
@@ -137,7 +157,7 @@ test.suite("renderRichChangelogSection", function(suite)
 				"",
 				"### Changes",
 				"",
-				"1. [engine] Add a thing.",
+				"[engine] Add a thing.",
 			}, "\n")
 		)
 	end)
@@ -203,13 +223,32 @@ test.suite("renderRichChangelogSection", function(suite)
 			collapsed = {},
 		})
 
-		assert.eq(section:find("1. Fix it. (#12)", 1, true) ~= nil, true)
+		assert.eq(section:find("- Fix it. (#12)", 1, true) ~= nil, true)
 	end)
-	suite:case("keeps a heading in an entry body from ending the release", function(assert)
+
+	suite:case("keeps a bullet on an entry with no chips, with its description collapsed under it", function(assert)
 		local section = renderRichChangelogSection("1.0.0", {
-			entry("Add a new API.\n\n## Migration\n\nCall the new one.", {
+			entry("Fix it.", { pr = 12, description = "Details here." }),
+		}, {
+			collapsed = {},
+		})
+
+		assert.neq(
+			section:find(
+				"- Fix it. (#12)\n\n  <details>\n  <summary>Details</summary>\n\n  Details here.\n\n  </details>",
+				1,
+				true
+			),
+			nil
+		)
+	end)
+
+	suite:case("keeps a heading in an entry description from ending the release", function(assert)
+		local section = renderRichChangelogSection("1.0.0", {
+			entry("Add a new API.", {
 				kind = "engine",
 				highlight = "A new API",
+				description = "## Migration\n\nCall the new one.",
 			}),
 		}, {
 			collapsed = {},

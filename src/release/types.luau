@@ -10,7 +10,7 @@ export type ParsedUnreleasedChange = {
 	bump: VersionComponent,
 	category: string,
 	summary: string,
-	body: string,
+	description: string?,
 	kind: string?,
 	flags: { ChangeFlag },
 	highlight: string?,

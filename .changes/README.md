@@ -18,7 +18,7 @@ return {
 - **`bump`** (required) — how much to move the version: `"major"`, `"minor"`, or `"patch"`.
 - **`category`** — the heading this entry appears under in the changelog. When `categories` is configured in `changewrite.toml`, every entry needs one from that list. Otherwise it's optional and defaults to `Changes`.
 - **`summary`** (required) — one short sentence for the changelog, on one line and at most 140 characters (see Summary checks).
-- **`description`** — more detail for readers who want it, written in Markdown. It renders after the summary.
+- **`description`** — more detail for readers who want it, written in Markdown. It renders in a collapsed `<details>` block under the summary, so the list stays scannable. Under Highlights and Breaking changes it renders open.
 
 Changewrite runs the file to read its fields, so a field's value can be computed instead of written out. Write a description in whatever form reads best: a quoted string, a block string, or paragraphs joined with `table.concat` so they stay indented with the rest of the table:
 
@@ -50,7 +50,7 @@ return {
 }
 ```
 
-- **`kind`** — what the change touches, such as `docs` or `engine`, from the kinds configured in `changewrite.toml` (see Kinds and chips). Once a repo configures any kinds, every entry needs one. It renders as a chip in front of the entry. Entries are listed in the order they merged, so kinds mix within a category.
+- **`kind`** — what the change touches, such as `docs` or `engine`, from the kinds configured in `changewrite.toml` (see Kinds and chips). Once a repo configures any kinds, every entry needs one. It renders as a chip in front of the entry. The chips mark where each entry starts, so release notes list entries without numbers, and an entry without a chip gets a bullet. Entries are listed in the order they merged, so kinds mix within a category.
 - **`flags`** — what the change asks of readers: any of `breaking`, `deprecated`, and `security`, written as a list such as `flags = { "breaking", "security" }`. Each renders as a chip after the kind chip. `breaking` entries are gathered under a Breaking changes heading near the top instead of under their category, and the release gets a banner asking readers to act. A `security` flag adds a banner recommending the update.
 - **`highlight`** — a short title for a change worth a headline. The entry's summary and description appear under Highlights, and its category lists it by title. Level 1 and 2 headings in a description render as level 4 so they nest under the release.
 - **`pr`** — the pull request number, such as `pr = 42`. Changewrite finds it from the squash commit that added the entry, so set it only when that commit doesn't name the right pull request, such as an entry backfilled later. Entries are listed in the order their pull requests merged, so an entry with `pr` sorts by when that pull request merged.
@@ -86,7 +86,7 @@ max_summary_length = 120
 
 ### Converting Markdown entries
 
-Changewrite reads only Luau entries. `changewrite check --fix` converts each Markdown entry in this folder to Luau. The first paragraph of a Markdown body becomes the summary and the rest becomes the description, so the entry renders the same. A converted summary can still be too long, and `check` reports it.
+Changewrite reads only Luau entries. `changewrite check --fix` converts each Markdown entry in this folder to Luau. The first paragraph of a Markdown body becomes the summary and the rest becomes the description. A converted summary can still be too long, and `check` reports it.
 
 ### Release summary
 

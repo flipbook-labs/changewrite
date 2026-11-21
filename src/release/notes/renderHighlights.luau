@@ -35,9 +35,14 @@ local function renderHighlights(entries: { UnreleasedChange }, context: notesTyp
 			continue
 		end
 
-		local body = entry.body
+		local body = entry.summary
 		if entry.pr then
 			body ..= ` ({renderPullRequestLink(entry.pr, context.repositoryUrl)})`
+		end
+		-- A highlight is a change readers shouldn't miss, so its description is
+		-- open here rather than collapsed.
+		if entry.description then
+			body ..= `\n\n{entry.description}`
 		end
 		table.insert(blocks, quote(`{heading}\n\n{body}`))
 	end

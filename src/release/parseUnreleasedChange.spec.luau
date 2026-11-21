@@ -22,7 +22,7 @@ return {
 		assert.eq(change.bump, "minor")
 		assert.eq(change.category, "Features")
 		assert.eq(change.summary, "Add support for unreleased changes.")
-		assert.eq(change.body, "Add support for unreleased changes.")
+		assert.eq(change.description, nil)
 	end)
 
 	suite:case("reads a table returned through a local", function(assert)
@@ -37,7 +37,7 @@ return entry
 		local change = parseUnreleasedChange(source)
 
 		assert.eq(change.bump, "patch")
-		assert.eq(change.body, "Fix a thing.")
+		assert.eq(change.summary, "Fix a thing.")
 	end)
 
 	suite:case("reads a value computed from a local", function(assert)
@@ -55,7 +55,7 @@ return {
 		assert.eq(change.summary, "Fix a thing.")
 	end)
 
-	suite:case("joins the summary and description with a blank line", function(assert)
+	suite:case("reads the description without the block string's surrounding newlines", function(assert)
 		local source = [==[
 return {
 	bump = "patch",
@@ -69,7 +69,8 @@ See the README.
 ]==]
 		local change = parseUnreleasedChange(source)
 
-		assert.eq(change.body, "Fix a thing.\n\nIt needs a newer Lute.\n\nSee the README.")
+		assert.eq(change.summary, "Fix a thing.")
+		assert.eq(change.description, "It needs a newer Lute.\n\nSee the README.")
 	end)
 
 	suite:case("builds a description from paragraphs joined with table.concat", function(assert)
@@ -85,7 +86,7 @@ return {
 ]]
 		local change = parseUnreleasedChange(source)
 
-		assert.eq(change.body, "Fix a thing.\n\nIt needs a newer Lute.\n\nSee the README.")
+		assert.eq(change.description, "It needs a newer Lute.\n\nSee the README.")
 	end)
 
 	suite:case("rejects an entry that requires a module", function(assert)

@@ -40,7 +40,7 @@ local function readUnreleasedChanges(): { UnreleasedChange }
 			bump = parsed.bump,
 			category = parsed.category,
 			summary = parsed.summary,
-			body = parsed.body,
+			description = parsed.description,
 			kind = parsed.kind,
 			flags = parsed.flags,
 			highlight = parsed.highlight,

@@ -76,10 +76,8 @@ Run `changewrite check --fix` to convert "Markdown" entries.
 		assert.eq(change.flags[1], "breaking")
 		assert.eq(change.highlight, "Luau entries")
 		assert.eq(change.pr, 97)
-		assert.eq(
-			change.body,
-			'Read changelog entries written in Luau.\n\nRun `changewrite check --fix` to convert "Markdown" entries.'
-		)
+		assert.eq(change.summary, "Read changelog entries written in Luau.")
+		assert.eq(change.description, 'Run `changewrite check --fix` to convert "Markdown" entries.')
 	end)
 
 	suite:case("rejects a frontmatter field Changewrite doesn't read", function(assert)

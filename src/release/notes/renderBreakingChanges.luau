@@ -1,7 +1,6 @@
 local isBreaking = require("@root/release/notes/isBreaking")
 local notesTypes = require("@root/release/notes/types")
 local renderChips = require("@root/release/notes/renderChips")
-local renderNumberedList = require("@root/release/notes/renderNumberedList")
 local renderPullRequestLink = require("@root/release/notes/renderPullRequestLink")
 local types = require("@root/release/types")
 
@@ -14,9 +13,14 @@ local function renderBreakingChanges(entries: { UnreleasedChange }, context: not
 			continue
 		end
 
-		local body = entry.body
+		local body = entry.summary
 		if entry.pr then
 			body ..= ` ({renderPullRequestLink(entry.pr, context.repositoryUrl)})`
+		end
+		-- A breaking change is where a reader has to act, so its description is
+		-- open here rather than collapsed.
+		if entry.description then
+			body ..= `\n\n{entry.description}`
 		end
 		local lead = renderChips(entry, context.chips) .. " "
 		if entry.highlight then
@@ -29,7 +33,7 @@ local function renderBreakingChanges(entries: { UnreleasedChange }, context: not
 	if #items == 0 then
 		return nil
 	end
-	return "### Breaking changes\n\n" .. renderNumberedList(items)
+	return "### Breaking changes\n\n" .. table.concat(items, "\n\n")
 end
 
 return renderBreakingChanges
