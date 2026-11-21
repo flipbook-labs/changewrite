@@ -8,13 +8,22 @@ local function mapOutsideFences(text: string, mapLine: (line: string) -> string)
 	-- least as many of the same character, with nothing after it, closes it.
 	local fenceCharacter: string? = nil
 	local fenceLength = 0
+	-- A fence opened inside a blockquote also closes when the quote ends,
+	-- even without a closing fence, so the lines after it are outside again.
+	local isFenceQuoted = false
 	for line in (text .. "\n"):gmatch("(.-)\n") do
+		local isQuoted = line:match("^>") ~= nil
+		if fenceCharacter ~= nil and isFenceQuoted and not isQuoted then
+			fenceCharacter = nil
+		end
+
 		local content = line:gsub("^>%s?", "")
 		if fenceCharacter == nil then
 			local marker = content:match("^ ? ? ?(```+)") or content:match("^ ? ? ?(~~~+)")
 			if marker then
 				fenceCharacter = marker:sub(1, 1)
 				fenceLength = #marker
+				isFenceQuoted = isQuoted
 			else
 				line = mapLine(line)
 			end
