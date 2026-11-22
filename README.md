@@ -74,4 +74,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 MIT.
 
-The bundled Schibsted Grotesk font is licensed under the [SIL Open Font License](assets/chips/font/OFL.txt).
+The bundled Schibsted Grotesk font is licensed under the [SIL Open Font License](workspace/changewrite/src/chips/font/OFL.txt).
