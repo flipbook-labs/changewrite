@@ -58,7 +58,7 @@ category: Fixes
 One or two sentences describing the change, written for the changelog.
 ```
 
-Run `changewrite check` to validate a branch's entries. Set the Action's `require-entry` input to fail pull requests that don't add one.
+Run `changewrite check` to validate a branch's entries. To fail pull requests that don't add one, run the Action again in a separate workflow triggered by `pull_request`, with `fetch-depth: 0` on checkout and `require-entry: true`. That input runs only the entry check and skips releases, so keep it out of the release workflow.
 
 ## Configure
 
