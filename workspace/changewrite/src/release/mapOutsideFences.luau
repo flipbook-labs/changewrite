@@ -1,5 +1,36 @@
+-- Markdown measures indentation in columns, and a tab advances to the next
+-- multiple of four.
+local function advanceColumn(column: number, character: string): number
+	return if character == "\t" then column + 4 - column % 4 else column + 1
+end
+
+-- Returns how many columns of indentation `text` starts with.
 local function countIndent(text: string): number
-	return #(text:match("^ *") :: string)
+	local column = 0
+	for index = 1, #text do
+		local character = text:sub(index, index)
+		if character ~= " " and character ~= "\t" then
+			break
+		end
+		column = advanceColumn(column, character)
+	end
+	return column
+end
+
+-- Removes up to `columns` columns of indentation from the start of `text`.
+-- When a tab spans past `columns`, the columns left over stay as spaces.
+local function removeIndent(text: string, columns: number): string
+	local column = 0
+	local index = 1
+	while column < columns and index <= #text do
+		local character = text:sub(index, index)
+		if character ~= " " and character ~= "\t" then
+			break
+		end
+		column = advanceColumn(column, character)
+		index += 1
+	end
+	return string.rep(" ", math.max(column - columns, 0)) .. text:sub(index)
 end
 
 -- Passes each line of Markdown outside fenced code blocks through `mapLine`,
@@ -45,15 +76,15 @@ local function mapOutsideFences(text: string, mapLine: (line: string) -> string)
 			-- after it are indented to match. That indent is removed before
 			-- looking for a fence marker, which may itself be indented up to
 			-- three spaces.
-			local bullet = content:match("^( *[-*+] +)") or content:match("^( *%d+[.)] +)")
+			local bullet = content:match("^([ \t]*[-*+][ \t]+)") or content:match("^([ \t]*%d+[.)][ \t]+)")
 			local itemText = content
 			if bullet then
-				listIndent = #bullet
+				listIndent = countIndent((bullet:gsub("[-*+%d.)]", " ")))
 				itemText = content:sub(#bullet + 1)
 			elseif not isBlank and countIndent(content) < listIndent then
 				listIndent = 0
 			else
-				itemText = content:sub(listIndent + 1)
+				itemText = removeIndent(content, listIndent)
 			end
 
 			local marker = itemText:match("^ ? ? ?(```+)") or itemText:match("^ ? ? ?(~~~+)")
@@ -66,7 +97,7 @@ local function mapOutsideFences(text: string, mapLine: (line: string) -> string)
 				line = mapLine(line)
 			end
 		else
-			local closing = content:sub(fenceIndent + 1):match("^ ? ? ?([`~]+)%s*$")
+			local closing = removeIndent(content, fenceIndent):match("^ ? ? ?([`~]+)%s*$")
 			if closing and closing:sub(1, 1) == fenceCharacter and #closing >= fenceLength then
 				local isUniform = closing == string.rep(fenceCharacter, #closing)
 				if isUniform then
