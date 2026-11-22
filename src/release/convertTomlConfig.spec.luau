@@ -49,6 +49,16 @@ max_summary_length = 120
 		assert.eq(config.unreleased_changes, nil)
 	end)
 
+	suite:case("writes a flag table's name as the flag is now spelled", function(assert)
+		local config = parseConfig(convertTomlConfig([[
+[flag.breaking]
+text = "Heads up"
+]]))
+
+		assert.eq((config.flag :: any).Breaking.text, "Heads up")
+		assert.eq((config.flag :: any).breaking, nil)
+	end)
+
 	suite:case("keeps a kind named in snake_case as it is", function(assert)
 		local config = parseConfig(convertTomlConfig([[
 [kind.dev_tools]

@@ -1,8 +1,8 @@
 return {
 	bump = "minor",
 	category = "Features",
-	kind = "cli",
-	flags = { "breaking" },
+	kind = "CLI",
+	flags = { "Breaking" },
 	summary = "Changewrite reads its settings from `changewrite.luau` instead of `changewrite.toml`.",
 	body = table.concat({
 		"Run `changewrite check --fix` to convert an existing `changewrite.toml`.",

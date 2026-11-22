@@ -8,27 +8,27 @@ type ChipStyle = types.ChipStyle
 -- Security keeps its hand-picked one, because the derived color is 0.027 from
 -- it in OKLab, past the roughly 0.02 where a difference becomes noticeable.
 local flagStyles: { [string]: ChipStyle } = {
-	breaking = {
+	Breaking = {
 		group = "flag",
-		name = "breaking",
+		name = "Breaking",
 		text = "Breaking",
 		colorMode = {
 			light = { color = "#c8264b" },
 			dark = { color = deriveDarkColor("#c8264b") },
 		},
 	},
-	deprecated = {
+	Deprecated = {
 		group = "flag",
-		name = "deprecated",
+		name = "Deprecated",
 		text = "Deprecated",
 		colorMode = {
 			light = { color = "#6b7380" },
 			dark = { color = deriveDarkColor("#6b7380") },
 		},
 	},
-	security = {
+	Security = {
 		group = "flag",
-		name = "security",
+		name = "Security",
 		text = "Security",
 		colorMode = {
 			light = { color = "#d4540b" },

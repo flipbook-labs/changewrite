@@ -8,7 +8,7 @@ type VersionComponent = semverTypes.VersionComponent
 -- checks its field names, and each parse module reads and checks one setting.
 export type Config = { [string]: unknown }
 
-export type ChangeFlag = "breaking" | "deprecated" | "security"
+export type ChangeFlag = "Breaking" | "Deprecated" | "Security"
 
 export type ParsedUnreleasedChange = {
 	bump: VersionComponent,

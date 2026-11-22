@@ -49,7 +49,7 @@ test.suite("convertMarkdownEntry", function(suite)
 		local source =
 			convertMarkdownEntry("---\nbump: major\nflags: [breaking, 'security']\npr: #42\n---\n\nDrop it.\n")
 
-		assert.strContains(source, '\tflags = { "breaking", "security" },\n')
+		assert.strContains(source, '\tflags = { "Breaking", "Security" },\n')
 		assert.strContains(source, "\tpr = 42,\n")
 	end)
 
@@ -73,7 +73,7 @@ Run `changewrite check --fix` to convert "Markdown" entries.
 		assert.eq(change.bump, "minor")
 		assert.eq(change.category, "Features")
 		assert.eq(change.kind, "cli")
-		assert.eq(change.flags[1], "breaking")
+		assert.eq(change.flags[1], "Breaking")
 		assert.eq(change.highlight, "Luau entries")
 		assert.eq(change.pr, 97)
 		assert.eq(

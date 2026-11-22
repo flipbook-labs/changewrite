@@ -221,7 +221,7 @@ return {
 return {
 	bump = "major",
 	kind = "engine",
-	flags = { "breaking", "security", "breaking" },
+	flags = { "Breaking", "Security", "Breaking" },
 	highlight = "Embedded runtime",
 	pr = 42,
 	summary = "Add an embedded runtime.",
@@ -231,8 +231,8 @@ return {
 
 		assert.eq(change.kind, "engine")
 		assert.eq(#change.flags, 2)
-		assert.eq(change.flags[1], "breaking")
-		assert.eq(change.flags[2], "security")
+		assert.eq(change.flags[1], "Breaking")
+		assert.eq(change.flags[2], "Security")
 		assert.eq(change.highlight, "Embedded runtime")
 		assert.eq(change.pr, 42)
 	end)
@@ -262,8 +262,14 @@ return {
 		assert.strContains(getError(source), 'flag "experimental" is not supported')
 	end)
 
+	suite:case("rejects a flag written in lowercase", function(assert)
+		local source = 'return {\n\tbump = "patch",\n\tflags = { "breaking" },\n\tsummary = "Fix a thing.",\n}\n'
+
+		assert.strContains(getError(source), "Expected any of: Breaking, Deprecated, Security")
+	end)
+
 	suite:case("rejects flags written as a string", function(assert)
-		local source = 'return {\n\tbump = "patch",\n\tflags = "breaking",\n\tsummary = "Fix a thing.",\n}\n'
+		local source = 'return {\n\tbump = "patch",\n\tflags = "Breaking",\n\tsummary = "Fix a thing.",\n}\n'
 
 		assert.strContains(getError(source), "flags must be a list")
 	end)

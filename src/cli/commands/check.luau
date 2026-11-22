@@ -87,7 +87,7 @@ local function printNoChangesError()
 	if #kinds > 0 then
 		print(`  • kind (required): one of {table.concat(kinds, ", ")}`)
 	end
-	print("  • flags (optional): a list of any of breaking, deprecated, security")
+	print("  • flags (optional): a list of any of Breaking, Deprecated, Security")
 	print("  • highlight (optional): a short title for a headline change")
 	print(`  • summary (required): one short sentence, at most {readMaxSummaryLength()} characters`)
 	print("  • body (optional): more detail, rendered after the summary")

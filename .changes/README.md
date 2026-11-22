@@ -44,14 +44,14 @@ These are optional, except that `kind` is required once a repo configures kinds.
 return {
 	bump = "minor",
 	category = "Features",
-	kind = "engine",
+	kind = "Engine",
 	highlight = "Embedded runtime",
 	summary = "Add an embedded runtime so stories can be browsed inside a running experience.",
 }
 ```
 
-- **`kind`** — what the change touches, such as `docs` or `engine`, from the kinds configured in `changewrite.luau` (see Kinds and chips). Once a repo configures any kinds, every entry needs one. It renders as a chip in front of the entry. Entries are listed in the order they merged, so kinds mix within a category.
-- **`flags`** — what the change asks of readers: any of `breaking`, `deprecated`, and `security`, written as a list such as `flags = { "breaking", "security" }`. Each renders as a chip after the kind chip. `breaking` entries are gathered under a Breaking changes heading near the top instead of under their category, and the release gets a banner asking readers to act. A `security` flag adds a banner recommending the update.
+- **`kind`** — what the change touches, such as `Docs` or `Engine`, from the kinds configured in `changewrite.luau` (see Kinds and chips). Once a repo configures any kinds, every entry needs one. It renders as a chip in front of the entry. Entries are listed in the order they merged, so kinds mix within a category.
+- **`flags`** — what the change asks of readers: any of `Breaking`, `Deprecated`, and `Security`, written as a list such as `flags = { "Breaking", "Security" }`. Each renders as a chip after the kind chip. `Breaking` entries are gathered under a Breaking changes heading near the top instead of under their category, and the release gets a banner asking readers to act. A `Security` flag adds a banner recommending the update.
 - **`highlight`** — a short title for a change worth a headline. The entry's summary and body appear under Highlights, and its category lists it by title. Level 1 and 2 headings in a body render as level 4 so they nest under the release.
 - **`pr`** — the pull request number, such as `pr = 42`. Changewrite finds it from the squash commit that added the entry, so set it only when that commit doesn't name the right pull request, such as an entry backfilled later. Entries are listed in the order their pull requests merged, so an entry with `pr` sorts by when that pull request merged.
 
@@ -62,7 +62,7 @@ Each kind is a table under `kind` in `changewrite.luau`. `text` is the chip's la
 ```luau
 return {
 	kind = {
-		engine = { text = "Engine", color = "#7c5cff" },
+		Engine = { text = "Engine", color = "#7c5cff" },
 	},
 }
 ```
@@ -70,12 +70,12 @@ return {
 Pick `color` to read on a white page. The dark color mode gets a lighter version of it: the same hue and chroma, 0.16 lighter in OKLCH, with chroma reduced if the result is too saturated for sRGB. The label's color is a neutral that suits each color mode, and `textColor` overrides it. A `colorMode.light` or `colorMode.dark` table overrides `color` or `textColor` for that mode alone, such as a hand-picked dark color:
 
 ```luau
-engine = { text = "Engine", color = "#7c5cff", colorMode = { dark = { color = "#a28bff" } } },
+Engine = { text = "Engine", color = "#7c5cff", colorMode = { dark = { color = "#a28bff" } } },
 ```
 
-The `breaking`, `deprecated`, and `security` flags have built-in chips, and a table of the same shape under `flag`, such as `flag = { breaking = { text = "Heads up" } }`, restyles one.
+The `Breaking`, `Deprecated`, and `Security` flags have built-in chips, and a table of the same shape under `flag`, such as `flag = { Breaking = { text = "Heads up" } }`, restyles one.
 
-Chips are images, because GitHub strips CSS from release notes. Run `changewrite generate` after changing kinds or flag styles, and commit the images it writes to `assets/` in this folder. Each chip's files are named after it, such as `kind-engine-light.svg`, so restyling a chip rewrites the same files and past releases show the new look too. A chip removed from `changewrite.luau` keeps its files, because past releases still link to them. `changewrite check` fails while the chips don't match `changewrite.luau`.
+Chips are images, because GitHub strips CSS from release notes. Run `changewrite generate` after changing kinds or flag styles, and commit the images it writes to `assets/` in this folder. Each chip's files are named after it in lowercase, such as `kind-engine-light.svg` for the `Engine` kind, so restyling a chip rewrites the same files and past releases show the new look too. A chip removed from `changewrite.luau` keeps its files, because past releases still link to them. `changewrite check` fails while the chips don't match `changewrite.luau`.
 
 ### Summary checks
 

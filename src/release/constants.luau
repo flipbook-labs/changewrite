@@ -22,7 +22,7 @@ local MIRROR_MANIFESTS: { string } = {
 return {
 	CHANGELOG_FILE = "CHANGELOG.md",
 	-- Also the order of the allowed values named in validation errors.
-	CHANGE_FLAGS = { "breaking", "deprecated", "security" },
+	CHANGE_FLAGS = { "Breaking", "Deprecated", "Security" },
 	CONFIG_FILE = "changewrite.luau",
 	-- The config file Changewrite read before changewrite.luau. `check --fix`
 	-- converts it, and every other command fails while it's present.

@@ -1,3 +1,4 @@
+local canonicalFlag = require("@root/release/canonicalFlag")
 local chomp = require("@root/chomp")
 local parseFrontmatter = require("@root/release/parseFrontmatter")
 local stripQuotes = require("@root/release/stripQuotes")
@@ -33,7 +34,7 @@ local function parseFlags(value: string): { string }
 	for _, rawFlag in list:split(",") do
 		local flag = stripQuotes(chomp(rawFlag))
 		if flag ~= "" then
-			table.insert(flags, flag)
+			table.insert(flags, canonicalFlag(flag))
 		end
 	end
 	return flags

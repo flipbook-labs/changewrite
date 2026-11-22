@@ -7,11 +7,11 @@ return {
 		},
 	},
 	kind = {
-		chips = { text = "Chips", color = "#d6409f" },
-		cli = { text = "CLI", color = "#1f883d" },
-		docs = { text = "Docs", color = "#bf8700" },
-		notes = { text = "Notes", color = "#7c5cff" },
-		publishing = { text = "Publishing", color = "#2f81f7" },
-		tooling = { text = "Tooling", color = "#6e7781" },
+		CLI = { text = "CLI", color = "#1f883d" },
+		Chips = { text = "Chips", color = "#d6409f" },
+		Docs = { text = "Docs", color = "#bf8700" },
+		Notes = { text = "Notes", color = "#7c5cff" },
+		Publishing = { text = "Publishing", color = "#2f81f7" },
+		Tooling = { text = "Tooling", color = "#6e7781" },
 	},
 }

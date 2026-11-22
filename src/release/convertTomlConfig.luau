@@ -1,5 +1,6 @@
 local toml = require("@lpm/batteries@v1.0.1-nightly.20261115/toml")
 
+local canonicalFlag = require("@root/release/canonicalFlag")
 local constants = require("@root/release/constants")
 local renderLuauConfig = require("@root/release/renderLuauConfig")
 
@@ -31,6 +32,17 @@ local function convertTomlConfig(text: string): string
 	local config: { [string]: unknown } = {}
 	for key, value in toml.deserialize(text) do
 		config[RENAMED_SETTINGS[key] or key] = value
+	end
+
+	-- `[flag.breaking]` restyled the Breaking flag's chip before flags were
+	-- written in PascalCase.
+	local flag = config.flag
+	if typeof(flag) == "table" then
+		local renamed: { [string]: unknown } = {}
+		for name, style in flag :: { [string]: unknown } do
+			renamed[canonicalFlag(name)] = style
+		end
+		config.flag = renamed
 	end
 
 	local version = config.version

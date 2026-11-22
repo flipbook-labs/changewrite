@@ -3,9 +3,9 @@ local types = require("@root/release/types")
 type ChangeFlag = types.ChangeFlag
 
 local ChangeFlag = table.freeze({
-	Breaking = "breaking" :: ChangeFlag,
-	Deprecated = "deprecated" :: ChangeFlag,
-	Security = "security" :: ChangeFlag,
+	Breaking = "Breaking" :: ChangeFlag,
+	Deprecated = "Deprecated" :: ChangeFlag,
+	Security = "Security" :: ChangeFlag,
 })
 
 return ChangeFlag
