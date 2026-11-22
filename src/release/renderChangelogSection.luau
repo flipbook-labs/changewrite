@@ -1,5 +1,4 @@
 local renderBullet = require("@root/release/renderBullet")
-local renderCollapsedBody = require("@root/release/renderCollapsedBody")
 local types = require("@root/release/types")
 
 type UnreleasedChange = types.UnreleasedChange
@@ -34,9 +33,12 @@ local function renderChangelogSection(
 
 		local bullets: { string } = {}
 		for _, entry in byCategory[category] do
+			-- Without chips or other markup, this changelog is meant to read
+			-- well as plain text too, so the body stays open under the bullet
+			-- instead of collapsing in HTML.
 			local text = entry.summary
 			if entry.body then
-				text ..= `\n\n{renderCollapsedBody(entry.body)}`
+				text ..= `\n\n{entry.body}`
 			end
 			table.insert(bullets, renderBullet(text))
 		end

@@ -23,7 +23,7 @@ local function entry(
 end
 
 test.suite("renderChangelogSection", function(suite)
-	suite:case("collapses an entry's body under its bullet", function(assert)
+	suite:case("indents an entry's body under its bullet as plain paragraphs", function(assert)
 		local section = renderChangelogSection("0.4.0", {
 			entry("minor", "Features", "Add change partials.", "Each one is a file.\n\nSee the README."),
 		}, { "Features" })
@@ -37,14 +37,9 @@ test.suite("renderChangelogSection", function(suite)
 				"",
 				"- Add change partials.",
 				"",
-				"  <details>",
-				"  <summary>Details</summary>",
-				"",
 				"  Each one is a file.",
 				"",
 				"  See the README.",
-				"",
-				"  </details>",
 			}, "\n")
 		)
 	end)

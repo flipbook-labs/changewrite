@@ -55,12 +55,12 @@ return {
 		assert.eq(change.summary, "Fix a thing.")
 	end)
 
-	suite:case("reads the description without the block string's surrounding newlines", function(assert)
+	suite:case("reads the body without the block string's surrounding newlines", function(assert)
 		local source = [==[
 return {
 	bump = "patch",
 	summary = "Fix a thing.",
-	description = [[
+	body = [[
 It needs a newer Lute.
 
 See the README.
@@ -73,12 +73,12 @@ See the README.
 		assert.eq(change.body, "It needs a newer Lute.\n\nSee the README.")
 	end)
 
-	suite:case("builds a description from paragraphs joined with table.concat", function(assert)
+	suite:case("builds a body from paragraphs joined with table.concat", function(assert)
 		local source = [[
 return {
 	bump = "patch",
 	summary = "Fix a thing.",
-	description = table.concat({
+	body = table.concat({
 		"It needs a newer Lute.",
 		"See the README.",
 	}, "\n\n"),
