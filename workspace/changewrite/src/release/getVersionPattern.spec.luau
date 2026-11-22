@@ -20,6 +20,12 @@ test.suite("getVersionPattern", function(suite)
 		assert.eq(PKG_MANIFEST:match(pattern), "0.7.0")
 	end)
 
+	suite:case("reads the version from a pkg.luau in a subfolder without a configured pattern", function(assert)
+		local pattern = getVersionPattern({ file = path.parse("workspace/png/pkg.luau") })
+
+		assert.eq(PKG_MANIFEST:match(pattern), "0.7.0")
+	end)
+
 	suite:case("prefers a configured pattern over the default", function(assert)
 		local pattern = getVersionPattern({ file = path.parse("pkg.luau"), pattern = 'name = "(%w+)"' })
 

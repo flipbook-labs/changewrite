@@ -3,50 +3,36 @@ local test = require("@std/test")
 local parseVersionConfig = require("@root/release/parseVersionConfig")
 
 test.suite("parseVersionConfig", function(suite)
-	suite:case("defaults to changewrite.toml as the version source", function(assert)
-		local text = [[
-[version]
-current = "1.2.3"
-]]
-		local config = parseVersionConfig(text)
+	suite:case("defaults to changewrite.luau as the version source", function(assert)
+		local config = parseVersionConfig({ version = { current = "1.2.3" } })
 
 		assert.eq(config.current, "1.2.3")
-		assert.eq(tostring(config.source.file), "changewrite.toml")
+		assert.eq(tostring(config.source.file), "changewrite.luau")
 	end)
 
 	suite:case("defaults the unreleased changes directory to ./.changes/", function(assert)
-		local text = [[
-[version]
-current = "1.2.3"
-]]
-		local config = parseVersionConfig(text)
+		local config = parseVersionConfig({ version = { current = "1.2.3" } })
 
 		assert.eq(tostring(config.unreleasedChangesDir), "./.changes")
 	end)
 
-	suite:case("reads an explicit unreleased_changes directory", function(assert)
-		local text = [[
-unreleased_changes = "changelog.d/"
-
-[version]
-current = "1.2.3"
-]]
-		local config = parseVersionConfig(text)
+	suite:case("reads an explicit unreleasedChanges directory", function(assert)
+		local config = parseVersionConfig({ unreleasedChanges = "changelog.d/", version = { current = "1.2.3" } })
 
 		assert.eq(tostring(config.unreleasedChangesDir), "changelog.d")
 	end)
 
 	suite:case("reads an explicit source file and mirror targets", function(assert)
-		local text = [[
-[version]
-file = "wally.toml"
-pattern = 'version = "([^"]+)"'
-mirror = [
-  { file = "loom.config.luau" },
-  { file = "package.json", pattern = '"version"%s*:%s*"([^"]+)"' },
-]
-]]
-		local config = parseVersionConfig(text)
+		local config = parseVersionConfig({
+			version = {
+				file = "wally.toml",
+				pattern = 'version = "([^"]+)"',
+				mirror = {
+					{ file = "loom.config.luau" },
+					{ file = "package.json", pattern = '"version"%s*:%s*"([^"]+)"' },
+				},
+			},
+		})
 
 		assert.eq(tostring(config.source.file), "wally.toml")
 		assert.eq(config.source.pattern, 'version = "([^"]+)"')
@@ -56,27 +42,10 @@ mirror = [
 		assert.eq(config.mirrors[2].pattern, '"version"%s*:%s*"([^"]+)"')
 	end)
 
-	suite:case("accepts a single inline-table mirror", function(assert)
-		local text = [[
-[version]
-current = "1.0.0"
-mirror = { file = "loom.config.luau" }
-]]
-		local config = parseVersionConfig(text)
+	suite:case("accepts a single mirror table", function(assert)
+		local config = parseVersionConfig({ version = { current = "1.0.0", mirror = { file = "loom.config.luau" } } })
 
 		assert.eq(#config.mirrors, 1)
 		assert.eq(tostring(config.mirrors[1].file), "loom.config.luau")
-	end)
-
-	suite:case("ignores comments and surrounding whitespace", function(assert)
-		local text = [[
-# leading comment
-[version]
-current = "4.5.6" # inline comment
-]]
-		local config = parseVersionConfig(text)
-
-		assert.eq(config.current, "4.5.6")
-		assert.eq(tostring(config.source.file), "changewrite.toml")
 	end)
 end)

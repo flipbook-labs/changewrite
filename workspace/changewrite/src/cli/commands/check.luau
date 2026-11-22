@@ -6,7 +6,6 @@ local richterm = require("@lpm/batteries@v1.0.1-nightly.20261115/richterm")
 
 local chomp = require("@root/chomp")
 local config = require("@root/config")
-local convertMarkdownEntry = require("@root/entries/convertMarkdownEntry")
 local detectAddedEntries = require("@root/release/detectAddedEntries")
 local findMarkdownEntries = require("@root/release/findMarkdownEntries")
 local findStaleChipAssets = require("@root/chips/findStaleChipAssets")
@@ -27,6 +26,7 @@ local readReleaseSummary = require("@root/release/readReleaseSummary")
 local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local releaseTypes = require("@root/release/types")
 local resolveBaseBranch = require("@root/release/resolveBaseBranch")
+local runFixes = require("@root/fixes/runFixes")
 local splitLines = require("@root/release/splitLines")
 local types = require("@root/cli/types")
 
@@ -38,10 +38,10 @@ parser:add("base", "option", {
 	help = "Base ref to diff against when detecting a newly added entry. Defaults to the pull request's base branch on GitHub Actions, otherwise the repository's default branch.",
 })
 parser:add("publish-branch", "option", {
-	help = "Pass on this publish branch instead of `release.branch` from changewrite.toml.",
+	help = "Pass on this publish branch instead of `release.branch` from changewrite.luau.",
 })
 parser:add("fix", "flag", {
-	help = "Convert Markdown entries to Luau before checking.",
+	help = "Repair what Changewrite can fix on its own, such as files written for an older version, before checking.",
 })
 parser:add("help", "flag", {
 	help = "Show this help message",
@@ -184,7 +184,7 @@ local function usesChips(entries: { releaseTypes.UnreleasedChange }): boolean
 end
 
 local function checkChips(entries: { releaseTypes.UnreleasedChange })
-	-- Reading the styles validates every [kind] and [flag] table, which matters
+	-- Reading the styles validates every kind and flag, which matters
 	-- even in a repo that hasn't used a chip yet.
 	readChipStyles()
 	if not usesChips(entries) then
@@ -192,23 +192,11 @@ local function checkChips(entries: { releaseTypes.UnreleasedChange })
 	end
 	local stale = findStaleChipAssets()
 	if #stale > 0 then
-		print(richterm.red("Chips don't match changewrite.toml. Run `changewrite generate` and commit the result:"))
+		print(richterm.red("Chips don't match changewrite.luau. Run `changewrite generate` and commit the result:"))
 		for _, line in stale do
 			print(`  • {line}`)
 		end
 		process.exit(1)
-	end
-end
-
-local function fixEntries()
-	for _, file in findMarkdownEntries() do
-		local target = path.parse(path.format(file):gsub("%.[mM][dD]$", ".luau"))
-		assert(not fs.exists(target), `Can't convert {file}: {target} already exists`)
-		local success, converted = pcall(convertMarkdownEntry, fs.readFileToString(file))
-		assert(success, `{file}: {converted}`)
-		fs.writeStringToFile(target, converted)
-		fs.remove(file)
-		print(`Converted {file} to {target}.`)
 	end
 end
 
@@ -241,7 +229,7 @@ end
 
 local function run()
 	if parser:has("fix") then
-		fixEntries()
+		runFixes()
 	end
 	checkMarkdownEntries()
 	local entries = readUnreleasedChanges()

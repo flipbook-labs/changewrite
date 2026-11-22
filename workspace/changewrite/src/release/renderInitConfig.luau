@@ -1,26 +1,23 @@
--- Render a starter `changewrite.toml` making it the version authority and
+-- Render a starter `changewrite.luau` making it the version authority and
 -- mirroring the detected manifests.
 local path = require("@std/path")
 
 local constants = require("@root/release/constants")
+local renderLuauConfig = require("@root/release/renderLuauConfig")
 
 local function renderInitConfig(version: string, mirrors: { path.Path }): string
-	local lines = {
-		`categories = ["{table.concat(constants.DEFAULT_CATEGORIES, '", "')}"]`,
-		"",
-		"[version]",
-		`current = "{version}"`,
-	}
-
-	if #mirrors > 0 then
-		table.insert(lines, "mirror = [")
-		for _, file in mirrors do
-			table.insert(lines, `  \{ file = "{file}" \},`)
-		end
-		table.insert(lines, "]")
+	local mirrorTargets: { { file: string } } = {}
+	for _, file in mirrors do
+		table.insert(mirrorTargets, { file = tostring(file) })
 	end
 
-	return table.concat(lines, "\n") .. "\n"
+	return renderLuauConfig({
+		categories = table.clone(constants.DEFAULT_CATEGORIES),
+		version = {
+			current = version,
+			mirror = if #mirrorTargets > 0 then mirrorTargets else nil,
+		},
+	})
 end
 
 return renderInitConfig

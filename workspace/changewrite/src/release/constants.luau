@@ -1,5 +1,5 @@
 local DEFAULT_PATTERNS: { [string]: string } = {
-	["changewrite.toml"] = "current%s*=%s*[\"']([^\"']+)[\"']",
+	["changewrite.luau"] = "current%s*=%s*[\"']([^\"']+)[\"']",
 	["pkg.luau"] = "version%s*=%s*[\"']([^\"']+)[\"']",
 	["loom.config.luau"] = "version%s*=%s*[\"']([^\"']+)[\"']",
 	["wally.toml"] = "version%s*=%s*[\"']([^\"']+)[\"']",
@@ -23,7 +23,10 @@ return {
 	CHANGELOG_FILE = "CHANGELOG.md",
 	-- Also the order of the allowed values named in validation errors.
 	CHANGE_FLAGS = { "Breaking", "Deprecated", "Security" },
-	CONFIG_FILE = "changewrite.toml",
+	CONFIG_FILE = "changewrite.luau",
+	-- The config file Changewrite read before changewrite.luau. `check --fix`
+	-- converts it, and every other command fails while it's present.
+	LEGACY_CONFIG_FILE = "changewrite.toml",
 	DEFAULT_CATEGORIES = {
 		"Features",
 		"Fixes",

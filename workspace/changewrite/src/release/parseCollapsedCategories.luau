@@ -1,19 +1,18 @@
-local toml = require("@lpm/batteries@v1.0.1-nightly.20261115/toml")
+local types = require("@root/release/types")
 
-local function parseCollapsedCategories(text: string): { string }
-	local parsed = toml.deserialize(text)
-	local value = parsed.collapsed
+local function parseCollapsedCategories(config: types.Config): { string }
+	local value = config.collapsed
 	if value == nil then
 		return {}
 	end
-	assert(typeof(value) == "table", "`collapsed` must be an array of category names")
+	assert(typeof(value) == "table", "`collapsed` must be a list of category names")
 
-	local configured = parsed.categories
-	local configuredCategories = if typeof(configured) == "table" then configured :: { toml.TomlValue } else nil
+	local configured = config.categories
+	local configuredCategories = if typeof(configured) == "table" then configured :: { unknown } else nil
 
 	local collapsed: { string } = {}
-	for _, category in value :: { toml.TomlValue } do
-		assert(typeof(category) == "string" and category ~= "", "`collapsed` must be an array of category names")
+	for _, category in value :: { unknown } do
+		assert(typeof(category) == "string" and category ~= "", "`collapsed` must be a list of category names")
 		if configuredCategories then
 			assert(
 				table.find(configuredCategories, category) ~= nil,

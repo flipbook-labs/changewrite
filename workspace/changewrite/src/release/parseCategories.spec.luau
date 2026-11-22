@@ -4,35 +4,18 @@ local parseCategories = require("@root/release/parseCategories")
 
 test.suite("parseCategories", function(suite)
 	suite:case("reads configured changelog categories", function(assert)
-		local text = [[
-categories = ["Features", "Fixes", "Changes"]
+		local config = { categories = { "Features", "Fixes", "Changes" }, version = { current = "1.2.3" } }
 
-[version]
-current = "1.2.3"
-]]
-
-		assert.eq(parseCategories(text), { "Features", "Fixes", "Changes" })
+		assert.eq(parseCategories(config), { "Features", "Fixes", "Changes" })
 	end)
 
 	suite:case("rejects a category map", function(assert)
-		local text = [[
-categories = { intended = "Features" }
-
-[version]
-current = "1.2.3"
-]]
-
 		assert.throws(function()
-			parseCategories(text)
+			parseCategories({ categories = { intended = "Features" } })
 		end)
 	end)
 
 	suite:case("omits changelog categories when they are not configured", function(assert)
-		local text = [[
-[version]
-current = "1.2.3"
-]]
-
-		assert.eq(parseCategories(text), nil)
+		assert.eq(parseCategories({ version = { current = "1.2.3" } }), nil)
 	end)
 end)

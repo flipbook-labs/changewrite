@@ -1,16 +1,17 @@
-local toml = require("@lpm/batteries@v1.0.1-nightly.20261115/toml")
-
 local assertKnownFields = require("@root/release/assertKnownFields")
+local types = require("@root/release/types")
 local validateVersionTargetFields = require("@root/release/validateVersionTargetFields")
+
+type Config = types.Config
 
 local TOP_LEVEL_FIELDS: { [string]: boolean } = {
 	categories = true,
 	collapsed = true,
 	flag = true,
 	kind = true,
-	max_summary_length = true,
+	maxSummaryLength = true,
 	release = true,
-	unreleased_changes = true,
+	unreleasedChanges = true,
 	version = true,
 }
 
@@ -25,26 +26,25 @@ local VERSION_FIELDS: { [string]: boolean } = {
 	pattern = true,
 }
 
-local function validateConfigFields(text: string): ()
-	local parsed = toml.deserialize(text)
-	assertKnownFields(parsed, TOP_LEVEL_FIELDS, "changewrite.toml")
+local function validateConfigFields(config: Config): ()
+	assertKnownFields(config, TOP_LEVEL_FIELDS, "changewrite.luau")
 
-	local release = parsed.release
+	local release = config.release
 	if typeof(release) == "table" then
-		assertKnownFields(release :: { [string]: toml.TomlValue }, RELEASE_FIELDS, "[release]")
+		assertKnownFields(release :: { [string]: unknown }, RELEASE_FIELDS, "`release`")
 	end
 
-	local version = parsed.version
+	local version = config.version
 	if typeof(version) ~= "table" then
 		return
 	end
 
-	local versionConfig = version :: { [string]: toml.TomlValue }
-	assertKnownFields(versionConfig, VERSION_FIELDS, "[version]")
+	local versionConfig = version :: { [string]: unknown }
+	assertKnownFields(versionConfig, VERSION_FIELDS, "`version`")
 
 	local mirror = versionConfig.mirror
-	if typeof(mirror) == "table" and #(mirror :: { toml.TomlValue }) > 0 then
-		for _, entry in mirror :: { toml.TomlValue } do
+	if typeof(mirror) == "table" and #(mirror :: { unknown }) > 0 then
+		for _, entry in mirror :: { unknown } do
 			validateVersionTargetFields(entry, "a version mirror")
 		end
 	else

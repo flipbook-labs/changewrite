@@ -54,6 +54,6 @@ test.suite("findStaleChips", function(suite)
 		local stale = findStaleChips(planned, draw(planned), function(name: string): string?
 			return if name:match("^kind%-engine") then "an earlier look" else name
 		end)
-		assert.eq(table.concat(stale, "\n"), "kind/engine changed in changewrite.toml")
+		assert.eq(table.concat(stale, "\n"), "kind/engine changed in changewrite.luau")
 	end)
 end)

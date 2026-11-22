@@ -1,0 +1,31 @@
+return {
+	categories = { "Features", "Fixes", "Changes", "Dependencies" },
+	version = {
+		current = "0.14.1",
+		mirror = {
+			{ file = "workspace/changewrite/pkg.luau" },
+			{ file = "workspace/png/pkg.luau" },
+			{ file = "workspace/semver/pkg.luau" },
+			{ file = "workspace/truetype/pkg.luau" },
+			{ file = "workspace/vector/pkg.luau" },
+			{ file = "README.md", pattern = "\n%- uses: flipbook%-labs/changewrite@v([%d%.]+)" },
+			{ file = "README.md", pattern = "\n +%- uses: flipbook%-labs/changewrite@v([%d%.]+)" },
+			{ file = "workspace/png/README.md", pattern = 'rev = "v([%d%.]+)"' },
+			{ file = "workspace/png/README.md", pattern = "@lpm/png@v([%d%.]+)" },
+			{ file = "workspace/semver/README.md", pattern = 'rev = "v([%d%.]+)"' },
+			{ file = "workspace/semver/README.md", pattern = "@lpm/semver@v([%d%.]+)" },
+			{ file = "workspace/truetype/README.md", pattern = 'rev = "v([%d%.]+)"' },
+			{ file = "workspace/truetype/README.md", pattern = "@lpm/truetype@v([%d%.]+)" },
+			{ file = "workspace/vector/README.md", pattern = 'rev = "v([%d%.]+)"' },
+			{ file = "workspace/vector/README.md", pattern = "@lpm/vector@v([%d%.]+)" },
+		},
+	},
+	kind = {
+		CLI = { text = "CLI", color = "#1f883d" },
+		Chips = { text = "Chips", color = "#d6409f" },
+		Docs = { text = "Docs", color = "#bf8700" },
+		Notes = { text = "Notes", color = "#7c5cff" },
+		Publishing = { text = "Publishing", color = "#2f81f7" },
+		Tooling = { text = "Tooling", color = "#6e7781" },
+	},
+}

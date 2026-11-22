@@ -40,7 +40,7 @@ inputs:
   branch:
     description: >-
       Branch name for the generated publish PR. Defaults to `release.branch`
-      in changewrite.toml, or `publish-next-version` when that is unset.
+      in changewrite.luau, or `publish-next-version` when that is unset.
     required: false
     default: ""
   debug:

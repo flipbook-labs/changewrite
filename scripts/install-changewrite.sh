@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Put the changewrite binary on disk and export CHANGEWRITE_BIN for later steps.
-# Locates changewrite.toml relative to itself, not via $GITHUB_ACTION_PATH, so
+# Locates changewrite.luau relative to itself, not via $GITHUB_ACTION_PATH, so
 # it works from any action's subdirectory.
 set -euo pipefail
 
@@ -14,9 +14,9 @@ if [[ -n "${CHANGEWRITE_BIN:-}" ]]; then
 fi
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-version="$(sed -n 's/^current = "\(.*\)"/\1/p' "$script_dir/../changewrite.toml")"
+version="$(sed -n 's/^[[:space:]]*current = "\([^"]*\)".*/\1/p' "$script_dir/../changewrite.luau" | head -n 1)"
 if [[ -z "$version" ]]; then
-	echo "Failed to parse version from changewrite.toml"
+	echo "Failed to parse version from changewrite.luau"
 	exit 1
 fi
 
@@ -44,7 +44,7 @@ if ! gh release download "v${version}" \
 	--repo flipbook-labs/changewrite \
 	--pattern "$zip" \
 	--dir "$tmp"; then
-	echo "::warning::Could not download the binary for v${version}. Falling back to the latest release. This is expected on the publish PR, which bumps the version before its release exists. Otherwise, check that the version in changewrite.toml has a published release."
+	echo "::warning::Could not download the binary for v${version}. Falling back to the latest release. This is expected on the publish PR, which bumps the version before its release exists. Otherwise, check that the version in changewrite.luau has a published release."
 	gh release download \
 		--repo flipbook-labs/changewrite \
 		--pattern "$zip" \

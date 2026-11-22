@@ -244,17 +244,17 @@ return {
 		assert.strContains(err, "has no kind. Expected one of: docs, engine")
 	end)
 
-	suite:case("rejects a kind changewrite.toml doesn't configure", function(assert)
+	suite:case("rejects a kind changewrite.luau doesn't configure", function(assert)
 		local source = 'return {\n\tbump = "patch",\n\tkind = "added",\n\tsummary = "Fix a thing.",\n}\n'
 		local err = getError(source, nil, { "engine" })
 
 		assert.strContains(err, 'Unreleased change kind "added" is not configured. Expected one of: engine')
 	end)
 
-	suite:case("points at changewrite.toml when no kinds are configured", function(assert)
+	suite:case("points at changewrite.luau when no kinds are configured", function(assert)
 		local source = 'return {\n\tbump = "patch",\n\tkind = "engine",\n\tsummary = "Fix a thing.",\n}\n'
 
-		assert.strContains(getError(source), "Add a [kind.engine] table to changewrite.toml")
+		assert.strContains(getError(source), "Add `kind.engine` to changewrite.luau")
 	end)
 
 	suite:case("rejects an unknown flag", function(assert)

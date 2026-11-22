@@ -15,7 +15,7 @@ local parseVersion = semver.parseVersion
 local pickHighestVersion = semver.pickHighestVersion
 
 local title = "init"
-local summary = "Scaffold a changewrite.toml, wiring up mirrors for the manifests it detects."
+local summary = "Scaffold a changewrite.luau, wiring up mirrors for the manifests it detects."
 
 local DEFAULT_VERSION = "0.1.0"
 
@@ -29,6 +29,10 @@ local function run()
 	assert(
 		not fs.exists(configPath),
 		`{constants.CONFIG_FILE} already exists. Delete it first if you want to start over.`
+	)
+	assert(
+		not fs.exists(path.resolve(constants.LEGACY_CONFIG_FILE)),
+		`{constants.LEGACY_CONFIG_FILE} already exists. Run \`changewrite check --fix\` to convert it instead.`
 	)
 
 	local present: { string } = {}
