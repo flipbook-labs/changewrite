@@ -24,10 +24,12 @@ export type PlannedChip = {
 -- links to them shows the new look.
 --
 -- The filenames use the name in lowercase, such as `flag-breaking-light.svg`
--- for the `Breaking` flag. Names used to be lowercase, so releases published
--- before the switch to names like `Breaking` keep finding their chips. Two
--- names that differ only in case can't both exist, because parseChipStyles
--- rejects them.
+-- for the `Breaking` flag, while the key keeps the name as written. Flags and
+-- many repos' kinds used to be lowercase, and published releases link to
+-- files named that way, so lowercasing keeps those links working after a
+-- rename such as `breaking` to `Breaking`. parseChipStyles rejects kinds whose
+-- names differ only in case, and flag names are fixed, so no two chips share a
+-- filename.
 local function planChips(styles: { ChipStyle }): { PlannedChip }
 	local planned: { PlannedChip } = {}
 	for _, style in styles do
