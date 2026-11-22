@@ -87,6 +87,26 @@ test.suite("extractReleaseSection", function(suite)
 		assert.strNotContains(section, "- Older.")
 	end)
 
+	suite:case("keeps an unquoted fence open past a quoted fence marker", function(assert)
+		local changelog = table.concat({
+			"## v1.0.0",
+			"",
+			"```markdown",
+			"> ```",
+			"```",
+			"",
+			"- Last line.",
+			"",
+			"## v0.9.0",
+			"",
+			"- Older.",
+		}, "\n")
+
+		local section = extractReleaseSection(changelog, "1.0.0")
+		assert.strContains(section, "- Last line.")
+		assert.strNotContains(section, "- Older.")
+	end)
+
 	suite:case("ends a quoted fence when its quote ends", function(assert)
 		local changelog = table.concat({
 			"## v1.0.0",

@@ -17,7 +17,11 @@ local function mapOutsideFences(text: string, mapLine: (line: string) -> string)
 			fenceCharacter = nil
 		end
 
-		local content = line:gsub("^>%s?", "")
+		-- A quote marker belongs to the Markdown only outside a fence or in a
+		-- fence the quote opened. In a fence outside any quote, a line such as
+		-- "> ```" is code, so it can't close the fence.
+		local isMarkup = fenceCharacter == nil or isFenceQuoted
+		local content = if isMarkup then line:gsub("^>%s?", "") else line
 		if fenceCharacter == nil then
 			local marker = content:match("^ ? ? ?(```+)") or content:match("^ ? ? ?(~~~+)")
 			if marker then
