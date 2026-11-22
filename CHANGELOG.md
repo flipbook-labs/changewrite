@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.15.0
+
+> [!WARNING]
+> Action required: this release has breaking changes. Each one under [Breaking changes](#breaking-changes) says what changed.
+
+Breaking 1
+
+### Breaking changes
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-cli-dark.svg" /><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-cli-light.svg" /><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-cli-light.png" alt="CLI" height="18" align="texttop" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/flag-breaking-dark.svg" /><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/flag-breaking-light.svg" /><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/flag-breaking-light.png" alt="Breaking" height="18" align="texttop" /></picture> Changewrite reads its settings from `changewrite.luau` instead of `changewrite.toml`. ([#101](https://github.com/flipbook-labs/changewrite/pull/101))
+
+Run `changewrite check --fix` to convert an existing `changewrite.toml`.
+
+Settings are now camelCase, so `unreleased_changes` becomes `unreleasedChanges` and `max_summary_length` becomes `maxSummaryLength`.
+
+A version mirror in a subfolder, such as `workspace/png/pkg.luau`, now gets its file's default pattern, so it no longer needs its own `pattern`.
+
+
 ## v0.14.1
 
 Fixes 1
