@@ -1,7 +1,7 @@
 categories = ["Features", "Fixes", "Changes", "Dependencies"]
 
 [version]
-current = "0.13.0"
+current = "0.14.0"
 mirror = [
   { file = "workspace/changewrite/pkg.luau", pattern = 'version%s*=%s*"([^"]+)"' },
   { file = "workspace/png/pkg.luau", pattern = 'version%s*=%s*"([^"]+)"' },
