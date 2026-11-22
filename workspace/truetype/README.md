@@ -8,7 +8,7 @@ Add this to the `dependencies` in `pkg.luau` and run `lute pkg install --vendor`
 
 ```luau
 truetype = {
-	rev = "v0.13.0",
+	rev = "v0.14.0",
 	sourceKind = "github",
 	source = "https://github.com/flipbook-labs/changewrite",
 	target = "workspace/truetype",
@@ -23,7 +23,7 @@ Read a font from its file, then measure text or lay it out as a path in pixels:
 
 ```luau
 local fs = require("@std/fs")
-local truetype = require("@lpm/truetype@v0.13.0")
+local truetype = require("@lpm/truetype@v0.14.0")
 
 local font = truetype.readTrueTypeFont(buffer.fromstring(fs.readFileToString("Font.ttf")))
 

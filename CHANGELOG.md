@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.14.0
+
+> [!WARNING]
+> Action required: this release has breaking changes. Each one under [Breaking changes](#breaking-changes) says what changed.
+
+Breaking 1 · Features 2 · Changes 1
+
+### Breaking changes
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-cli-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-cli-light.svg"><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-cli-light.png" alt="CLI" height="18" align="texttop"></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/flag-breaking-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/flag-breaking-light.svg"><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/flag-breaking-light.png" alt="Breaking" height="18" align="texttop"></picture> Changelog entries are Luau files that return their fields, and `changewrite check` keeps each summary to one short line. ([#98](https://github.com/flipbook-labs/changewrite/pull/98))
+
+Run `changewrite check --fix` to convert pending Markdown entries.
+
+Flags are now written `Breaking`, `Deprecated`, and `Security`, so a `[flag.breaking]` table in `changewrite.toml` becomes `[flag.Breaking]`. The conversion fixes the flags in each entry. Chip files keep their lowercase names, so past releases still show their chips.
+
+### Features
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-tooling-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-tooling-light.svg"><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-tooling-light.png" alt="Tooling" height="18" align="texttop"></picture> Publish `semver`, `png`, `truetype`, and `vector` as packages, installed from this repository with `target = "workspace/<name>"`. ([#98](https://github.com/flipbook-labs/changewrite/pull/98))
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-notes-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-notes-light.svg"><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-notes-light.png" alt="Notes" height="18" align="texttop"></picture> An entry's `body` renders collapsed under its summary, and release notes list entries without numbers. ([#99](https://github.com/flipbook-labs/changewrite/pull/99))
+
+### Changes
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-docs-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-docs-light.svg"><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-docs-light.png" alt="Docs" height="18" align="texttop"></picture> Rewrite the README with setup steps and an example workflow, and add READMEs for the `semver`, `png`, `truetype`, and `vector` packages. ([#98](https://github.com/flipbook-labs/changewrite/pull/98))
+
+
 ## v0.13.0
 
 Features 1 · Changes 1
