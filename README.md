@@ -57,7 +57,7 @@ return {
 }
 ```
 
-[`.changes/README.md`](.changes/README.md) covers every field, including a longer `body`. Markdown entries from older versions fail `changewrite check`, and `changewrite check --fix` converts them.
+[`.changes/README.md`](.changes/README.md) covers every field, including a longer `body`.
 
 Run `changewrite check` to validate a branch's entries. To fail pull requests that don't add one, run the Action again in a separate workflow triggered by `pull_request`, with `fetch-depth: 0` on checkout and `require-entry: true`. That input runs only the entry check and skips releases, so keep it out of the release workflow.
 
@@ -80,8 +80,6 @@ return {
 Like a changelog entry, the file runs with only the `string`, `table`, `math`, and `utf8` libraries and a few basic functions such as `tostring` and `typeof`, because `changewrite check` runs it on pull requests, including ones from forks. A value can come from a local, such as a color several kinds share, but the file can't `require` other modules.
 
 Changewrite bumps the version by rewriting the `current = "x.y.z"` line, so keep `version.current` a string literal. To keep the version in another file instead, such as `wally.toml`, set `version.file` and, for a file Changewrite doesn't know, `version.pattern`.
-
-Changewrite used to read `changewrite.toml`. It now fails while that file is present, and `changewrite check --fix` converts it to `changewrite.luau`, renaming `unreleased_changes` and `max_summary_length` to `unreleasedChanges` and `maxSummaryLength`. Comments in the TOML file aren't carried over.
 
 By default the publish PR is opened with `GITHUB_TOKEN`, so it won't trigger other workflows. Pass a GitHub App token or PAT as `pr-token` if it should.
 

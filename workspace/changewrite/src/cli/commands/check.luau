@@ -6,9 +6,6 @@ local richterm = require("@lpm/batteries@v1.0.1-nightly.20261115/richterm")
 
 local chomp = require("@root/chomp")
 local config = require("@root/config")
-local constants = require("@root/release/constants")
-local convertMarkdownEntry = require("@root/entries/convertMarkdownEntry")
-local convertTomlConfig = require("@root/release/convertTomlConfig")
 local detectAddedEntries = require("@root/release/detectAddedEntries")
 local findMarkdownEntries = require("@root/release/findMarkdownEntries")
 local findStaleChipAssets = require("@root/chips/findStaleChipAssets")
@@ -18,7 +15,6 @@ local getCurrentBranch = require("@root/release/getCurrentBranch")
 local getUnreleasedChangesDir = require("@root/release/getUnreleasedChangesDir")
 local isPublishBranch = require("@root/release/isPublishBranch")
 local isSameRepositoryPullRequest = require("@root/release/isSameRepositoryPullRequest")
-local parseConfig = require("@root/release/parseConfig")
 local readCategories = require("@root/release/readCategories")
 local readChipStyles = require("@root/chips/readChipStyles")
 local readCollapsedCategories = require("@root/release/readCollapsedCategories")
@@ -30,6 +26,7 @@ local readReleaseSummary = require("@root/release/readReleaseSummary")
 local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local releaseTypes = require("@root/release/types")
 local resolveBaseBranch = require("@root/release/resolveBaseBranch")
+local runFixes = require("@root/fixes/runFixes")
 local splitLines = require("@root/release/splitLines")
 local types = require("@root/cli/types")
 
@@ -44,7 +41,7 @@ parser:add("publish-branch", "option", {
 	help = "Pass on this publish branch instead of `release.branch` from changewrite.luau.",
 })
 parser:add("fix", "flag", {
-	help = "Convert changewrite.toml and Markdown entries to Luau before checking.",
+	help = "Repair what Changewrite can fix on its own, such as files written for an older version, before checking.",
 })
 parser:add("help", "flag", {
 	help = "Show this help message",
@@ -203,42 +200,6 @@ local function checkChips(entries: { releaseTypes.UnreleasedChange })
 	end
 end
 
--- Converts a changewrite.toml to changewrite.luau. It runs before anything
--- reads the config, since every reader fails while changewrite.toml is there.
-local function fixConfig()
-	local legacyPath = path.resolve(constants.LEGACY_CONFIG_FILE)
-	if not fs.exists(legacyPath) then
-		return
-	end
-	local target = path.resolve(constants.CONFIG_FILE)
-	assert(
-		not fs.exists(target),
-		`Can't convert {constants.LEGACY_CONFIG_FILE}: {constants.CONFIG_FILE} already exists. Delete whichever is out of date.`
-	)
-
-	local converted = convertTomlConfig(fs.readFileToString(legacyPath))
-	-- Loading the result catches a setting Changewrite doesn't read before the
-	-- TOML file is gone.
-	local success, err = pcall(parseConfig, converted)
-	assert(success, `Can't convert {constants.LEGACY_CONFIG_FILE}: {err}`)
-
-	fs.writeStringToFile(target, converted)
-	fs.remove(legacyPath)
-	print(`Converted {constants.LEGACY_CONFIG_FILE} to {constants.CONFIG_FILE}. Comments in it weren't carried over.`)
-end
-
-local function fixEntries()
-	for _, file in findMarkdownEntries() do
-		local target = path.parse(path.format(file):gsub("%.[mM][dD]$", ".luau"))
-		assert(not fs.exists(target), `Can't convert {file}: {target} already exists`)
-		local success, converted = pcall(convertMarkdownEntry, fs.readFileToString(file))
-		assert(success, `{file}: {converted}`)
-		fs.writeStringToFile(target, converted)
-		fs.remove(file)
-		print(`Converted {file} to {target}.`)
-	end
-end
-
 local function checkMarkdownEntries()
 	local files = findMarkdownEntries()
 	if #files == 0 then
@@ -268,8 +229,7 @@ end
 
 local function run()
 	if parser:has("fix") then
-		fixConfig()
-		fixEntries()
+		runFixes()
 	end
 	checkMarkdownEntries()
 	local entries = readUnreleasedChanges()
