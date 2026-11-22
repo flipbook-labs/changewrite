@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 
 
+## v0.14.1
+
+Fixes 1
+
+### Fixes
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-chips-dark.svg" /><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-chips-light.svg" /><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-chips-light.png" alt="Chips" height="18" align="texttop" /></picture> Close chip `<source>` and `<img>` tags with `/>`, so docs sites that read CHANGELOG.md as MDX can build it. ([#111](https://github.com/flipbook-labs/changewrite/pull/111))
+
+
 ## v0.14.0
 
 > [!WARNING]
