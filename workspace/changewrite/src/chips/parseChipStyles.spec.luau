@@ -30,7 +30,7 @@ color = "#2da44e"
 		for _, style in styles do
 			table.insert(keys, `{style.group}/{style.name}`)
 		end
-		assert.eq(table.concat(keys, " "), "kind/docs kind/engine flag/breaking flag/deprecated flag/security")
+		assert.eq(table.concat(keys, " "), "kind/docs kind/engine flag/Breaking flag/Deprecated flag/Security")
 
 		local engine = find(styles, "kind", "engine")
 		assert.eq(engine.text, "Engine")
@@ -71,26 +71,26 @@ textColor = "#eeeeee"
 
 	suite:case("restyles a flag over its built-in style", function(assert)
 		local styles = parseChipStyles([[
-[flag.breaking]
+[flag.Breaking]
 text = "Heads up"
 ]])
 
-		local breaking = find(styles, "flag", "breaking")
+		local breaking = find(styles, "flag", "Breaking")
 		assert.eq(breaking.text, "Heads up")
 		assert.eq(breaking.colorMode.light.color, "#c8264b")
 		assert.eq(breaking.colorMode.dark.color, "#ff647a")
 
-		local security = find(styles, "flag", "security")
+		local security = find(styles, "flag", "Security")
 		assert.eq(security.colorMode.dark.color, "#ff8c46")
 	end)
 
 	suite:case("derives a dark color for a flag given a new color", function(assert)
 		local styles = parseChipStyles([[
-[flag.security]
+[flag.Security]
 color = "#bc4c00"
 ]])
 
-		local security = find(styles, "flag", "security")
+		local security = find(styles, "flag", "Security")
 		assert.eq(security.colorMode.light.color, "#bc4c00")
 		assert.eq(security.colorMode.dark.color, "#f37e46")
 	end)
@@ -99,7 +99,7 @@ color = "#bc4c00"
 		local styles = parseChipStyles('categories = ["Features"]\n')
 
 		assert.eq(#styles, 3)
-		assert.eq(find(styles, "flag", "security").text, "Security")
+		assert.eq(find(styles, "flag", "Security").text, "Security")
 	end)
 
 	suite:case("rejects a kind without a text or color", function(assert)

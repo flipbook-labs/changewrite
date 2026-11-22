@@ -47,16 +47,17 @@ Run `changewrite help` for every command, and see [`action.yml`](action.yml) for
 
 ## Entries
 
-An entry is a Markdown file in `.changes/` with a version bump, a category, and a sentence or two for the changelog:
+An entry is a Luau file in `.changes/` that returns a version bump, a category, and a one-line summary for the changelog:
 
-```md
----
-bump: patch
-category: Fixes
----
-
-One or two sentences describing the change, written for the changelog.
+```luau
+return {
+	bump = "patch",
+	category = "Fixes",
+	summary = "One short sentence describing the change, written for the changelog.",
+}
 ```
+
+[`.changes/README.md`](.changes/README.md) covers every field, including a longer `body`. Markdown entries from older versions fail `changewrite check`, and `changewrite check --fix` converts them.
 
 Run `changewrite check` to validate a branch's entries. To fail pull requests that don't add one, run the Action again in a separate workflow triggered by `pull_request`, with `fetch-depth: 0` on checkout and `require-entry: true`. That input runs only the entry check and skips releases, so keep it out of the release workflow.
 

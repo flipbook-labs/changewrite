@@ -10,6 +10,7 @@ local function entry(bump: "major" | "minor" | "patch", category: string, body: 
 	return {
 		bump = bump,
 		category = category,
+		summary = body,
 		body = body,
 		flags = {},
 		file = path.parse(body),

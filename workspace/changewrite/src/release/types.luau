@@ -3,11 +3,12 @@ local semver = require("@workspace/semver")
 
 type VersionComponent = semver.VersionComponent
 
-export type ChangeFlag = "breaking" | "deprecated" | "security"
+export type ChangeFlag = "Breaking" | "Deprecated" | "Security"
 
 export type ParsedUnreleasedChange = {
 	bump: VersionComponent,
 	category: string,
+	summary: string,
 	body: string,
 	kind: string?,
 	flags: { ChangeFlag },
