@@ -3,7 +3,11 @@ return {
 	version = {
 		current = "0.13.0",
 		mirror = {
-			{ file = "pkg.luau" },
+			{ file = "workspace/changewrite/pkg.luau", pattern = 'version%s*=%s*"([^"]+)"' },
+			{ file = "workspace/png/pkg.luau", pattern = 'version%s*=%s*"([^"]+)"' },
+			{ file = "workspace/semver/pkg.luau", pattern = 'version%s*=%s*"([^"]+)"' },
+			{ file = "workspace/truetype/pkg.luau", pattern = 'version%s*=%s*"([^"]+)"' },
+			{ file = "workspace/vector/pkg.luau", pattern = 'version%s*=%s*"([^"]+)"' },
 		},
 	},
 	kind = {
