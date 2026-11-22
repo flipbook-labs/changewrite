@@ -8,7 +8,7 @@ Add this to the `dependencies` in `pkg.luau` and run `lute pkg install --vendor`
 
 ```luau
 vector = {
-	rev = "v0.14.0",
+	rev = "v0.14.1",
 	sourceKind = "github",
 	source = "https://github.com/flipbook-labs/changewrite",
 	target = "workspace/vector",
@@ -22,7 +22,7 @@ The package lands in `.lpm/vector@<rev>`. Requiring it through `@lpm` needs an `
 Build a path, write it as SVG, and paint it onto a canvas:
 
 ```luau
-local vector = require("@lpm/vector@v0.14.0")
+local vector = require("@lpm/vector@v0.14.1")
 
 local pill = vector.pillPath(0, 0, 80, 24)
 print(vector.pathToSvgData(pill)) --> M12 0L68 0C74.63 0 80 5.37 80 12...

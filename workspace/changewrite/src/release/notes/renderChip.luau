@@ -9,9 +9,9 @@ local function renderChip(chip: planChips.PlannedChip, assetsUrl: string): strin
 	local alt = chip.text:gsub("&", "&amp;"):gsub('"', "&quot;"):gsub("<", "&lt;")
 	return table.concat({
 		"<picture>",
-		`<source media="(prefers-color-scheme: dark)" srcset="{assetsUrl}/{chip.files.dark}">`,
-		`<source media="(prefers-color-scheme: light)" srcset="{assetsUrl}/{chip.files.light}">`,
-		`<img src="{assetsUrl}/{chip.files.fallback}" alt="{alt}" height="{chipDrawing.metrics.height}" align="texttop">`,
+		`<source media="(prefers-color-scheme: dark)" srcset="{assetsUrl}/{chip.files.dark}" />`,
+		`<source media="(prefers-color-scheme: light)" srcset="{assetsUrl}/{chip.files.light}" />`,
+		`<img src="{assetsUrl}/{chip.files.fallback}" alt="{alt}" height="{chipDrawing.metrics.height}" align="texttop" />`,
 		"</picture>",
 	})
 end

@@ -23,9 +23,9 @@ test.suite("renderChip", function(suite)
 
 		assert.eq(
 			markup,
-			'<picture><source media="(prefers-color-scheme: dark)" srcset="https://example.com/assets/kind-engine-dark.svg">'
-				.. '<source media="(prefers-color-scheme: light)" srcset="https://example.com/assets/kind-engine-light.svg">'
-				.. '<img src="https://example.com/assets/kind-engine-light.png" alt="Engine" height="18" align="texttop"></picture>'
+			'<picture><source media="(prefers-color-scheme: dark)" srcset="https://example.com/assets/kind-engine-dark.svg" />'
+				.. '<source media="(prefers-color-scheme: light)" srcset="https://example.com/assets/kind-engine-light.svg" />'
+				.. '<img src="https://example.com/assets/kind-engine-light.png" alt="Engine" height="18" align="texttop" /></picture>'
 		)
 	end)
 
