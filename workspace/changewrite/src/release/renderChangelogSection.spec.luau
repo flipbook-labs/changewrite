@@ -6,18 +6,44 @@ local types = require("@root/release/types")
 
 type UnreleasedChange = types.UnreleasedChange
 
-local function entry(bump: "major" | "minor" | "patch", category: string, body: string): UnreleasedChange
+local function entry(
+	bump: "major" | "minor" | "patch",
+	category: string,
+	summary: string,
+	body: string?
+): UnreleasedChange
 	return {
 		bump = bump,
 		category = category,
-		summary = body,
+		summary = summary,
 		body = body,
 		flags = {},
-		file = path.parse(body),
+		file = path.parse(summary),
 	}
 end
 
 test.suite("renderChangelogSection", function(suite)
+	suite:case("indents an entry's body under its bullet as plain paragraphs", function(assert)
+		local section = renderChangelogSection("0.4.0", {
+			entry("minor", "Features", "Add change partials.", "Each one is a file.\n\nSee the README."),
+		}, { "Features" })
+
+		assert.eq(
+			section,
+			table.concat({
+				"## v0.4.0",
+				"",
+				"### Features",
+				"",
+				"- Add change partials.",
+				"",
+				"  Each one is a file.",
+				"",
+				"  See the README.",
+			}, "\n")
+		)
+	end)
+
 	suite:case("orders category headings from the configuration", function(assert)
 		local section = renderChangelogSection("0.4.0", {
 			entry("minor", "Features", "Add change partials."),
