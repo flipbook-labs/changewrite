@@ -10,6 +10,14 @@ mirror = [
   { file = "workspace/vector/pkg.luau", pattern = 'version%s*=%s*"([^"]+)"' },
   { file = "README.md", pattern = "\n%- uses: flipbook%-labs/changewrite@v([%d%.]+)" },
   { file = "README.md", pattern = "\n +%- uses: flipbook%-labs/changewrite@v([%d%.]+)" },
+  { file = "workspace/png/README.md", pattern = "rev = \"v([%d%.]+)\"" },
+  { file = "workspace/png/README.md", pattern = "@lpm/png@v([%d%.]+)" },
+  { file = "workspace/semver/README.md", pattern = "rev = \"v([%d%.]+)\"" },
+  { file = "workspace/semver/README.md", pattern = "@lpm/semver@v([%d%.]+)" },
+  { file = "workspace/truetype/README.md", pattern = "rev = \"v([%d%.]+)\"" },
+  { file = "workspace/truetype/README.md", pattern = "@lpm/truetype@v([%d%.]+)" },
+  { file = "workspace/vector/README.md", pattern = "rev = \"v([%d%.]+)\"" },
+  { file = "workspace/vector/README.md", pattern = "@lpm/vector@v([%d%.]+)" },
 ]
 
 [kind]
