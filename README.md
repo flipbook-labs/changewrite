@@ -1,21 +1,77 @@
-# changewrite
+# Changewrite
 
-Changewrite is a CLI tool and GitHub Action for release automation: it creates release PRs, drafts and publishes GitHub releases, and exposes release state for downstream jobs.
+Changewrite turns changelog entries into GitHub releases. Each pull request adds a short entry, and Changewrite keeps a publish PR open that bumps the version and assembles the changelog. Merging that PR tags the release, drafts its notes, and publishes it.
 
-## Development
+It runs as a GitHub Action, with a CLI for checking entries and previewing notes locally.
 
-Changewrite uses [Rokit](https://github.com/rojo-rbx/rokit) for toolchain management.
+## Install
 
-```sh
-rokit install
-lute run install   # vendor dependencies into .lpm/
-lute run analyze   # run the stylua and luau-lsp checks
-lute run build     # compile the changewrite binary into build/
-lute test          # run the *.spec.luau test suite
+As a GitHub Action:
+
+```yaml
+- uses: flipbook-labs/changewrite@v0.13.0
 ```
 
-`lute run install` copies the dependencies into `.lpm/<key>@<rev>` folders, and code requires them through the `lpm` alias in `.config.luau`, which `lute compile` bundles into the binary. It also fetches the shared [agent-skills](https://github.com/flipbook-labs/agent-skills) library that [`AGENTS.md`](AGENTS.md) routes agents to. That library is a dev dependency, so it lands in `.lpm/` but is not bundled into the binary.
+With Rokit, for the CLI:
+
+```sh
+rokit add flipbook-labs/changewrite
+```
+
+## Use
+
+1. Run `changewrite init` at the repository root. It creates `changewrite.toml` and mirrors the version into the manifests it finds, such as `wally.toml` and `pkg.luau`.
+2. Add a workflow that runs the Action on every push to `main`:
+
+   ```yaml
+   on:
+     push:
+       branches: [main]
+
+   jobs:
+     release:
+       runs-on: ubuntu-latest
+       permissions:
+         contents: write
+         pull-requests: write
+       steps:
+         - uses: actions/checkout@v7
+           with:
+             fetch-depth: 0
+         - uses: flipbook-labs/changewrite@v0.13.0
+   ```
+
+3. Have each pull request add an entry under `.changes/`.
+
+Run `changewrite help` for every command, and see [`action.yml`](action.yml) for every Action input and output.
+
+## Entries
+
+An entry is a Markdown file in `.changes/` with a version bump, a category, and a sentence or two for the changelog:
+
+```md
+---
+bump: patch
+category: Fixes
+---
+
+One or two sentences describing the change, written for the changelog.
+```
+
+Run `changewrite check` to validate a branch's entries. To fail pull requests that don't add one, run the Action again in a separate workflow triggered by `pull_request`, with `fetch-depth: 0` on checkout and `require-entry: true`. That input runs only the entry check and skips releases, so keep it out of the release workflow.
+
+## Configure
+
+`changewrite.toml` holds the current version, the files it's mirrored into, and the categories and kinds entries can use. The publish PR's title and body, and hooks that run after the release is drafted or published, are Action inputs.
+
+By default the publish PR is opened with `GITHUB_TOKEN`, so it won't trigger other workflows. Pass a GitHub App token or PAT as `pr-token` if it should.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-[MIT](LICENSE)
+MIT.
+
+The bundled Schibsted Grotesk font is licensed under the [SIL Open Font License](workspace/changewrite/src/chips/font/OFL.txt).
