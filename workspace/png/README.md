@@ -8,7 +8,7 @@ Add this to the `dependencies` in `pkg.luau` and run `lute pkg install --vendor`
 
 ```luau
 png = {
-	rev = "v0.14.1",
+	rev = "v0.15.0",
 	sourceKind = "github",
 	source = "https://github.com/flipbook-labs/changewrite",
 	target = "workspace/png",
@@ -23,7 +23,7 @@ Pass the image's size and a buffer of straight RGBA pixels, one byte per channel
 
 ```luau
 local fs = require("@std/fs")
-local png = require("@lpm/png@v0.14.1")
+local png = require("@lpm/png@v0.15.0")
 
 local width, height = 16, 16
 local pixels = buffer.create(width * height * 4)
