@@ -15,10 +15,12 @@ local function mapOutsideFences(text: string, mapLine: (line: string) -> string)
 	local fenceLength = 0
 	-- A fence that opened inside a blockquote or a list item also closes when
 	-- that block ends, even without a closing fence, so the lines after it are
-	-- outside again. A list item ends at the first non-blank line indented less
-	-- than the item's text, so `listIndent` tracks that indent for the current
-	-- item, and `fenceIndent` keeps it for the item the open fence is in.
+	-- outside again. A blockquote ends at a line without `>`.
 	local isFenceQuoted = false
+	-- A list item ends at the first non-blank line indented less than the
+	-- item's text. `listIndent` is that indent for the list item the current
+	-- line is in, or 0 outside a list. `fenceIndent` is the same indent for the
+	-- item the open fence is in.
 	local fenceIndent = 0
 	local listIndent = 0
 	for line in (text .. "\n"):gmatch("(.-)\n") do
@@ -40,8 +42,9 @@ local function mapOutsideFences(text: string, mapLine: (line: string) -> string)
 
 		if fenceCharacter == nil then
 			-- The text of a list item starts after its marker, and the lines
-			-- after it are indented to match. A fence marker counts once that
-			-- indent is removed.
+			-- after it are indented to match. That indent is removed before
+			-- looking for a fence marker, which may itself be indented up to
+			-- three spaces.
 			local bullet = content:match("^( *[-*+] +)") or content:match("^( *%d+[.)] +)")
 			local itemText = content
 			if bullet then
