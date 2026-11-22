@@ -3,11 +3,11 @@ return {
 	version = {
 		current = "0.13.0",
 		mirror = {
-			{ file = "workspace/changewrite/pkg.luau", pattern = 'version%s*=%s*"([^"]+)"' },
-			{ file = "workspace/png/pkg.luau", pattern = 'version%s*=%s*"([^"]+)"' },
-			{ file = "workspace/semver/pkg.luau", pattern = 'version%s*=%s*"([^"]+)"' },
-			{ file = "workspace/truetype/pkg.luau", pattern = 'version%s*=%s*"([^"]+)"' },
-			{ file = "workspace/vector/pkg.luau", pattern = 'version%s*=%s*"([^"]+)"' },
+			{ file = "workspace/changewrite/pkg.luau" },
+			{ file = "workspace/png/pkg.luau" },
+			{ file = "workspace/semver/pkg.luau" },
+			{ file = "workspace/truetype/pkg.luau" },
+			{ file = "workspace/vector/pkg.luau" },
 			{ file = "README.md", pattern = "\n%- uses: flipbook%-labs/changewrite@v([%d%.]+)" },
 			{ file = "README.md", pattern = "\n +%- uses: flipbook%-labs/changewrite@v([%d%.]+)" },
 			{ file = "workspace/png/README.md", pattern = 'rev = "v([%d%.]+)"' },
