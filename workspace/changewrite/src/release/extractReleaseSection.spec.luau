@@ -107,6 +107,64 @@ test.suite("extractReleaseSection", function(suite)
 		assert.strNotContains(section, "- Older.")
 	end)
 
+	suite:case("ends a fence in a list item when the item ends", function(assert)
+		local changelog = table.concat({
+			"## v1.0.0",
+			"",
+			"- Add a script.",
+			"",
+			"  ```sh",
+			"  echo hello",
+			"",
+			"## v0.9.0",
+			"",
+			"- Older.",
+		}, "\n")
+
+		local section = extractReleaseSection(changelog, "1.0.0")
+		assert.strContains(section, "echo hello")
+		assert.strNotContains(section, "- Older.")
+	end)
+
+	suite:case("ends a fence that opens on a bullet's line when the item ends", function(assert)
+		local changelog = table.concat({
+			"## v1.0.0",
+			"",
+			"- ```sh",
+			"  echo hello",
+			"## v0.9.0",
+			"",
+			"- Older.",
+		}, "\n")
+
+		local section = extractReleaseSection(changelog, "1.0.0")
+		assert.strContains(section, "echo hello")
+		assert.strNotContains(section, "- Older.")
+	end)
+
+	suite:case("keeps a release heading in a list item's closed fence", function(assert)
+		local changelog = table.concat({
+			"## v1.0.0",
+			"",
+			"- Document the format.",
+			"",
+			"  ```markdown",
+			"  ## v0.5.0",
+			"  ```",
+			"",
+			"- Last line.",
+			"",
+			"## v0.9.0",
+			"",
+			"- Older.",
+		}, "\n")
+
+		local section = extractReleaseSection(changelog, "1.0.0")
+		assert.strContains(section, "  ## v0.5.0")
+		assert.strContains(section, "- Last line.")
+		assert.strNotContains(section, "- Older.")
+	end)
+
 	suite:case("ends a quoted fence when its quote ends", function(assert)
 		local changelog = table.concat({
 			"## v1.0.0",
