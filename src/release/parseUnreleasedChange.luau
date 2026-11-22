@@ -31,7 +31,7 @@ local function readFlags(value: unknown): { ChangeFlag }
 	if value == nil then
 		return {}
 	end
-	assert(typeof(value) == "table", `Unreleased change flags must be a list, such as \{ "breaking" \}`)
+	assert(typeof(value) == "table", `Unreleased change flags must be a list, such as \{ "Breaking" \}`)
 
 	local flags: { ChangeFlag } = {}
 	for _, flag in value :: { unknown } do

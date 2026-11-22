@@ -4,7 +4,7 @@ local semverTypes = require("@root/semver/types")
 
 type VersionComponent = semverTypes.VersionComponent
 
-export type ChangeFlag = "breaking" | "deprecated" | "security"
+export type ChangeFlag = "Breaking" | "Deprecated" | "Security"
 
 export type ParsedUnreleasedChange = {
 	bump: VersionComponent,
