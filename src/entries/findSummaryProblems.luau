@@ -5,7 +5,7 @@
 local function findSummaryProblems(summary: string, maxLength: number): { string }
 	local problems: { string } = {}
 	if summary:find("\n", 1, true) then
-		table.insert(problems, "Keep the summary on one line. Put any details in `description`.")
+		table.insert(problems, "Keep the summary on one line. Put any details in `body`.")
 	end
 
 	-- `utf8.len` returns nil for invalid UTF-8, which falls back to bytes.
@@ -13,7 +13,7 @@ local function findSummaryProblems(summary: string, maxLength: number): { string
 	if length > maxLength then
 		table.insert(
 			problems,
-			`The summary is {length} characters, over the limit of {maxLength}. Keep it to one short sentence and put any details in \`description\`.`
+			`The summary is {length} characters, over the limit of {maxLength}. Keep it to one short sentence and put any details in \`body\`.`
 		)
 	end
 	return problems

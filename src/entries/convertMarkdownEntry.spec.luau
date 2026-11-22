@@ -27,13 +27,13 @@ test.suite("convertMarkdownEntry", function(suite)
 		assert.strContains(source, '\tsummary = "Fix a thing that wrapped.",\n')
 	end)
 
-	suite:case("moves the paragraphs after the first into a block-string description", function(assert)
+	suite:case("moves the paragraphs after the first into a block-string body", function(assert)
 		local source = convertMarkdownEntry("---\nbump: patch\n---\n\nFix a thing.\n\nMore detail.\n\nEven more.\n")
 
-		assert.strContains(source, "\tdescription = [[\nMore detail.\n\nEven more.\n]],\n")
+		assert.strContains(source, "\tbody = [[\nMore detail.\n\nEven more.\n]],\n")
 	end)
 
-	suite:case("raises the block-string level when the description contains ]]", function(assert)
+	suite:case("raises the block-string level when the body contains ]]", function(assert)
 		local source = convertMarkdownEntry("---\nbump: patch\n---\n\nFix a thing.\n\nIndex t[a[1]] here.\n")
 
 		assert.strContains(source, "[=[\nIndex t[a[1]] here.\n]=]")
