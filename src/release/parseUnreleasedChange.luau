@@ -18,7 +18,7 @@ local FIELDS = {
 	"highlight",
 	"pr",
 	"summary",
-	"description",
+	"body",
 }
 
 local function readString(fields: { [string]: unknown }, name: string): string?
@@ -60,7 +60,7 @@ end
 
 -- An entry is a Luau file that returns a table of its fields. `runEntry` runs
 -- it with a limited set of globals, so a value can be computed, such as a
--- description joined from paragraphs.
+-- body joined from paragraphs.
 --
 -- `categories` and `kinds` are the lists `changewrite.toml` configures. Once a
 -- repo configures either list, every entry has to pick a value from it, so no
@@ -129,8 +129,8 @@ local function parseUnreleasedChange(
 		highlight = nil
 	end
 
-	local description = chomp(readString(fields, "description") or "")
-	local body = if description == "" then summary else `{summary}\n\n{description}`
+	local detail = chomp(readString(fields, "body") or "")
+	local body = if detail == "" then summary else `{summary}\n\n{detail}`
 
 	return {
 		bump = bump,

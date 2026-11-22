@@ -55,12 +55,12 @@ return {
 		assert.eq(change.summary, "Fix a thing.")
 	end)
 
-	suite:case("joins the summary and description with a blank line", function(assert)
+	suite:case("joins the summary and body with a blank line", function(assert)
 		local source = [==[
 return {
 	bump = "patch",
 	summary = "Fix a thing.",
-	description = [[
+	body = [[
 It needs a newer Lute.
 
 See the README.
@@ -72,12 +72,12 @@ See the README.
 		assert.eq(change.body, "Fix a thing.\n\nIt needs a newer Lute.\n\nSee the README.")
 	end)
 
-	suite:case("builds a description from paragraphs joined with table.concat", function(assert)
+	suite:case("builds a body from paragraphs joined with table.concat", function(assert)
 		local source = [[
 return {
 	bump = "patch",
 	summary = "Fix a thing.",
-	description = table.concat({
+	body = table.concat({
 		"It needs a newer Lute.",
 		"See the README.",
 	}, "\n\n"),

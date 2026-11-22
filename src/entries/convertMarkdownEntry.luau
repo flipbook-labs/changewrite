@@ -40,8 +40,8 @@ local function parseFlags(value: string): { string }
 end
 
 -- Converts a Markdown entry to the Luau format. The first paragraph of the
--- body becomes the summary, joined onto one line, and the rest becomes the
--- description. Markdown renders both the same way, so the entry's text in the
+-- Markdown body becomes the summary, joined onto one line, and the rest becomes
+-- the entry's `body`. Markdown renders both the same way, so the entry's text in the
 -- changelog doesn't change.
 local function convertMarkdownEntry(text: string): string
 	local frontmatter = parseFrontmatter(text, "Markdown entry")
@@ -55,7 +55,7 @@ local function convertMarkdownEntry(text: string): string
 
 	local body = frontmatter.body
 	assert(body ~= "", "Markdown entry has no body")
-	local summaryLines, description = body:match("^(.-)\n%s*\n(.*)$")
+	local summaryLines, rest = body:match("^(.-)\n%s*\n(.*)$")
 	if not summaryLines then
 		summaryLines = body
 	end
@@ -84,8 +84,8 @@ local function convertMarkdownEntry(text: string): string
 		table.insert(lines, `\tpr = {digits},`)
 	end
 	table.insert(lines, `\tsummary = {quote(summary)},`)
-	if description and chomp(description) ~= "" then
-		table.insert(lines, `\tdescription = {renderBlockString(chomp(description))},`)
+	if rest and chomp(rest) ~= "" then
+		table.insert(lines, `\tbody = {renderBlockString(chomp(rest))},`)
 	end
 	table.insert(lines, "}")
 	table.insert(lines, "")
