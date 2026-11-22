@@ -132,14 +132,13 @@ local function parseUnreleasedChange(
 		highlight = nil
 	end
 
-	local detail = chomp(readString(fields, "body") or "")
-	local body = if detail == "" then summary else `{summary}\n\n{detail}`
+	local body = chomp(readString(fields, "body") or "")
 
 	return {
 		bump = bump,
 		category = category or DEFAULT_CATEGORY,
 		summary = summary,
-		body = body,
+		body = if body == "" then nil else body,
 		kind = kind,
 		flags = readFlags(fields.flags),
 		highlight = highlight,
