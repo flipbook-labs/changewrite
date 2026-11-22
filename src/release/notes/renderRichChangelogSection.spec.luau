@@ -25,9 +25,9 @@ local CHIPS: notesTypes.ChipMarkup = {
 	["kind/docs"] = "[docs]",
 	["kind/engine"] = "[engine]",
 	["kind/ui"] = "[ui]",
-	["flag/breaking"] = "[breaking]",
-	["flag/deprecated"] = "[deprecated]",
-	["flag/security"] = "[security]",
+	["flag/Breaking"] = "[breaking]",
+	["flag/Deprecated"] = "[deprecated]",
+	["flag/Security"] = "[security]",
 }
 
 local function entry(summary: string, fields: EntryFields): UnreleasedChange
@@ -50,7 +50,7 @@ test.suite("renderRichChangelogSection", function(suite)
 			entry("Remove the old loader.", {
 				category = "Features",
 				kind = "engine",
-				flags = { "breaking" },
+				flags = { "Breaking" },
 				highlight = "A new loader",
 				pr = 9,
 				body = "Call the new loader instead.",
@@ -164,7 +164,7 @@ test.suite("renderRichChangelogSection", function(suite)
 
 	suite:case("recommends updating when an entry is flagged as a security fix", function(assert)
 		local section = renderRichChangelogSection("1.0.1", {
-			entry("Escape story names.", { kind = "ui", flags = { "security" } }),
+			entry("Escape story names.", { kind = "ui", flags = { "Security" } }),
 		}, {
 			collapsed = {},
 			chips = CHIPS,

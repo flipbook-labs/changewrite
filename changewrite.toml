@@ -7,9 +7,9 @@ mirror = [
 ]
 
 [kind]
-notes = { text = "Notes", color = "#7c5cff" }
-chips = { text = "Chips", color = "#d6409f" }
-publishing = { text = "Publishing", color = "#2f81f7" }
-cli = { text = "CLI", color = "#1f883d" }
-docs = { text = "Docs", color = "#bf8700" }
-tooling = { text = "Tooling", color = "#6e7781" }
+Notes = { text = "Notes", color = "#7c5cff" }
+Chips = { text = "Chips", color = "#d6409f" }
+Publishing = { text = "Publishing", color = "#2f81f7" }
+CLI = { text = "CLI", color = "#1f883d" }
+Docs = { text = "Docs", color = "#bf8700" }
+Tooling = { text = "Tooling", color = "#6e7781" }

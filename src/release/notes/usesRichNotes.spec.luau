@@ -25,7 +25,7 @@ test.suite("usesRichNotes", function(suite)
 		local withKind = plainEntry()
 		withKind.kind = "engine"
 		local withFlag = plainEntry()
-		withFlag.flags = { "security" }
+		withFlag.flags = { "Security" }
 		local withHighlight = plainEntry()
 		withHighlight.highlight = "A headline"
 		local withPr = plainEntry()

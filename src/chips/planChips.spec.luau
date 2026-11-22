@@ -34,4 +34,15 @@ test.suite("planChips", function(suite)
 		assert.eq(restyled.files.light, first.files.light)
 		assert.eq(restyled.files.fallback, first.files.fallback)
 	end)
+
+	suite:case("names the files in lowercase and keys the chip by its name", function(assert)
+		local named = style("CLI", "#1f883d")
+		named.name = "CLI"
+		local chip = planChips({ named })[1]
+
+		assert.eq(chip.key, "kind/CLI")
+		assert.eq(chip.files.light, "kind-cli-light.svg")
+		assert.eq(chip.files.fallback, "kind-cli-light.png")
+		assert.eq(chip.spec.name, "kind-cli")
+	end)
 end)

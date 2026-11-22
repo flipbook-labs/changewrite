@@ -1,4 +1,5 @@
 local chomp = require("@root/chomp")
+local constants = require("@root/release/constants")
 local parseFrontmatter = require("@root/release/parseFrontmatter")
 local stripQuotes = require("@root/release/stripQuotes")
 
@@ -27,13 +28,26 @@ local function renderBlockString(text: string): string
 	return `[{equals}[\n{text}\n]{equals}]`
 end
 
+-- Markdown entries wrote flags in lowercase, such as `breaking`, and Luau
+-- entries write them as `Breaking`. A flag that matches a known one in any case
+-- takes its current spelling. Anything else is kept as written, so the
+-- converted entry fails `check` with the list of flags it can use.
+local function canonicalFlag(flag: string): string
+	for _, known in constants.CHANGE_FLAGS do
+		if known:lower() == flag:lower() then
+			return known
+		end
+	end
+	return flag
+end
+
 local function parseFlags(value: string): { string }
 	local flags = {}
 	local list = value:match("^%[(.*)%]$") or value
 	for _, rawFlag in list:split(",") do
 		local flag = stripQuotes(chomp(rawFlag))
 		if flag ~= "" then
-			table.insert(flags, flag)
+			table.insert(flags, canonicalFlag(flag))
 		end
 	end
 	return flags

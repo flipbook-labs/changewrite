@@ -22,10 +22,16 @@ export type PlannedChip = {
 -- drawing it. A chip's filenames come from its group (`kind` or `flag`) and
 -- name alone, so restyling it rewrites the same files and every release that
 -- links to them shows the new look.
+--
+-- The filenames use the name in lowercase, such as `flag-breaking-light.svg`
+-- for the `Breaking` flag. Names used to be lowercase, so releases published
+-- before the switch to names like `Breaking` keep finding their chips. Two
+-- names that differ only in case can't both exist, because parseChipStyles
+-- rejects them.
 local function planChips(styles: { ChipStyle }): { PlannedChip }
 	local planned: { PlannedChip } = {}
 	for _, style in styles do
-		local stem = `{style.group}-{style.name}`
+		local stem = `{style.group}-{style.name:lower()}`
 		table.insert(planned, {
 			key = `{style.group}/{style.name}`,
 			text = style.text,
