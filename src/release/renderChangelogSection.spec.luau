@@ -10,20 +10,20 @@ local function entry(
 	bump: "major" | "minor" | "patch",
 	category: string,
 	summary: string,
-	description: string?
+	body: string?
 ): UnreleasedChange
 	return {
 		bump = bump,
 		category = category,
 		summary = summary,
-		description = description,
+		body = body,
 		flags = {},
 		file = path.parse(summary),
 	}
 end
 
 test.suite("renderChangelogSection", function(suite)
-	suite:case("collapses an entry's description under its bullet", function(assert)
+	suite:case("collapses an entry's body under its bullet", function(assert)
 		local section = renderChangelogSection("0.4.0", {
 			entry("minor", "Features", "Add change partials.", "Each one is a file.\n\nSee the README."),
 		}, { "Features" })

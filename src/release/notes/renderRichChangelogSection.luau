@@ -34,7 +34,7 @@ local function renderRichChangelogSection(
 	for _, entry in entries do
 		local copy = table.clone(entry)
 		copy.summary = demoteHeadings(entry.summary)
-		copy.description = if entry.description then demoteHeadings(entry.description) else nil
+		copy.body = if entry.body then demoteHeadings(entry.body) else nil
 		table.insert(demotedEntries, copy)
 	end
 	entries = demotedEntries

@@ -22,7 +22,7 @@ return {
 		assert.eq(change.bump, "minor")
 		assert.eq(change.category, "Features")
 		assert.eq(change.summary, "Add support for unreleased changes.")
-		assert.eq(change.description, nil)
+		assert.eq(change.body, nil)
 	end)
 
 	suite:case("reads a table returned through a local", function(assert)
@@ -70,7 +70,7 @@ See the README.
 		local change = parseUnreleasedChange(source)
 
 		assert.eq(change.summary, "Fix a thing.")
-		assert.eq(change.description, "It needs a newer Lute.\n\nSee the README.")
+		assert.eq(change.body, "It needs a newer Lute.\n\nSee the README.")
 	end)
 
 	suite:case("builds a description from paragraphs joined with table.concat", function(assert)
@@ -86,7 +86,7 @@ return {
 ]]
 		local change = parseUnreleasedChange(source)
 
-		assert.eq(change.description, "It needs a newer Lute.\n\nSee the README.")
+		assert.eq(change.body, "It needs a newer Lute.\n\nSee the README.")
 	end)
 
 	suite:case("rejects an entry that requires a module", function(assert)

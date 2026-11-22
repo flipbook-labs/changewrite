@@ -135,7 +135,7 @@ local function parseUnreleasedChange(
 		bump = bump,
 		category = category or DEFAULT_CATEGORY,
 		summary = summary,
-		description = if description == "" then nil else description,
+		body = if description == "" then nil else description,
 		kind = kind,
 		flags = readFlags(fields.flags),
 		highlight = highlight,

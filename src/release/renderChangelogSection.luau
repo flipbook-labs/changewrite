@@ -1,5 +1,5 @@
 local renderBullet = require("@root/release/renderBullet")
-local renderCollapsedDescription = require("@root/release/renderCollapsedDescription")
+local renderCollapsedBody = require("@root/release/renderCollapsedBody")
 local types = require("@root/release/types")
 
 type UnreleasedChange = types.UnreleasedChange
@@ -35,8 +35,8 @@ local function renderChangelogSection(
 		local bullets: { string } = {}
 		for _, entry in byCategory[category] do
 			local text = entry.summary
-			if entry.description then
-				text ..= `\n\n{renderCollapsedDescription(entry.description)}`
+			if entry.body then
+				text ..= `\n\n{renderCollapsedBody(entry.body)}`
 			end
 			table.insert(bullets, renderBullet(text))
 		end

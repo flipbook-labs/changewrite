@@ -12,7 +12,7 @@ local function renderCategory(
 ): string
 	local items: { string } = {}
 	for _, entry in entries do
-		-- A highlighted entry's summary and description are under Highlights, so
+		-- A highlighted entry's summary and body are under Highlights, so
 		-- here it is listed by title to keep the category scannable.
 		table.insert(items, renderEntryText(entry, context, true))
 	end

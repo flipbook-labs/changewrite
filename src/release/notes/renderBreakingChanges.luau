@@ -13,20 +13,20 @@ local function renderBreakingChanges(entries: { UnreleasedChange }, context: not
 			continue
 		end
 
-		local body = entry.summary
+		local text = entry.summary
 		if entry.pr then
-			body ..= ` ({renderPullRequestLink(entry.pr, context.repositoryUrl)})`
+			text ..= ` ({renderPullRequestLink(entry.pr, context.repositoryUrl)})`
 		end
-		-- A breaking change is where a reader has to act, so its description is
+		-- A breaking change is where a reader has to act, so its body is
 		-- open here rather than collapsed.
-		if entry.description then
-			body ..= `\n\n{entry.description}`
+		if entry.body then
+			text ..= `\n\n{entry.body}`
 		end
 		local lead = renderChips(entry, context.chips) .. " "
 		if entry.highlight then
-			table.insert(items, `{lead}**{entry.highlight}**\n\n{body}`)
+			table.insert(items, `{lead}**{entry.highlight}**\n\n{text}`)
 		else
-			table.insert(items, lead .. body)
+			table.insert(items, lead .. text)
 		end
 	end
 
