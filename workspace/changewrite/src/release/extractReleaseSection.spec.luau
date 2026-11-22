@@ -107,6 +107,20 @@ test.suite("extractReleaseSection", function(suite)
 		assert.strNotContains(section, "- Older.")
 	end)
 
+	suite:case("treats a backtick run followed by more backticks as a code span", function(assert)
+		local changelog = table.concat({
+			"## v1.0.0",
+			"",
+			"``` `name` ```",
+			"",
+			"## v0.9.0",
+			"",
+			"- Older.",
+		}, "\n")
+
+		assert.eq(extractReleaseSection(changelog, "1.0.0"), "``` `name` ```")
+	end)
+
 	suite:case("ends a fence in a list item when the item ends", function(assert)
 		local changelog = table.concat({
 			"## v1.0.0",

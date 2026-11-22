@@ -87,7 +87,9 @@ local function mapOutsideFences(text: string, mapLine: (line: string) -> string)
 				itemText = removeIndent(content, listIndent)
 			end
 
-			local marker = itemText:match("^ ? ? ?(```+)") or itemText:match("^ ? ? ?(~~~+)")
+			-- A backtick fence's opening line can't have another backtick after
+			-- the marker, so a line such as "``` `name` ```" is a code span.
+			local marker: string? = itemText:match("^ ? ? ?(```+)[^`]*$") or itemText:match("^ ? ? ?(~~~+)")
 			if marker then
 				fenceCharacter = marker:sub(1, 1)
 				fenceLength = #marker
