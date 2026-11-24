@@ -24,7 +24,7 @@ local function prependSection(changelog: string, section: string): string
 	if releases ~= "" then
 		table.insert(parts, releases)
 	end
-	return table.concat(parts, "\n\n\n") .. "\n"
+	return table.concat(parts, "\n\n") .. "\n"
 end
 
 return prependSection
