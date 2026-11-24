@@ -4,31 +4,48 @@ local types = require("@root/release/types")
 
 type UnreleasedChange = types.UnreleasedChange
 
-local function renderCategory(
-	category: string,
-	entries: { UnreleasedChange },
-	context: notesTypes.NotesContext,
-	isCollapsed: boolean
-): string
+local function renderList(entries: { UnreleasedChange }, context: notesTypes.NotesContext): string
 	local items: { string } = {}
 	for _, entry in entries do
 		-- A highlighted entry's summary and body are under Highlights, so
 		-- here it is listed by title to keep the category scannable.
 		table.insert(items, renderEntryText(entry, context, true))
 	end
-	local list = table.concat(items, "\n\n")
+	return table.concat(items, "\n\n")
+end
 
-	if isCollapsed then
-		return table.concat({
+-- A collapsed category keeps its heading so it reads as part of the notes,
+-- but shows only its first `visibleCount` entries and folds the rest under a
+-- toggle. A category that isn't collapsed passes `math.huge`.
+local function renderCategory(
+	category: string,
+	entries: { UnreleasedChange },
+	context: notesTypes.NotesContext,
+	visibleCount: number
+): string
+	if #entries <= visibleCount then
+		return `### {category}\n\n{renderList(entries, context)}`
+	end
+
+	local blocks = { `### {category}` }
+	if visibleCount > 0 then
+		table.insert(blocks, renderList(table.move(entries, 1, visibleCount, 1, {}), context))
+	end
+	local hidden = table.move(entries, visibleCount + 1, #entries, 1, {})
+	table.insert(
+		blocks,
+		table.concat({
 			"<details>",
-			`<summary>{category} ({#entries})</summary>`,
+			if visibleCount > 0
+				then `<summary>See {#hidden} more</summary>`
+				else `<summary>See all {#hidden}</summary>`,
 			"",
-			list,
+			renderList(hidden, context),
 			"",
 			"</details>",
 		}, "\n")
-	end
-	return `### {category}\n\n{list}`
+	)
+	return table.concat(blocks, "\n\n")
 end
 
 return renderCategory

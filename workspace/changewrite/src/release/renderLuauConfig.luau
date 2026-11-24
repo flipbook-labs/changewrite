@@ -12,6 +12,7 @@ local MAX_INLINE_WIDTH = 100
 local KEY_ORDER: { string } = {
 	"categories",
 	"collapsed",
+	"collapsedVisible",
 	"unreleasedChanges",
 	"maxSummaryLength",
 	"version",

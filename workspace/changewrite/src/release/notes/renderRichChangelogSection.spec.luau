@@ -130,14 +130,104 @@ test.suite("renderRichChangelogSection", function(suite)
 				"",
 				`[ui] Fix a crash on reload. ([#7]({REPO}/pull/7))`,
 				"",
-				"<details>",
-				"<summary>Internal (1)</summary>",
+				"### Internal",
 				"",
 				`- Restructure CI. ([#3]({REPO}/pull/3))`,
+			}, "\n")
+		)
+	end)
+
+	suite:case("shows a collapsed category's first entries and folds the rest under a toggle", function(assert)
+		local entries: { UnreleasedChange } = {}
+		for index = 1, 7 do
+			table.insert(entries, entry(`Chore {index}.`, { category = "Internal", kind = "docs", pr = index }))
+		end
+
+		local section = renderRichChangelogSection("1.0.1", entries, {
+			categories = { "Internal" },
+			collapsed = { "Internal" },
+			collapsedVisible = 5,
+			chips = CHIPS,
+		})
+
+		assert.eq(
+			section,
+			table.concat({
+				"## v1.0.1",
+				"",
+				"Internal 7",
+				"",
+				"### Internal",
+				"",
+				"[docs] Chore 1. (#1)",
+				"",
+				"[docs] Chore 2. (#2)",
+				"",
+				"[docs] Chore 3. (#3)",
+				"",
+				"[docs] Chore 4. (#4)",
+				"",
+				"[docs] Chore 5. (#5)",
+				"",
+				"<details>",
+				"<summary>See 2 more</summary>",
+				"",
+				"[docs] Chore 6. (#6)",
+				"",
+				"[docs] Chore 7. (#7)",
 				"",
 				"</details>",
 			}, "\n")
 		)
+	end)
+
+	suite:case("leaves out the toggle when a collapsed category fits in its visible count", function(assert)
+		local entries: { UnreleasedChange } = {}
+		for index = 1, 5 do
+			table.insert(entries, entry(`Chore {index}.`, { category = "Internal" }))
+		end
+
+		local section = renderRichChangelogSection("1.0.1", entries, {
+			collapsed = { "Internal" },
+			collapsedVisible = 5,
+		})
+
+		assert.neq(section:find("- Chore 5.", 1, true), nil)
+		assert.eq(section:find("<details>", 1, true), nil)
+	end)
+
+	suite:case("folds every entry of a collapsed category when none are visible", function(assert)
+		local section = renderRichChangelogSection("1.0.1", {
+			entry("Chore 1.", { category = "Internal" }),
+			entry("Chore 2.", { category = "Internal" }),
+		}, {
+			collapsed = { "Internal" },
+			collapsedVisible = 0,
+		})
+
+		assert.neq(
+			section:find(
+				"### Internal\n\n<details>\n<summary>See all 2</summary>\n\n- Chore 1.\n\n- Chore 2.\n\n</details>",
+				1,
+				true
+			),
+			nil
+		)
+	end)
+
+	suite:case("shows every entry of a collapsed category when the count is math.huge", function(assert)
+		local entries: { UnreleasedChange } = {}
+		for index = 1, 20 do
+			table.insert(entries, entry(`Chore {index}.`, { category = "Internal" }))
+		end
+
+		local section = renderRichChangelogSection("1.0.1", entries, {
+			collapsed = { "Internal" },
+			collapsedVisible = math.huge,
+		})
+
+		assert.neq(section:find("- Chore 20.", 1, true), nil)
+		assert.eq(section:find("<details>", 1, true), nil)
 	end)
 
 	suite:case("renders no banner when the release needs no action", function(assert)

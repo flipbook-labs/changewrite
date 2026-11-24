@@ -103,12 +103,13 @@ Without one, the TL;DR lists the highlight titles. The file is consumed with the
 
 ### Collapsed categories
 
-Categories listed in `collapsed` in `changewrite.luau` render inside a collapsed `<details>` block with their entry count, after the other categories:
+Categories listed in `collapsed` in `changewrite.luau` come after the other categories, under the same heading style. The first five entries show, and the rest fold under a "See more" toggle. Set `collapsedVisible` to change how many show: `0` folds every entry, and `math.huge` shows them all.
 
 ```luau
 return {
 	categories = { "Features", "Fixes", "Dependencies", "Internal" },
 	collapsed = { "Dependencies", "Internal" },
+	collapsedVisible = 3,
 }
 ```
 

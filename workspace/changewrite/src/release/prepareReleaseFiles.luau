@@ -12,6 +12,7 @@ local prependSection = require("@root/release/prependSection")
 local readCategories = require("@root/release/readCategories")
 local readChipStyles = require("@root/chips/readChipStyles")
 local readCollapsedCategories = require("@root/release/readCollapsedCategories")
+local readCollapsedVisible = require("@root/release/readCollapsedVisible")
 local readReleaseSummary = require("@root/release/readReleaseSummary")
 local removeUnreleasedChanges = require("@root/release/removeUnreleasedChanges")
 local renderChangelogSection = require("@root/release/renderChangelogSection")
@@ -83,6 +84,7 @@ local function prepareReleaseFiles(nextVersion: string, changes: { UnreleasedCha
 		section = renderRichChangelogSection(nextVersion, resolved, {
 			categories = categories,
 			collapsed = collapsed,
+			collapsedVisible = readCollapsedVisible(),
 			summary = summary,
 			repositoryUrl = repositoryUrl,
 			chips = chips,
