@@ -130,14 +130,68 @@ test.suite("renderRichChangelogSection", function(suite)
 				"",
 				`[ui] Fix a crash on reload. ([#7]({REPO}/pull/7))`,
 				"",
-				"<details>",
-				"<summary>Internal (1)</summary>",
+				"### Internal",
 				"",
-				`- Restructure CI. ([#3]({REPO}/pull/3))`,
+				`- <sub>Restructure CI. ([#3]({REPO}/pull/3))</sub>`,
+			}, "\n")
+		)
+	end)
+
+	suite:case("shows five entries of a collapsed category and folds the rest under a toggle", function(assert)
+		local entries: { UnreleasedChange } = {}
+		for index = 1, 7 do
+			table.insert(entries, entry(`Chore {index}.`, { category = "Internal", kind = "docs", pr = index }))
+		end
+
+		local section = renderRichChangelogSection("1.0.1", entries, {
+			categories = { "Internal" },
+			collapsed = { "Internal" },
+			chips = CHIPS,
+		})
+
+		assert.eq(
+			section,
+			table.concat({
+				"## v1.0.1",
+				"",
+				"Internal 7",
+				"",
+				"### Internal",
+				"",
+				"[docs] <sub>Chore 1. (#1)</sub>",
+				"",
+				"[docs] <sub>Chore 2. (#2)</sub>",
+				"",
+				"[docs] <sub>Chore 3. (#3)</sub>",
+				"",
+				"[docs] <sub>Chore 4. (#4)</sub>",
+				"",
+				"[docs] <sub>Chore 5. (#5)</sub>",
+				"",
+				"<details>",
+				"<summary>See 2 more</summary>",
+				"",
+				"[docs] <sub>Chore 6. (#6)</sub>",
+				"",
+				"[docs] <sub>Chore 7. (#7)</sub>",
 				"",
 				"</details>",
 			}, "\n")
 		)
+	end)
+
+	suite:case("leaves out the toggle when a collapsed category has five entries or fewer", function(assert)
+		local entries: { UnreleasedChange } = {}
+		for index = 1, 5 do
+			table.insert(entries, entry(`Chore {index}.`, { category = "Internal" }))
+		end
+
+		local section = renderRichChangelogSection("1.0.1", entries, {
+			collapsed = { "Internal" },
+		})
+
+		assert.neq(section:find("- <sub>Chore 5.</sub>", 1, true), nil)
+		assert.eq(section:find("<details>", 1, true), nil)
 	end)
 
 	suite:case("renders no banner when the release needs no action", function(assert)
