@@ -132,7 +132,7 @@ test.suite("renderRichChangelogSection", function(suite)
 				"",
 				"### Internal",
 				"",
-				`- <sub>Restructure CI. ([#3]({REPO}/pull/3))</sub>`,
+				`- Restructure CI. ([#3]({REPO}/pull/3))`,
 			}, "\n")
 		)
 	end)
@@ -158,22 +158,22 @@ test.suite("renderRichChangelogSection", function(suite)
 				"",
 				"### Internal",
 				"",
-				"[docs] <sub>Chore 1. (#1)</sub>",
+				"[docs] Chore 1. (#1)",
 				"",
-				"[docs] <sub>Chore 2. (#2)</sub>",
+				"[docs] Chore 2. (#2)",
 				"",
-				"[docs] <sub>Chore 3. (#3)</sub>",
+				"[docs] Chore 3. (#3)",
 				"",
-				"[docs] <sub>Chore 4. (#4)</sub>",
+				"[docs] Chore 4. (#4)",
 				"",
-				"[docs] <sub>Chore 5. (#5)</sub>",
+				"[docs] Chore 5. (#5)",
 				"",
 				"<details>",
 				"<summary>See 2 more</summary>",
 				"",
-				"[docs] <sub>Chore 6. (#6)</sub>",
+				"[docs] Chore 6. (#6)",
 				"",
-				"[docs] <sub>Chore 7. (#7)</sub>",
+				"[docs] Chore 7. (#7)",
 				"",
 				"</details>",
 			}, "\n")
@@ -190,7 +190,7 @@ test.suite("renderRichChangelogSection", function(suite)
 			collapsed = { "Internal" },
 		})
 
-		assert.neq(section:find("- <sub>Chore 5.</sub>", 1, true), nil)
+		assert.neq(section:find("- Chore 5.", 1, true), nil)
 		assert.eq(section:find("<details>", 1, true), nil)
 	end)
 

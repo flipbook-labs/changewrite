@@ -103,7 +103,7 @@ Without one, the TL;DR lists the highlight titles. The file is consumed with the
 
 ### Collapsed categories
 
-Categories listed in `collapsed` in `changewrite.luau` come after the other categories, under the same heading style, with their entries in small text. The first five entries show, and the rest fold under a "See more" toggle:
+Categories listed in `collapsed` in `changewrite.luau` come after the other categories, under the same heading style. The first five entries show, and the rest fold under a "See more" toggle:
 
 ```luau
 return {
