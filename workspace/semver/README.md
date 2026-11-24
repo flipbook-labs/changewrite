@@ -8,7 +8,7 @@ Add this to the `dependencies` in `pkg.luau` and run `lute pkg install --vendor`
 
 ```luau
 semver = {
-	rev = "v0.15.1",
+	rev = "v0.16.0",
 	sourceKind = "github",
 	source = "https://github.com/flipbook-labs/changewrite",
 	target = "workspace/semver",
@@ -20,7 +20,7 @@ The package lands in `.lpm/semver@<rev>`. Requiring it through `@lpm` needs an `
 ## Use
 
 ```luau
-local semver = require("@lpm/semver@v0.15.1")
+local semver = require("@lpm/semver@v0.16.0")
 
 print(semver.getNextVersion("1.4.2", "minor")) --> 1.5.0
 print(semver.pickHighestVersion({ "1.2.0", "1.10.0", "1.9.3" })) --> 1.10.0

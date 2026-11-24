@@ -1,7 +1,7 @@
 return {
 	categories = { "Features", "Fixes", "Changes", "Dependencies" },
 	version = {
-		current = "0.15.1",
+		current = "0.16.0",
 		mirror = {
 			{ file = "workspace/changewrite/pkg.luau" },
 			{ file = "workspace/png/pkg.luau" },

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.16.0
+
+Changes 1
+
+### Changes
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-notes-dark.svg" /><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-notes-light.svg" /><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-notes-light.png" alt="Notes" height="18" align="texttop" /></picture> Give collapsed categories a heading, showing the first few entries (set by `collapsedVisible`) and folding the rest. ([#121](https://github.com/flipbook-labs/changewrite/pull/121))
+
 ## v0.15.1
 
 Fixes 1
