@@ -1,7 +1,7 @@
 return {
 	package = {
 		name = "changewrite",
-		version = "0.15.0",
+		version = "0.15.1",
 		dependencies = {
 			png = { sourceKind = "path", source = "../png" },
 			semver = { sourceKind = "path", source = "../semver" },
