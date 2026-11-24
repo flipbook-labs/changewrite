@@ -7,6 +7,7 @@ type Config = types.Config
 local TOP_LEVEL_FIELDS: { [string]: boolean } = {
 	categories = true,
 	collapsed = true,
+	collapsedVisible = true,
 	flag = true,
 	kind = true,
 	maxSummaryLength = true,

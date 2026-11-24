@@ -4,11 +4,6 @@ local types = require("@root/release/types")
 
 type UnreleasedChange = types.UnreleasedChange
 
--- A collapsed category shows this many entries before folding the rest away,
--- enough to give a sense of what changed without pushing the release notes
--- down the page.
-local VISIBLE_COLLAPSED_ENTRIES = 5
-
 local function renderList(entries: { UnreleasedChange }, context: notesTypes.NotesContext): string
 	local items: { string } = {}
 	for _, entry in entries do
@@ -20,31 +15,37 @@ local function renderList(entries: { UnreleasedChange }, context: notesTypes.Not
 end
 
 -- A collapsed category keeps its heading so it reads as part of the notes,
--- but folds any entries past the first few under a toggle.
+-- but shows only its first `visibleCount` entries and folds the rest under a
+-- toggle. A category that isn't collapsed passes `math.huge`.
 local function renderCategory(
 	category: string,
 	entries: { UnreleasedChange },
 	context: notesTypes.NotesContext,
-	isCollapsed: boolean
+	visibleCount: number
 ): string
-	if not isCollapsed or #entries <= VISIBLE_COLLAPSED_ENTRIES then
+	if #entries <= visibleCount then
 		return `### {category}\n\n{renderList(entries, context)}`
 	end
 
-	local visible = table.move(entries, 1, VISIBLE_COLLAPSED_ENTRIES, 1, {})
-	local hidden = table.move(entries, VISIBLE_COLLAPSED_ENTRIES + 1, #entries, 1, {})
-	return table.concat({
-		`### {category}`,
-		"",
-		renderList(visible, context),
-		"",
-		"<details>",
-		`<summary>See {#hidden} more</summary>`,
-		"",
-		renderList(hidden, context),
-		"",
-		"</details>",
-	}, "\n")
+	local blocks = { `### {category}` }
+	if visibleCount > 0 then
+		table.insert(blocks, renderList(table.move(entries, 1, visibleCount, 1, {}), context))
+	end
+	local hidden = table.move(entries, visibleCount + 1, #entries, 1, {})
+	table.insert(
+		blocks,
+		table.concat({
+			"<details>",
+			if visibleCount > 0
+				then `<summary>See {#hidden} more</summary>`
+				else `<summary>See all {#hidden}</summary>`,
+			"",
+			renderList(hidden, context),
+			"",
+			"</details>",
+		}, "\n")
+	)
+	return table.concat(blocks, "\n\n")
 end
 
 return renderCategory

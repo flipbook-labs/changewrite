@@ -1,6 +1,6 @@
 return {
-	bump = "patch",
+	bump = "minor",
 	category = "Changes",
 	kind = "Notes",
-	summary = "Give collapsed categories a heading, showing five entries and folding the rest under a See more toggle.",
+	summary = "Give collapsed categories a heading, showing the first few entries (set by `collapsedVisible`) and folding the rest.",
 }

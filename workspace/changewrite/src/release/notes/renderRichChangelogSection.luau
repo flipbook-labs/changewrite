@@ -15,6 +15,9 @@ type UnreleasedChange = types.UnreleasedChange
 export type RichSectionOptions = {
 	categories: { string }?,
 	collapsed: { string },
+	-- How many entries each collapsed category shows before its toggle. All of
+	-- them show when this is nil.
+	collapsedVisible: number?,
 	summary: ReleaseSummary?,
 	repositoryUrl: string?,
 	chips: notesTypes.ChipMarkup?,
@@ -85,12 +88,12 @@ local function renderRichChangelogSection(
 
 	for _, category in categories do
 		if byCategory[category] and not table.find(options.collapsed, category) then
-			add(renderCategory(category, byCategory[category], context, false))
+			add(renderCategory(category, byCategory[category], context, math.huge))
 		end
 	end
 	for _, category in categories do
 		if byCategory[category] and table.find(options.collapsed, category) then
-			add(renderCategory(category, byCategory[category], context, true))
+			add(renderCategory(category, byCategory[category], context, options.collapsedVisible or math.huge))
 		end
 	end
 
