@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.15.1
+
+Fixes 1
+
+### Fixes
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-notes-dark.svg" /><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-notes-light.svg" /><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-notes-light.png" alt="Notes" height="18" align="texttop" /></picture> Separate CHANGELOG.md sections with one blank line, so formatters like Prettier accept the generated file. ([#118](https://github.com/flipbook-labs/changewrite/pull/118))
 
 ## v0.15.0
 
