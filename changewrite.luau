@@ -1,5 +1,6 @@
 return {
-	categories = { "Features", "Fixes", "Changes", "Dependencies" },
+	categories = { "Features", "Fixes", "Changes", "Dependencies", "Internal" },
+	collapsed = { "Internal" },
 	version = {
 		current = "0.16.0",
 		mirror = {

@@ -1,6 +1,6 @@
 return {
 	bump = "patch",
-	category = "Dependencies",
+	category = "Internal",
 	kind = "Tooling",
 	summary = "Move to AgentSkills v0.9.0.",
 }
