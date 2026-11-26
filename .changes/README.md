@@ -87,6 +87,18 @@ return {
 }
 ```
 
+### One entry per pull request
+
+A pull request squash-merges into one commit, so `changewrite check` fails a branch that adds more than one entry. Fold the extra detail into the entry's `body` instead. Set `maxEntriesPerPullRequest` in `changewrite.luau` to allow more, or `math.huge` to drop the limit:
+
+```luau
+return {
+	maxEntriesPerPullRequest = 2,
+}
+```
+
+An entry the base branch added after the branch forked doesn't count. In a stack of pull requests, that's the entry of a parent that squash-merged before the child merged its new base in.
+
 ### Converting Markdown entries
 
 Changewrite reads only Luau entries. `changewrite check --fix` converts each Markdown entry in this folder to Luau. The first paragraph of a Markdown entry becomes the summary and the rest becomes the `body`. A converted summary can still be too long, and `check` reports it.

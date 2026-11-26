@@ -10,6 +10,7 @@ local TOP_LEVEL_FIELDS: { [string]: boolean } = {
 	collapsedVisible = true,
 	flag = true,
 	kind = true,
+	maxEntriesPerPullRequest = true,
 	maxSummaryLength = true,
 	release = true,
 	unreleasedChanges = true,
