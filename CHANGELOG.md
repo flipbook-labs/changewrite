@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.17.0
+
+> [!WARNING]
+> Action required: this release has breaking changes. Each one under [Breaking changes](#breaking-changes) says what changed.
+
+Breaking 1 · Changes 1 · Internal 2
+
+### Breaking changes
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-cli-dark.svg" /><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-cli-light.svg" /><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-cli-light.png" alt="CLI" height="18" align="texttop" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/flag-breaking-dark.svg" /><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/flag-breaking-light.svg" /><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/flag-breaking-light.png" alt="Breaking" height="18" align="texttop" /></picture> `changewrite check` fails a branch that adds more than one entry. Set `maxEntriesPerPullRequest` to change the limit. ([#128](https://github.com/flipbook-labs/changewrite/pull/128))
+
+In a stack of pull requests, a parent's entry stops counting against its child once the parent merges.
+
+### Changes
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-cli-dark.svg" /><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-cli-light.svg" /><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-cli-light.png" alt="CLI" height="18" align="texttop" /></picture> `changewrite check` lists every invalid changelog entry and why, and commands that read entries report the same list. ([#129](https://github.com/flipbook-labs/changewrite/pull/129))
+
+### Internal
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-tooling-dark.svg" /><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-tooling-light.svg" /><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-tooling-light.png" alt="Tooling" height="18" align="texttop" /></picture> Move to AgentSkills v0.9.0. ([#123](https://github.com/flipbook-labs/changewrite/pull/123))
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-tooling-dark.svg" /><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-tooling-light.svg" /><img src="https://raw.githubusercontent.com/flipbook-labs/changewrite/main/.changes/assets/kind-tooling-light.png" alt="Tooling" height="18" align="texttop" /></picture> Lint the codebase with the shared CodeQuality rules. ([#130](https://github.com/flipbook-labs/changewrite/pull/130))
+
 ## v0.16.0
 
 Changes 1
