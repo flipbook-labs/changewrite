@@ -8,7 +8,6 @@ local chomp = require("@root/chomp")
 local collectUnreleasedChanges = require("@root/release/collectUnreleasedChanges")
 local config = require("@root/config")
 local detectAddedEntries = require("@root/release/detectAddedEntries")
-local findMarkdownEntries = require("@root/release/findMarkdownEntries")
 local findStaleChipAssets = require("@root/chips/findStaleChipAssets")
 local findSummaryProblems = require("@root/entries/findSummaryProblems")
 local getAssetsDir = require("@root/chips/getAssetsDir")
@@ -201,21 +200,10 @@ local function checkChips(entries: { releaseTypes.UnreleasedChange })
 	end
 end
 
-local function checkMarkdownEntries()
-	local files = findMarkdownEntries()
-	if #files == 0 then
-		return
-	end
-	print(richterm.red("Changelog entries are written in Luau. Run `changewrite check --fix` to convert these:"))
-	for _, file in files do
-		print(`  • {file}`)
-	end
-	process.exit(1)
-end
-
 -- Reports every problem across all entries in one run, then exits if there
--- were any: entries that don't parse first, then summaries that break the
--- length or one-line rules. Returns the parsed entries when all of them pass.
+-- were any: entries that don't parse or are still Markdown first, then
+-- summaries that break the length or one-line rules. Returns the parsed
+-- entries when all of them pass.
 local function checkEntries(): { releaseTypes.UnreleasedChange }
 	local result = collectUnreleasedChanges()
 	local problems = table.clone(result.problems)
@@ -244,7 +232,6 @@ local function run()
 	if parser:has("fix") then
 		runFixes()
 	end
-	checkMarkdownEntries()
 	local entries = checkEntries()
 	readReleaseSummary()
 	readCollapsedCategories()
