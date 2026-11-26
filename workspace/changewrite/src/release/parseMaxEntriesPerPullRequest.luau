@@ -4,9 +4,10 @@ local DEFAULT_MAX_ENTRIES_PER_PULL_REQUEST = 1
 
 --[[
 	How many changelog entries one pull request may add, from
-	`maxEntriesPerPullRequest` in changewrite.luau. A pull request squash-merges
-	into one commit, and two entries for it would read in the release as two
-	separate changes, so the default is one. `math.huge` removes the limit.
+	`maxEntriesPerPullRequest` in changewrite.luau. Each entry reads in the
+	release notes as a separate change, so two entries would make one pull
+	request look like two changes, and the default is one. `math.huge` removes
+	the limit.
 ]]
 local function parseMaxEntriesPerPullRequest(config: types.Config): number
 	if config.maxEntriesPerPullRequest == nil then

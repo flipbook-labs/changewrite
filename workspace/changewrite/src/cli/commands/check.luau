@@ -170,11 +170,13 @@ end
 	doesn't have yet. `check` leaves these out of the entries the branch adds.
 
 	They matter in a stack of pull requests. A child branch starts from its
-	parent's branch and carries the parent's commits. Once the parent
-	squash-merges, GitHub retargets the child to the parent's base. Until the
-	child merges that base in, its merge-base with the base is from before the
-	parent, so the diff above shows the parent's entry as added on the child. The
-	squash commit added that same path to the base branch, so it shows up here
+	parent's branch and carries the parent's commits. When the parent merges,
+	GitHub retargets the child to the parent's base. A merge commit makes the
+	parent's commits part of the base, so the diff above already leaves the
+	parent's entry out. A squash or rebase merge puts new copies of them on the base instead.
+	Until the child merges that base in, its merge-base with the base is from
+	before the parent, so the diff above shows the parent's entry as added on
+	the child. The copy on the base added that same path, so it shows up here
 	and is left out.
 
 	The same holds once the parent's entry is released and deleted from the

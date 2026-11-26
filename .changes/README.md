@@ -89,7 +89,7 @@ return {
 
 ### One entry per pull request
 
-A pull request squash-merges into one commit, so `changewrite check` fails a branch that adds more than one entry. Fold the extra detail into the entry's `body` instead. Set `maxEntriesPerPullRequest` in `changewrite.luau` to allow more, or `math.huge` to drop the limit:
+Each entry reads in the release notes as a separate change, so `changewrite check` fails a branch that adds more than one entry. Fold the extra detail into the entry's `body` instead. Set `maxEntriesPerPullRequest` in `changewrite.luau` to allow more, or `math.huge` to drop the limit:
 
 ```luau
 return {
@@ -97,7 +97,7 @@ return {
 }
 ```
 
-An entry the base branch added after the branch forked doesn't count. In a stack of pull requests, that's the entry of a parent that squash-merged before the child merged its new base in.
+In a stack of pull requests, a parent's entry stops counting against its child once the parent merges, however it merges, even before the child merges its new base in.
 
 ### Converting Markdown entries
 
