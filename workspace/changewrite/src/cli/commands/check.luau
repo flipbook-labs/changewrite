@@ -165,24 +165,26 @@ local function collectWorkingTreeAdditions(dir: path.Path): { string }
 	return paths
 end
 
--- Files that commits on the base branch added and the branch's tip, `head`,
--- doesn't have yet. `check` leaves these out of the entries the branch adds.
---
--- They matter in a stack of pull requests. A child branch starts from its
--- parent's branch and carries the parent's commits. Once the parent
--- squash-merges, GitHub retargets the child to the parent's base. Until the
--- child merges that base in, its merge-base with the base is from before the
--- parent, so the diff above shows the parent's entry as added on the child. The
--- squash commit added that same path to the base branch, so it shows up here
--- and is left out.
---
--- The same holds once the parent's entry is released and deleted from the
--- base. On a pull request, `HEAD` is a merge of the head into the base, which
--- brings the child's copy of that entry back. The merge already contains the
--- base, so the range has to start from the branch's tip rather than `HEAD`.
---
--- If git can't list them, nothing is left out and the branch is counted as
--- the diff alone reports it.
+--[[
+	Files that commits on the base branch added and the branch's tip, `head`,
+	doesn't have yet. `check` leaves these out of the entries the branch adds.
+
+	They matter in a stack of pull requests. A child branch starts from its
+	parent's branch and carries the parent's commits. Once the parent
+	squash-merges, GitHub retargets the child to the parent's base. Until the
+	child merges that base in, its merge-base with the base is from before the
+	parent, so the diff above shows the parent's entry as added on the child. The
+	squash commit added that same path to the base branch, so it shows up here
+	and is left out.
+
+	The same holds once the parent's entry is released and deleted from the
+	base. On a pull request, `HEAD` is a merge of the head into the base, which
+	brings the child's copy of that entry back. The merge already contains the
+	base, so the range has to start from the branch's tip rather than `HEAD`.
+
+	If git can't list them, nothing is left out and the branch is counted as
+	the diff alone reports it.
+]]
 local function collectBaseAdditions(baseRef: string, head: string, dir: path.Path): { [string]: true }
 	local result = process.run({
 		config.gitCmd,

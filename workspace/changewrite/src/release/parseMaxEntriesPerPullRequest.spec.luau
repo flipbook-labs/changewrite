@@ -16,7 +16,14 @@ test.suite("parseMaxEntriesPerPullRequest", function(suite)
 	end)
 
 	suite:case("rejects a limit that isn't a positive whole number", function(assert)
-		for _, value in { 0, -1, 1.5, "one" } :: { unknown } do
+		for _, value in
+			{
+				0,
+				-1,
+				1.5,
+				"one",
+			} :: { unknown }
+		do
 			local success, err = pcall(parseMaxEntriesPerPullRequest, { maxEntriesPerPullRequest = value })
 
 			assert.eq(success, false)
