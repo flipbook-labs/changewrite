@@ -12,7 +12,14 @@ test.suite("parseMaxSummaryLength", function(suite)
 	end)
 
 	suite:case("rejects a limit that isn't a positive whole number", function(assert)
-		for _, value in { 0, -5, 12.5, "long" } :: { unknown } do
+		for _, value in
+			{
+				0,
+				-5,
+				12.5,
+				"long",
+			} :: { unknown }
+		do
 			local success, err = pcall(parseMaxSummaryLength, { maxSummaryLength = value })
 
 			assert.eq(success, false)

@@ -26,10 +26,12 @@ local function readF2Dot14(data: buffer, cursor: number): number
 	return readI16(data, cursor) / 16384
 end
 
--- A composite glyph, such as an "i" built from a dotless i and a dot, lists
--- other glyphs to draw, each moved and optionally scaled. A part can instead be
--- placed by matching one of its points to a point already drawn, which isn't
--- supported and raises an error.
+--[[
+	A composite glyph, such as an "i" built from a dotless i and a dot, lists
+	other glyphs to draw, each moved and optionally scaled. A part can instead be
+	placed by matching one of its points to a point already drawn, which isn't
+	supported and raises an error.
+]]
 local function readCompositeOutline(
 	data: buffer,
 	offset: number,

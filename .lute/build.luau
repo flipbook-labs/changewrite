@@ -4,7 +4,7 @@ local project = require("@repo/project")
 local system = require("@lute/system")
 
 local outputPath = tostring(project.BUILD_OUTPUT)
-if string.lower(system.os) == "windows_nt" then
+if system.os:lower() == "windows_nt" then
 	outputPath = outputPath .. ".exe"
 end
 

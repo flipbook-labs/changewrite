@@ -7,7 +7,7 @@ export type UnlockRequest = {
 	publishHead: string?,
 	baseSha: string?,
 	readBaseHead: () -> string,
-	post: (buildStatusArgs.State) -> (),
+	post: (state: buildStatusArgs.State) -> (),
 }
 
 local function applyUnlock(request: UnlockRequest)
@@ -27,10 +27,12 @@ local function applyUnlock(request: UnlockRequest)
 	end
 	request.post(state)
 
-	-- A push that lands after the first read starts a newer run whose lock can
-	-- post before this unlock, which would overwrite it. That push moved the
-	-- base before its lock posted, so reading the base again after unlocking
-	-- catches it.
+	--[[
+		A push that lands after the first read starts a newer run whose lock can
+		post before this unlock, which would overwrite it. That push moved the
+		base before its lock posted, so reading the base again after unlocking
+		catches it.
+	]]
 	if state == "success" and request.baseSha and resolveState() == "failure" then
 		request.post("failure")
 	end

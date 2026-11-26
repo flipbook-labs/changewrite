@@ -1,17 +1,15 @@
 local types = require("@root/release/types")
 
 local function parseCollapsedCategories(config: types.Config): { string }
-	local value = config.collapsed
-	if value == nil then
+	if config.collapsed == nil then
 		return {}
 	end
-	assert(typeof(value) == "table", "`collapsed` must be a list of category names")
+	assert(typeof(config.collapsed) == "table", "`collapsed` must be a list of category names")
 
-	local configured = config.categories
-	local configuredCategories = if typeof(configured) == "table" then configured :: { unknown } else nil
+	local configuredCategories = if typeof(config.categories) == "table" then config.categories :: { unknown } else nil
 
 	local collapsed: { string } = {}
-	for _, category in value :: { unknown } do
+	for _, category in config.collapsed :: { unknown } do
 		assert(typeof(category) == "string" and category ~= "", "`collapsed` must be a list of category names")
 		if configuredCategories then
 			assert(

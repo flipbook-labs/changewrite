@@ -3,10 +3,12 @@ local types = require("@root/release/types")
 
 type UnreleasedChange = types.UnreleasedChange
 
--- A one-line count of the release's shape, such as "Breaking 1 · Features 3 ·
--- Internal 12". The name comes first so a count of one never needs a singular
--- form of a category's name. Breaking entries are counted on their own, since
--- they're listed apart from their categories.
+--[[
+	A one-line count of the release's shape, such as "Breaking 1 · Features 3 ·
+	Internal 12". The name comes first so a count of one never needs a singular
+	form of a category's name. Breaking entries are counted on their own, since
+	they're listed apart from their categories.
+]]
 local function renderStatsLine(entries: { UnreleasedChange }, categories: { string }): string?
 	local breakingCount = 0
 	local categoryCounts: { [string]: number } = {}

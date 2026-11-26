@@ -10,9 +10,8 @@ type VersionConfig = types.VersionConfig
 type VersionTarget = types.VersionTarget
 
 local function parseVersionConfig(config: Config): VersionConfig
-	local version = config.version
-	local versionConfig: { [string]: unknown } = if typeof(version) == "table"
-		then version :: { [string]: unknown }
+	local versionConfig: { [string]: unknown } = if typeof(config.version) == "table"
+		then config.version :: { [string]: unknown }
 		else {}
 
 	local file = readOptionalString(versionConfig.file)

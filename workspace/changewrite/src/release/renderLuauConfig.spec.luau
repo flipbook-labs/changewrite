@@ -56,14 +56,16 @@ test.suite("renderLuauConfig", function(suite)
 	end)
 
 	suite:case("quotes a key that is a Luau keyword", function(assert)
-		local loaded = runSandboxed(renderLuauConfig({ kind = { ["end"] = { text = "End" } } }), "config") :: any
+		local loaded =
+			runSandboxed(renderLuauConfig({ kind = { ["end"] = { text = "End" } } }), "config") :: { kind: { [string]: { text: string } } }
 
 		assert.eq(loaded.kind["end"].text, "End")
 	end)
 
 	suite:case("writes strings that load back unchanged", function(assert)
 		local value = 'version = "([^"]+)"\\n\twith \'both\' quotes\n'
-		local loaded = runSandboxed(renderLuauConfig({ version = { pattern = value } }), "config") :: any
+		local loaded =
+			runSandboxed(renderLuauConfig({ version = { pattern = value } }), "config") :: { version: { pattern: string } }
 
 		assert.eq(loaded.version.pattern, value)
 	end)

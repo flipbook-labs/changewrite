@@ -48,7 +48,12 @@ test.suite("renderChangelogSection", function(suite)
 		local section = renderChangelogSection("0.4.0", {
 			entry("minor", "Features", "Add change partials."),
 			entry("patch", "Dependencies", "Upgrade Lute."),
-		}, { "Features", "Fixes", "Changes", "Dependencies" })
+		}, {
+			"Features",
+			"Fixes",
+			"Changes",
+			"Dependencies",
+		})
 
 		assert.eq(
 			section,

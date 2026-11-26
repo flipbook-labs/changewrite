@@ -21,7 +21,7 @@ end
 
 -- Maps characters to glyph indices through the Windows Unicode BMP subtable,
 -- which uses format 4.
-local function readCharacterMap(data: buffer, cmapOffset: number): (number) -> number
+local function readCharacterMap(data: buffer, cmapOffset: number): (codepoint: number) -> number
 	local subtableOffset: number? = nil
 	local count = readU16(data, cmapOffset + 2)
 	for index = 0, count - 1 do
@@ -72,7 +72,18 @@ end
 -- Reads the outlines and advance widths of a static TrueType font.
 local function readTrueTypeFont(data: buffer): Font
 	local tables = readTables(data)
-	for _, required in { "head", "hhea", "hmtx", "maxp", "cmap", "loca", "glyf", "OS/2" } do
+	for _, required in
+		{
+			"head",
+			"hhea",
+			"hmtx",
+			"maxp",
+			"cmap",
+			"loca",
+			"glyf",
+			"OS/2",
+		}
+	do
 		assert(tables[required], `Font is missing its "{required}" table`)
 	end
 
@@ -112,7 +123,7 @@ local function readTrueTypeFont(data: buffer): Font
 	-- in case a broken font refers back to a glyph it's part of.
 	local MAX_COMPONENT_DEPTH = 8
 
-	local function readOutline(glyphIndex: number, offset: number, depth: number): { { GlyphPoint } }
+	local function readOutline(_glyphIndex: number, offset: number, depth: number): { { GlyphPoint } }
 		assert(depth <= MAX_COMPONENT_DEPTH, "Composite glyph nests too deeply")
 		return readGlyphOutline(data, offset, function(componentIndex: number): { { GlyphPoint } }
 			assert(componentIndex < glyphCount, `Composite glyph refers to missing glyph {componentIndex}`)

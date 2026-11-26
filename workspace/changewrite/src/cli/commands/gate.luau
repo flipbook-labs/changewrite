@@ -28,7 +28,13 @@ local function run()
 
 	-- `rev-parse --verify` exits non-zero when the ref is missing, so its exit
 	-- code answers whether the tag exists; `-q` silences the stderr it would print.
-	local tagExists = process.run({ config.gitCmd, "rev-parse", "-q", "--verify", `refs/tags/{tag}` }).ok
+	local tagExists = process.run({
+		config.gitCmd,
+		"rev-parse",
+		"-q",
+		"--verify",
+		`refs/tags/{tag}`,
+	}).ok
 
 	-- A release was prepared for this version if `prepare-pr` already folded it
 	-- into the changelog. Without that fingerprint an untagged version is just a
@@ -44,10 +50,12 @@ local function run()
 		releasePrepared = releasePrepared,
 	})
 
-	-- Emit the decision as JSON on stdout so callers (the release workflow, or a
-	-- person) can parse it. Deliberately environment-agnostic: the workflow is
-	-- responsible for any GitHub Actions plumbing (e.g. piping into
-	-- $GITHUB_OUTPUT), not the CLI.
+	--[[
+		Emit the decision as JSON on stdout so callers (the release workflow, or a
+		person) can parse it. Deliberately environment-agnostic: the workflow is
+		responsible for any GitHub Actions plumbing (e.g. piping into
+		$GITHUB_OUTPUT), not the CLI.
+	]]
 	print(json.serialize({
 		version = result.version,
 		should_publish = result.shouldPublish,

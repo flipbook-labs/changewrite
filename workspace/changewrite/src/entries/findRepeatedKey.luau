@@ -18,11 +18,13 @@ local function getKeyName(item: syntax.CstTableExprItem): string?
 	return nil
 end
 
--- Luau keeps only the last value when a table constructor names the same key
--- twice, so an entry that sets `summary` twice would silently lose the first
--- one. This finds a key that some table constructor in `source` names twice,
--- as `name =` or `["name"] =`, along with the line of the second one. It
--- returns nil when there's none. `source` must already be valid Luau.
+--[[
+	Luau keeps only the last value when a table constructor names the same key
+	twice, so an entry that sets `summary` twice would silently lose the first
+	one. This finds a key that some table constructor in `source` names twice,
+	as `name =` or `["name"] =`, along with the line of the second one. It
+	returns nil when there's none. `source` must already be valid Luau.
+]]
 local function findRepeatedKey(source: string): RepeatedKey?
 	local repeated: RepeatedKey? = nil
 

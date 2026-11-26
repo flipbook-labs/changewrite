@@ -15,18 +15,18 @@ local function buildChipLayers(font: Font, label: string, metrics: ChipMetrics):
 	local labelWidth = truetype.measureText(font, label, metrics.fontSize, metrics.letterSpacing)
 	local width =
 		math.ceil(metrics.paddingLeft + metrics.dotDiameter + metrics.dotGap + labelWidth + metrics.paddingRight)
-	local height = metrics.height
-	local inset = metrics.rimWidth
+	local innerWidth = width - metrics.rimWidth * 2
+	local innerHeight = metrics.height - metrics.rimWidth * 2
 
-	local rim: Path = vector.pillPath(0, 0, width, height)
-	for _, command in vector.pillPath(inset, inset, width - inset * 2, height - inset * 2, true) do
+	local rim: Path = vector.pillPath(0, 0, width, metrics.height)
+	for _, command in vector.pillPath(metrics.rimWidth, metrics.rimWidth, innerWidth, innerHeight, true) do
 		table.insert(rim, command)
 	end
 
-	local dotY = (height - metrics.dotDiameter) / 2
+	local dotY = (metrics.height - metrics.dotDiameter) / 2
 	local labelX = metrics.paddingLeft + metrics.dotDiameter + metrics.dotGap
 	local capHeight = font.capHeight * metrics.fontSize / font.unitsPerEm
-	local baselineY = (height + capHeight) / 2
+	local baselineY = (metrics.height + capHeight) / 2
 
 	local text: Path = {}
 	for _, command in truetype.layoutText(font, label, labelX, baselineY, metrics.fontSize, metrics.letterSpacing) do
@@ -35,9 +35,9 @@ local function buildChipLayers(font: Font, label: string, metrics: ChipMetrics):
 
 	return {
 		width = width,
-		height = height,
+		height = metrics.height,
 		rim = rim,
-		tint = vector.pillPath(inset, inset, width - inset * 2, height - inset * 2),
+		tint = vector.pillPath(metrics.rimWidth, metrics.rimWidth, innerWidth, innerHeight),
 		dot = vector.pillPath(metrics.paddingLeft, dotY, metrics.dotDiameter, metrics.dotDiameter),
 		text = text,
 	}
