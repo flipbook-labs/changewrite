@@ -40,7 +40,7 @@ local function readFlags(value: unknown): { ChangeFlag }
 	for _, flag in value :: { unknown } do
 		assert(typeof(flag) == "string", "Unreleased change flags must be a list of strings")
 		assert(
-			table.find(constants.CHANGE_FLAGS, flag) ~= nil,
+			table.find(constants.CHANGE_FLAGS, flag :: ChangeFlag) ~= nil,
 			`Unreleased change flag "{flag}" is not supported. Expected any of: {table.concat(
 				constants.CHANGE_FLAGS,
 				", "

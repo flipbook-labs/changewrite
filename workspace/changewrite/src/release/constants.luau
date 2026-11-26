@@ -1,3 +1,5 @@
+local ChangeFlag = require("@root/release/ChangeFlag")
+
 local DEFAULT_PATTERNS: { [string]: string } = {
 	["changewrite.luau"] = "current%s*=%s*[\"']([^\"']+)[\"']",
 	["pkg.luau"] = "version%s*=%s*[\"']([^\"']+)[\"']",
@@ -22,7 +24,7 @@ local MIRROR_MANIFESTS: { string } = {
 return {
 	CHANGELOG_FILE = "CHANGELOG.md",
 	-- Also the order of the allowed values named in validation errors.
-	CHANGE_FLAGS = { "Breaking", "Deprecated", "Security" },
+	CHANGE_FLAGS = { ChangeFlag.Breaking, ChangeFlag.Deprecated, ChangeFlag.Security },
 	CONFIG_FILE = "changewrite.luau",
 	-- The config file Changewrite read before changewrite.luau. `check --fix`
 	-- converts it, and every other command fails while it's present.

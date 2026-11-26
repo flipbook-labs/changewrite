@@ -1,4 +1,5 @@
--- lute-lint-ignore(string_union_enum)
-export type VersionComponent = "major" | "minor" | "patch"
+local VersionComponent = require("./VersionComponent")
+
+export type VersionComponent = VersionComponent.VersionComponent
 
 return nil
