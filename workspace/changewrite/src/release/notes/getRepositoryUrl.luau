@@ -13,7 +13,12 @@ local function getRepositoryUrl(): string?
 		return `{server}/{repository}`
 	end
 
-	local result = process.run({ config.gitCmd, "remote", "get-url", "origin" })
+	local result = process.run({
+		config.gitCmd,
+		"remote",
+		"get-url",
+		"origin",
+	})
 	if not result.ok then
 		return nil
 	end

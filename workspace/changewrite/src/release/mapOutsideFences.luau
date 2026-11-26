@@ -33,11 +33,13 @@ local function removeIndent(text: string, columns: number): string
 	return string.rep(" ", math.max(column - columns, 0)) .. text:sub(index)
 end
 
--- Passes each line of Markdown outside fenced code blocks through `mapLine`,
--- and leaves lines inside them as they are, since a `#` there is code, such as
--- a shell comment. A fence inside a blockquote or a list item counts too,
--- because highlights render their bodies as quotes and plain changelogs indent
--- an entry's body under its bullet.
+--[[
+	Passes each line of Markdown outside fenced code blocks through `mapLine`,
+	and leaves lines inside them as they are, since a `#` there is code, such as
+	a shell comment. A fence inside a blockquote or a list item counts too,
+	because highlights render their bodies as quotes and plain changelogs indent
+	an entry's body under its bullet.
+]]
 local function mapOutsideFences(text: string, mapLine: (line: string) -> string): string
 	local lines: { string } = {}
 	-- The open fence's character and length. Per CommonMark, only a line of at
@@ -48,10 +50,12 @@ local function mapOutsideFences(text: string, mapLine: (line: string) -> string)
 	-- that block ends, even without a closing fence, so the lines after it are
 	-- outside again. A blockquote ends at a line without `>`.
 	local isFenceQuoted = false
-	-- A list item ends at the first non-blank line indented less than the
-	-- item's text. `listIndent` is that indent for the list item the current
-	-- line is in, or 0 outside a list. `fenceIndent` is the same indent for the
-	-- item the open fence is in.
+	--[[
+		A list item ends at the first non-blank line indented less than the
+		item's text. `listIndent` is that indent for the list item the current
+		line is in, or 0 outside a list. `fenceIndent` is the same indent for the
+		item the open fence is in.
+	]]
 	local fenceIndent = 0
 	local listIndent = 0
 	for line in (text .. "\n"):gmatch("(.-)\n") do
@@ -72,14 +76,17 @@ local function mapOutsideFences(text: string, mapLine: (line: string) -> string)
 		end
 
 		if fenceCharacter == nil then
-			-- The text of a list item starts after its marker, and the lines
-			-- after it are indented to match. That indent is removed before
-			-- looking for a fence marker, which may itself be indented up to
-			-- three spaces.
+			--[[
+				The text of a list item starts after its marker, and the lines
+				after it are indented to match. That indent is removed before
+				looking for a fence marker, which may itself be indented up to
+				three spaces.
+			]]
 			local bullet = content:match("^([ \t]*[-*+][ \t]+)") or content:match("^([ \t]*%d+[.)][ \t]+)")
 			local itemText = content
 			if bullet then
-				listIndent = countIndent((bullet:gsub("[-*+%d.)]", " ")))
+				local bulletSpaces = bullet:gsub("[-*+%d.)]", " ")
+				listIndent = countIndent(bulletSpaces)
 				itemText = content:sub(#bullet + 1)
 			elseif not isBlank and countIndent(content) < listIndent then
 				listIndent = 0
@@ -101,7 +108,7 @@ local function mapOutsideFences(text: string, mapLine: (line: string) -> string)
 		else
 			local closing = removeIndent(content, fenceIndent):match("^ ? ? ?([`~]+)%s*$")
 			if closing and closing:sub(1, 1) == fenceCharacter and #closing >= fenceLength then
-				local isUniform = closing == string.rep(fenceCharacter, #closing)
+				local isUniform = closing == fenceCharacter:rep(#closing)
 				if isUniform then
 					fenceCharacter = nil
 				end

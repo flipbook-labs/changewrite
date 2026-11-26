@@ -25,16 +25,28 @@ local function glyphBytes(parts: { { kind: "i16" | "u8", value: number } }): buf
 end
 
 local function i16(value: number): { kind: "i16" | "u8", value: number }
-	return { kind = "i16", value = value }
+	return {
+		kind = "i16",
+		value = value,
+	}
 end
 
 local function u8(value: number): { kind: "i16" | "u8", value: number }
-	return { kind = "u8", value = value }
+	return {
+		kind = "u8",
+		value = value,
+	}
 end
 
 test.suite("readGlyphOutline", function(suite)
 	suite:case("reads a glyph that records zero contours as blank", function(assert)
-		local data = glyphBytes({ i16(0), i16(0), i16(0), i16(0), i16(0) })
+		local data = glyphBytes({
+			i16(0),
+			i16(0),
+			i16(0),
+			i16(0),
+			i16(0),
+		})
 
 		assert.eq(#readGlyphOutline(data, 0), 0)
 	end)
@@ -95,7 +107,9 @@ test.suite("readGlyphOutline", function(suite)
 		local requested: { number } = {}
 		local contours = readGlyphOutline(data, 0, function(glyphIndex: number)
 			table.insert(requested, glyphIndex)
-			return { { { x = 100, y = 40, isOnCurve = true } } }
+			return {
+				{ { x = 100, y = 40, isOnCurve = true } },
+			}
 		end)
 
 		assert.eq(#contours, 2)
@@ -107,7 +121,17 @@ test.suite("readGlyphOutline", function(suite)
 	end)
 
 	suite:case("rejects a composite glyph that places parts by matching points", function(assert)
-		local data = glyphBytes({ i16(-1), i16(0), i16(0), i16(0), i16(0), i16(0), i16(7), u8(0), u8(0) })
+		local data = glyphBytes({
+			i16(-1),
+			i16(0),
+			i16(0),
+			i16(0),
+			i16(0),
+			i16(0),
+			i16(7),
+			u8(0),
+			u8(0),
+		})
 
 		assert.throws(function()
 			readGlyphOutline(data, 0, function()

@@ -7,10 +7,9 @@ local types = require("@root/release/types")
 type VersionTarget = types.VersionTarget
 
 local function writeTargetVersion(target: VersionTarget, nextVersion: string): ()
-	local file = target.file
-	local content = fs.readFileToString(file)
-	local updated = replaceCapturedVersion(content, getVersionPattern(target), nextVersion, file)
-	fs.writeStringToFile(file, updated)
+	local content = fs.readFileToString(target.file)
+	local updated = replaceCapturedVersion(content, getVersionPattern(target), nextVersion, target.file)
+	fs.writeStringToFile(target.file, updated)
 end
 
 return writeTargetVersion

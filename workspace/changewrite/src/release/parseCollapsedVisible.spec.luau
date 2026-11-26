@@ -18,7 +18,7 @@ test.suite("parseCollapsedVisible", function(suite)
 			local success, err = pcall(parseCollapsedVisible, { collapsedVisible = value })
 
 			assert.eq(success, false)
-			assert.neq(string.find(tostring(err), "`collapsedVisible` must be", 1, true), nil)
+			assert.neq(tostring(err):find("`collapsedVisible` must be", 1, true), nil)
 		end
 	end)
 end)

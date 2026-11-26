@@ -14,10 +14,12 @@ local isEntryFileName = require("@root/release/isEntryFileName")
 local function isEntryFile(file: path.Path, dir: path.Path): boolean
 	local relative = path.relative(path.normalize(dir), path.normalize(file))
 
-	-- `readUnreleasedChanges` lists the directory non-recursively, so only a
-	-- direct child is ever consumed. A single path component is a direct child;
-	-- more components (or a leading `..`) means the file is nested or outside the
-	-- directory and would be silently dropped at release time.
+	--[[
+		`readUnreleasedChanges` lists the directory non-recursively, so only a
+		direct child is ever consumed. A single path component is a direct child;
+		more components (or a leading `..`) means the file is nested or outside the
+		directory and would be silently dropped at release time.
+	]]
 	if #relative.parts ~= 1 then
 		return false
 	end

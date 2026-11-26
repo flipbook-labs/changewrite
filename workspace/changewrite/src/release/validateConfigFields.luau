@@ -30,17 +30,15 @@ local VERSION_FIELDS: { [string]: boolean } = {
 local function validateConfigFields(config: Config): ()
 	assertKnownFields(config, TOP_LEVEL_FIELDS, "changewrite.luau")
 
-	local release = config.release
-	if typeof(release) == "table" then
-		assertKnownFields(release :: { [string]: unknown }, RELEASE_FIELDS, "`release`")
+	if typeof(config.release) == "table" then
+		assertKnownFields(config.release :: { [string]: unknown }, RELEASE_FIELDS, "`release`")
 	end
 
-	local version = config.version
-	if typeof(version) ~= "table" then
+	if typeof(config.version) ~= "table" then
 		return
 	end
 
-	local versionConfig = version :: { [string]: unknown }
+	local versionConfig = config.version :: { [string]: unknown }
 	assertKnownFields(versionConfig, VERSION_FIELDS, "`version`")
 
 	local mirror = versionConfig.mirror

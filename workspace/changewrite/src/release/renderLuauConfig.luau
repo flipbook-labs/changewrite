@@ -1,8 +1,10 @@
--- Writes a config table as the source of a changewrite.luau, for `init` and
--- for converting a changewrite.toml. A short table of plain values, such as a
--- kind or a list of categories, stays on one line. The limit counts the
--- table and its indent but not the key in front of it, so a line can run a
--- little past it. Anything else gets a line per field, indented with tabs.
+--[[
+	Writes a config table as the source of a changewrite.luau, for `init` and
+	for converting a changewrite.toml. A short table of plain values, such as a
+	kind or a list of categories, stays on one line. The limit counts the
+	table and its indent but not the key in front of it, so a line can run a
+	little past it. Anything else gets a line per field, indented with tabs.
+]]
 
 local MAX_INLINE_WIDTH = 100
 

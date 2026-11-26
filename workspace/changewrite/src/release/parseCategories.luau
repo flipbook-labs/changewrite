@@ -1,13 +1,12 @@
 local types = require("@root/release/types")
 
 local function parseCategories(config: types.Config): { string }?
-	local value = config.categories
-	if value == nil then
+	if config.categories == nil then
 		return nil
 	end
-	assert(typeof(value) == "table", "`categories` must be a non-empty list of strings")
+	assert(typeof(config.categories) == "table", "`categories` must be a non-empty list of strings")
 
-	local categoryValues = value :: { unknown }
+	local categoryValues = config.categories :: { unknown }
 	local categories = {}
 	local seen = {}
 	for _, category in categoryValues do

@@ -26,7 +26,16 @@ local function publish()
 	-- One call answers both "does the release exist?" (a non-ok exit means it
 	-- doesn't) and "is it still a draft?". Publish never creates a release, so a
 	-- missing one is an error rather than something to draft here.
-	local view = process.run({ config.ghCmd, "release", "view", tag, "--json", "isDraft", "-q", ".isDraft" })
+	local view = process.run({
+		config.ghCmd,
+		"release",
+		"view",
+		tag,
+		"--json",
+		"isDraft",
+		"-q",
+		".isDraft",
+	})
 	assert(view.ok, `No release found for {tag}; nothing to publish`)
 
 	if chomp(view.stdout) ~= "true" then
@@ -36,7 +45,12 @@ local function publish()
 
 	-- Flip the draft live. `gh` recomputes the "latest" release from semver on its
 	-- own, so we don't force it and any future prerelease stays out of that slot.
-	run(config.ghCmd, { "release", "edit", tag, "--draft=false" })
+	run(config.ghCmd, {
+		"release",
+		"edit",
+		tag,
+		"--draft=false",
+	})
 	print(`Published release {tag}`)
 end
 

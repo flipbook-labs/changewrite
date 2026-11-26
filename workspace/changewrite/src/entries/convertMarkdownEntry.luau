@@ -15,10 +15,12 @@ local function quote(value: string): string
 	return `"{escaped}"`
 end
 
--- Wraps the text in `[[ ]]`, adding `=` signs, as in `[=[ ]=]`, until the
--- text can't contain the closing delimiter and end the string early. Luau
--- drops a newline right after the opening delimiter, so the text starts on
--- its own line without gaining a blank one.
+--[==[
+	Wraps the text in `[[ ]]`, adding `=` signs, as in `[=[ ]=]`, until the
+	text can't contain the closing delimiter and end the string early. Luau
+	drops a newline right after the opening delimiter, so the text starts on
+	its own line without gaining a blank one.
+]==]
 local function renderBlockString(text: string): string
 	local level = 0
 	while text:find(`]{string.rep("=", level)}]`, 1, true) do
@@ -40,10 +42,12 @@ local function parseFlags(value: string): { string }
 	return flags
 end
 
--- Converts a Markdown entry to the Luau format. The first paragraph of the
--- Markdown body becomes the summary, joined onto one line, and the rest becomes
--- the entry's `body`. A wrapped paragraph renders as one line in Markdown, so
--- joining it doesn't change the summary's text.
+--[[
+	Converts a Markdown entry to the Luau format. The first paragraph of the
+	Markdown body becomes the summary, joined onto one line, and the rest becomes
+	the entry's `body`. A wrapped paragraph renders as one line in Markdown, so
+	joining it doesn't change the summary's text.
+]]
 local function convertMarkdownEntry(text: string): string
 	local frontmatter = parseFrontmatter(text, "Markdown entry")
 	local fields = frontmatter.fields

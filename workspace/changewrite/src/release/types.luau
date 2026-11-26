@@ -7,6 +7,7 @@ type VersionComponent = semver.VersionComponent
 -- checks its field names, and each parse module reads and checks one setting.
 export type Config = { [string]: unknown }
 
+-- lute-lint-ignore(string_union_enum)
 export type ChangeFlag = "Breaking" | "Deprecated" | "Security"
 
 export type ParsedUnreleasedChange = {

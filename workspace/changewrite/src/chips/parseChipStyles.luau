@@ -9,13 +9,18 @@ type ChipStyle = types.ChipStyle
 type ColorModeStyle = types.ColorModeStyle
 type ConfigTable = { [string]: unknown }
 
-local STYLE_FIELDS = { text = true, color = true, textColor = true, colorMode = true }
+local STYLE_FIELDS = {
+	text = true,
+	color = true,
+	textColor = true,
+	colorMode = true,
+}
 local COLOR_MODE_FIELDS = { light = true, dark = true }
 local COLOR_MODE_STYLE_FIELDS = { color = true, textColor = true }
 
 local function asTable(value: unknown, context: string): ConfigTable
 	assert(typeof(value) == "table", `{context} must be a table`)
-	return value :: any
+	return value :: ConfigTable
 end
 
 local function readString(value: unknown, context: string): string?
@@ -35,12 +40,14 @@ local function readColor(value: unknown, context: string): string?
 	return nil
 end
 
--- Lays a table's fields over a base style. Top-level `color` and `textColor`
--- apply to the light color mode, and `textColor` to the dark one too. A
--- `colorMode.light` or `colorMode.dark` table sets either field for that mode
--- alone. When the table sets a light color but no dark one, the dark color
--- comes from deriveDarkColor. A table that sets no color at all keeps the base
--- style's colors.
+--[[
+	Lays a table's fields over a base style. Top-level `color` and `textColor`
+	apply to the light color mode, and `textColor` to the dark one too. A
+	`colorMode.light` or `colorMode.dark` table sets either field for that mode
+	alone. When the table sets a light color but no dark one, the dark color
+	comes from deriveDarkColor. A table that sets no color at all keeps the base
+	style's colors.
+]]
 local function applyFields(base: ChipStyle, fields: ConfigTable, context: string): ChipStyle
 	assertKnownFields(fields, STYLE_FIELDS, context)
 
