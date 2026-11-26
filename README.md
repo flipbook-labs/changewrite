@@ -9,7 +9,7 @@ It runs as a GitHub Action, with a CLI for checking entries and previewing notes
 As a GitHub Action:
 
 ```yaml
-- uses: flipbook-labs/changewrite@v0.16.0
+- uses: flipbook-labs/changewrite@v0.17.0
 ```
 
 With Rokit, for the CLI:
@@ -38,7 +38,7 @@ rokit add flipbook-labs/changewrite
          - uses: actions/checkout@v7
            with:
              fetch-depth: 0
-         - uses: flipbook-labs/changewrite@v0.16.0
+         - uses: flipbook-labs/changewrite@v0.17.0
    ```
 
 3. Have each pull request add an entry under `.changes/`.
