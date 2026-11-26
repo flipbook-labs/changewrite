@@ -34,7 +34,7 @@ return {
 }
 ```
 
-An entry can use the `string`, `table`, `math`, and `utf8` libraries and a few basic functions such as `tostring`. It can't `require` other modules or reach `os`, `io`, or `process`, because `changewrite check` runs entries from pull requests, including ones from forks. `changewrite check` also rejects a field it doesn't know, and a category, kind, or flag outside the lists it allows.
+An entry can use the `string`, `table`, `math`, and `utf8` libraries and a few basic functions such as `tostring`. It can't `require` other modules or reach `os`, `io`, or `process`, because `changewrite check` runs entries from pull requests, including ones from forks. `changewrite check` also rejects a field it doesn't know, and a category, kind, or flag outside the lists it allows. It lists every rejected entry and why in one run.
 
 ### Release-notes fields
 

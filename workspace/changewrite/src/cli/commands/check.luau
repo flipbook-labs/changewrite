@@ -5,6 +5,7 @@ local process = require("@std/process")
 local richterm = require("@lpm/batteries@v1.0.1-nightly.20261115/richterm")
 
 local chomp = require("@root/chomp")
+local collectUnreleasedChanges = require("@root/release/collectUnreleasedChanges")
 local config = require("@root/config")
 local detectAddedEntries = require("@root/release/detectAddedEntries")
 local findMarkdownEntries = require("@root/release/findMarkdownEntries")
@@ -24,7 +25,6 @@ local readKindNames = require("@root/release/readKindNames")
 local readMaxSummaryLength = require("@root/release/readMaxSummaryLength")
 local readPublishBranch = require("@root/release/readPublishBranch")
 local readReleaseSummary = require("@root/release/readReleaseSummary")
-local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
 local releaseTypes = require("@root/release/types")
 local resolveBaseBranch = require("@root/release/resolveBaseBranch")
 local runFixes = require("@root/fixes/runFixes")
@@ -213,19 +213,31 @@ local function checkMarkdownEntries()
 	process.exit(1)
 end
 
-local function checkSummaries(entries: { releaseTypes.UnreleasedChange })
+-- Reports every problem across all entries in one run, then exits if there
+-- were any: entries that don't parse first, then summaries that break the
+-- length or one-line rules. Returns the parsed entries when all of them pass.
+local function checkEntries(): { releaseTypes.UnreleasedChange }
+	local result = collectUnreleasedChanges()
+	local problems = table.clone(result.problems)
 	local maxLength = readMaxSummaryLength()
-	local count = 0
-	for _, entry in entries do
+	for _, entry in result.changes do
 		for _, problem in findSummaryProblems(entry.summary, maxLength) do
-			print(`{entry.file}: {problem}`)
-			count += 1
+			table.insert(problems, {
+				file = entry.file,
+				problem = problem,
+			})
 		end
+	end
+
+	local count = #problems
+	for _, problem in problems do
+		print(`{problem.file}: {problem.problem}`)
 	end
 	if count > 0 then
 		print(richterm.red(`Found {count} problem{if count == 1 then "" else "s"} in changelog entries.`))
 		process.exit(1)
 	end
+	return result.changes
 end
 
 local function run()
@@ -233,11 +245,10 @@ local function run()
 		runFixes()
 	end
 	checkMarkdownEntries()
-	local entries = readUnreleasedChanges()
+	local entries = checkEntries()
 	readReleaseSummary()
 	readCollapsedCategories()
 	readCollapsedVisible()
-	checkSummaries(entries)
 	checkChips(entries)
 
 	local currentBranch = getCurrentBranch()

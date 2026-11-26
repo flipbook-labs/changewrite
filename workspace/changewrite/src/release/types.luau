@@ -24,6 +24,17 @@ export type UnreleasedChange = ParsedUnreleasedChange & {
 	file: path.Path,
 }
 
+-- Something wrong with one entry file, and the file it's in.
+export type EntryProblem = {
+	file: path.Path,
+	problem: string,
+}
+
+export type ParsedEntryFiles = {
+	changes: { UnreleasedChange },
+	problems: { EntryProblem },
+}
+
 export type ReleaseSummary = {
 	file: path.Path,
 	tldr: string,
