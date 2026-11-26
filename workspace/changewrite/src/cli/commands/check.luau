@@ -12,6 +12,7 @@ local findStaleChipAssets = require("@root/chips/findStaleChipAssets")
 local findSummaryProblems = require("@root/entries/findSummaryProblems")
 local getAssetsDir = require("@root/chips/getAssetsDir")
 local getCurrentBranch = require("@root/release/getCurrentBranch")
+local getPullRequestHeadSha = require("@root/release/getPullRequestHeadSha")
 local getUnreleasedChangesDir = require("@root/release/getUnreleasedChangesDir")
 local isPublishBranch = require("@root/release/isPublishBranch")
 local isSameRepositoryPullRequest = require("@root/release/isSameRepositoryPullRequest")
@@ -164,8 +165,8 @@ local function collectWorkingTreeAdditions(dir: path.Path): { string }
 	return paths
 end
 
--- Files that commits on the base branch added and this branch doesn't have
--- yet. `check` leaves these out of the entries the branch adds.
+-- Files that commits on the base branch added and the branch's tip, `head`,
+-- doesn't have yet. `check` leaves these out of the entries the branch adds.
 --
 -- They matter in a stack of pull requests. A child branch starts from its
 -- parent's branch and carries the parent's commits. Once the parent
@@ -175,16 +176,21 @@ end
 -- squash commit added that same path to the base branch, so it shows up here
 -- and is left out.
 --
+-- The same holds once the parent's entry is released and deleted from the
+-- base. On a pull request, `HEAD` is a merge of the head into the base, which
+-- brings the child's copy of that entry back. The merge already contains the
+-- base, so the range has to start from the branch's tip rather than `HEAD`.
+--
 -- If git can't list them, nothing is left out and the branch is counted as
 -- the diff alone reports it.
-local function collectBaseAdditions(baseRef: string, dir: path.Path): { [string]: true }
+local function collectBaseAdditions(baseRef: string, head: string, dir: path.Path): { [string]: true }
 	local result = process.run({
 		config.gitCmd,
 		"log",
 		"--format=",
 		"--name-only",
 		"--diff-filter=A",
-		`HEAD..{baseRef}`,
+		`{head}..{baseRef}`,
 		"--",
 		tostring(dir),
 	})
@@ -352,7 +358,8 @@ local function run()
 		table.insert(candidates, line)
 	end
 
-	local baseAdditions = collectBaseAdditions(baseRef, dir)
+	local head = getPullRequestHeadSha(readGithubEvent()) or "HEAD"
+	local baseAdditions = collectBaseAdditions(baseRef, head, dir)
 	local addedEntries: { string } = {}
 	for _, entry in detectAddedEntries(candidates, dir) do
 		if not baseAdditions[entry] then
