@@ -12,6 +12,7 @@ local findStaleChipAssets = require("@root/chips/findStaleChipAssets")
 local findSummaryProblems = require("@root/entries/findSummaryProblems")
 local getAssetsDir = require("@root/chips/getAssetsDir")
 local getCurrentBranch = require("@root/release/getCurrentBranch")
+local getPullRequestHeadSha = require("@root/release/getPullRequestHeadSha")
 local getUnreleasedChangesDir = require("@root/release/getUnreleasedChangesDir")
 local isPublishBranch = require("@root/release/isPublishBranch")
 local isSameRepositoryPullRequest = require("@root/release/isSameRepositoryPullRequest")
@@ -21,6 +22,7 @@ local readCollapsedCategories = require("@root/release/readCollapsedCategories")
 local readCollapsedVisible = require("@root/release/readCollapsedVisible")
 local readGithubEvent = require("@root/release/readGithubEvent")
 local readKindNames = require("@root/release/readKindNames")
+local readMaxEntriesPerPullRequest = require("@root/release/readMaxEntriesPerPullRequest")
 local readMaxSummaryLength = require("@root/release/readMaxSummaryLength")
 local readPublishBranch = require("@root/release/readPublishBranch")
 local readReleaseSummary = require("@root/release/readReleaseSummary")
@@ -163,6 +165,64 @@ local function collectWorkingTreeAdditions(dir: path.Path): { string }
 	return paths
 end
 
+--[[
+	Files that commits on the base branch added and the branch's tip, `head`,
+	doesn't have yet. `check` leaves these out of the entries the branch adds.
+
+	They matter in a stack of pull requests. A child branch starts from its
+	parent's branch and carries the parent's commits. When the parent merges,
+	GitHub retargets the child to the parent's base. A merge commit makes the
+	parent's commits part of the base, so the diff above already leaves the
+	parent's entry out. A squash or rebase merge puts new copies of them on the base instead.
+	Until the child merges that base in, its merge-base with the base is from
+	before the parent, so the diff above shows the parent's entry as added on
+	the child. The copy on the base added that same path, so it shows up here
+	and is left out.
+
+	The same holds once the parent's entry is released and deleted from the
+	base. On a pull request, `HEAD` is a merge of the head into the base, which
+	brings the child's copy of that entry back. The merge already contains the
+	base, so the range has to start from the branch's tip rather than `HEAD`.
+
+	If git can't list them, nothing is left out and the branch is counted as
+	the diff alone reports it.
+]]
+local function collectBaseAdditions(baseRef: string, head: string, dir: path.Path): { [string]: true }
+	local result = process.run({
+		config.gitCmd,
+		"log",
+		"--format=",
+		"--name-only",
+		"--diff-filter=A",
+		`{head}..{baseRef}`,
+		"--",
+		tostring(dir),
+	})
+	local files: { [string]: true } = {}
+	if result.ok then
+		for _, line in splitLines(result.stdout) do
+			files[line] = true
+		end
+	end
+	return files
+end
+
+local function printTooManyEntriesError(entries: { string }, maxEntries: number)
+	print(
+		richterm.red(`This branch adds {#entries} changelog entries, over the limit of {maxEntries} per pull request:`)
+	)
+	for _, entry in entries do
+		print(`  • {entry}`)
+	end
+	print("")
+	if maxEntries == 1 then
+		print("Combine them into one entry, and put any extra detail in its `body`.")
+	else
+		print(`Combine them into at most {maxEntries} entries, and put any extra detail in a \`body\`.`)
+	end
+	print("Set `maxEntriesPerPullRequest` in changewrite.luau to change the limit.")
+end
+
 -- GitHub Actions sets GITHUB_HEAD_REF only for pull_request and
 -- pull_request_target runs.
 local function isPullRequestRun(): boolean
@@ -302,9 +362,23 @@ local function run()
 		table.insert(candidates, line)
 	end
 
-	local addedEntries = detectAddedEntries(candidates, dir)
+	local head = getPullRequestHeadSha(readGithubEvent()) or "HEAD"
+	local baseAdditions = collectBaseAdditions(baseRef, head, dir)
+	local addedEntries: { string } = {}
+	for _, entry in detectAddedEntries(candidates, dir) do
+		if not baseAdditions[entry] then
+			table.insert(addedEntries, entry)
+		end
+	end
+
 	if #addedEntries == 0 then
 		printNoChangesError()
+		process.exit(1)
+	end
+
+	local maxEntries = readMaxEntriesPerPullRequest()
+	if #addedEntries > maxEntries then
+		printTooManyEntriesError(addedEntries, maxEntries)
 		process.exit(1)
 	end
 
