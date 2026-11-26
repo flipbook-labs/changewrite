@@ -102,13 +102,13 @@ test.suite("parseChipStyles", function(suite)
 		local success, err = pcall(parseChipStyles, { kind = { engine = { text = "Engine", color = "purple" } } })
 
 		assert.eq(success, false)
-		assert.neq(string.find(tostring(err), "must be a hex color", 1, true), nil)
+		assert.neq(tostring(err):find("must be a hex color", 1, true), nil)
 	end)
 
 	suite:case("rejects an unknown flag or field", function(assert)
 		local flagSuccess, flagErr = pcall(parseChipStyles, { flag = { api = { text = "API" } } })
 		assert.eq(flagSuccess, false)
-		assert.neq(string.find(tostring(flagErr), "`flag.api` is not a flag", 1, true), nil)
+		assert.neq(tostring(flagErr):find("`flag.api` is not a flag", 1, true), nil)
 
 		assert.throws(function()
 			parseChipStyles({ kind = { engine = { text = "Engine", color = "#7c5cff", label = "Engine" } } })
@@ -124,6 +124,6 @@ test.suite("parseChipStyles", function(suite)
 		})
 
 		assert.eq(success, false)
-		assert.neq(string.find(tostring(err), "`kind.app` and `kind.App` differ only by case", 1, true), nil)
+		assert.neq(tostring(err):find("`kind.app` and `kind.App` differ only by case", 1, true), nil)
 	end)
 end)

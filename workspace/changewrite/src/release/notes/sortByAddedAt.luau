@@ -2,10 +2,12 @@ local types = require("@root/release/types")
 
 type UnreleasedChange = types.UnreleasedChange
 
--- Puts entries in the order they merged, oldest first, using each entry's time
--- from `addedAt`. An entry without a time hasn't been committed yet, so it's
--- newer than the rest and goes last. Entries with the same time keep their
--- original order.
+--[[
+	Puts entries in the order they merged, oldest first, using each entry's time
+	from `addedAt`. An entry without a time hasn't been committed yet, so it's
+	newer than the rest and goes last. Entries with the same time keep their
+	original order.
+]]
 local function sortByAddedAt(
 	entries: { UnreleasedChange },
 	addedAt: { [UnreleasedChange]: number }

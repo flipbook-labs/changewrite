@@ -1,11 +1,13 @@
 local constants = require("@root/release/constants")
 
--- A version bump rewrites the first `current = "x.y.z"` in changewrite.luau,
--- since the file has to be edited as text to keep the rest of it intact. That
--- only lands on the right value when `version.current` is written as a string
--- and nothing else in the file assigns a `current`. This checks both against
--- `current`, the version the config returned when it ran, before anything is
--- written.
+--[[
+	A version bump rewrites the first `current = "x.y.z"` in changewrite.luau,
+	since the file has to be edited as text to keep the rest of it intact. That
+	only lands on the right value when `version.current` is written as a string
+	and nothing else in the file assigns a `current`. This checks both against
+	`current`, the version the config returned when it ran, before anything is
+	written.
+]]
 local function assertConfigVersionLiteral(content: string, current: string?): ()
 	local pattern = constants.DEFAULT_PATTERNS[constants.CONFIG_FILE]
 	local matches: { string } = {}

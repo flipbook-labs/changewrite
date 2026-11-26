@@ -23,6 +23,6 @@ test.suite("parseCollapsedCategories", function(suite)
 			pcall(parseCollapsedCategories, { categories = { "Features" }, collapsed = { "Internal" } })
 
 		assert.eq(success, false)
-		assert.neq(string.find(tostring(err), 'Collapsed category "Internal" is not listed', 1, true), nil)
+		assert.neq(tostring(err):find('Collapsed category "Internal" is not listed', 1, true), nil)
 	end)
 end)

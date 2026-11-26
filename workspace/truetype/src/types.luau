@@ -13,7 +13,7 @@ export type Glyph = {
 export type Font = {
 	unitsPerEm: number,
 	capHeight: number,
-	getGlyph: (string) -> Glyph,
+	getGlyph: (character: string) -> Glyph,
 }
 
 -- Outlines converted for drawing, in pixels with y pointing down. TrueType
@@ -21,7 +21,13 @@ export type Font = {
 export type PathCommand =
 	{ op: "M", x: number, y: number }
 	| { op: "L", x: number, y: number }
-	| { op: "Q", x1: number, y1: number, x: number, y: number }
+	| {
+		op: "Q",
+		x1: number,
+		y1: number,
+		x: number,
+		y: number,
+	}
 	| { op: "Z" }
 
 export type Path = { PathCommand }

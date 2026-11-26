@@ -10,10 +10,12 @@ export type EntryOrigin = {
 	addedAt: number?,
 }
 
--- Finds the commit that added an entry file. Squash merges on GitHub end the
--- commit subject with the pull request number, such as "Add a thing (#42)", so
--- that commit names the entry's PR, and its time is when the entry merged. An
--- entry that hasn't been committed yet has neither.
+--[[
+	Finds the commit that added an entry file. Squash merges on GitHub end the
+	commit subject with the pull request number, such as "Add a thing (#42)", so
+	that commit names the entry's PR, and its time is when the entry merged. An
+	entry that hasn't been committed yet has neither.
+]]
 local function findEntryOrigin(file: path.Path): EntryOrigin
 	local result = process.run({
 		config.gitCmd,

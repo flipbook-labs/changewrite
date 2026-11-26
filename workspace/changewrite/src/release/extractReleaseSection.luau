@@ -21,10 +21,12 @@ local function extractReleaseSection(changelog: string, version: string): string
 	end
 	assert(start, `Could not find a "{target}" section in CHANGELOG.md`)
 
-	-- Only another release heading ends the section. Changewrite writes every
-	-- release as `## v<version>`, so any other `## ` line stays part of the
-	-- notes. A release heading inside fenced code, such as an entry's
-	-- description showing the changelog format, stays part of them too.
+	--[[
+		Only another release heading ends the section. Changewrite writes every
+		release as `## v<version>`, so any other `## ` line stays part of the
+		notes. A release heading inside fenced code, such as an entry's
+		description showing the changelog format, stays part of them too.
+	]]
 	local rest = table.concat(lines, "\n", start)
 	local marked = mapOutsideFences(rest, function(line)
 		return if line:match("^## v%d") then RELEASE_HEADING_MARKER else line

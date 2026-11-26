@@ -1,4 +1,5 @@
 -- Parses and steps `major.minor.patch` versions.
+local VersionComponent = require("@self/src/VersionComponent")
 local getNextVersion = require("@self/src/getNextVersion")
 local parseVersion = require("@self/src/parseVersion")
 local parseVersionComponent = require("@self/src/parseVersionComponent")
@@ -12,4 +13,5 @@ return {
 	parseVersion = parseVersion,
 	parseVersionComponent = parseVersionComponent,
 	pickHighestVersion = pickHighestVersion,
+	VersionComponent = VersionComponent,
 }

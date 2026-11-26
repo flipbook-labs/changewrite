@@ -3,6 +3,17 @@ local test = require("@std/test")
 local convertTomlConfig = require("@root/release/convertTomlConfig")
 local parseConfig = require("@root/release/parseConfig")
 
+type VersionTarget = {
+	file: string,
+	pattern: string?,
+}
+
+type VersionConfig = {
+	file: string,
+	pattern: string?,
+	mirror: { VersionTarget },
+}
+
 test.suite("convertTomlConfig", function(suite)
 	suite:case("converts each table to Luau", function(assert)
 		local converted = convertTomlConfig([[
@@ -55,8 +66,8 @@ max_summary_length = 120
 text = "Heads up"
 ]]))
 
-		assert.eq((config.flag :: any).Breaking.text, "Heads up")
-		assert.eq((config.flag :: any).breaking, nil)
+		assert.eq((config.flag :: { [string]: { text: string } }).Breaking.text, "Heads up")
+		assert.eq((config.flag :: { [string]: { text: string } }).breaking, nil)
 	end)
 
 	suite:case("keeps a kind named in snake_case as it is", function(assert)
@@ -66,7 +77,7 @@ text = "Dev tools"
 color = "#6e7781"
 ]]))
 
-		assert.neq((config.kind :: any).dev_tools, nil)
+		assert.neq((config.kind :: { [string]: unknown }).dev_tools, nil)
 	end)
 
 	suite:case("points a version target at the new file when it named changewrite.toml", function(assert)
@@ -79,7 +90,7 @@ mirror = [
   { file = "wally.toml" },
   { file = "changewrite.toml", pattern = 'current = "([^"]+)"' },
 ]
-]])) :: any
+]])) :: { version: VersionConfig }
 
 		assert.eq(config.version.file, "changewrite.luau")
 		assert.eq(config.version.pattern, nil)
@@ -93,7 +104,7 @@ mirror = [
 [version]
 file = "wally.toml"
 mirror = { file = "changewrite.toml" }
-]])) :: any
+]])) :: { version: { mirror: VersionTarget } }
 
 		assert.eq(config.version.mirror.file, "changewrite.luau")
 	end)

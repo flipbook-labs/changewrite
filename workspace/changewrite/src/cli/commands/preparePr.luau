@@ -35,7 +35,13 @@ local function preparePr()
 	end
 	local bumpKind = computeBump(bumps)
 
-	local tagExists = process.run({ config.gitCmd, "rev-parse", "-q", "--verify", `refs/tags/v{current}` }).ok
+	local tagExists = process.run({
+		config.gitCmd,
+		"rev-parse",
+		"-q",
+		"--verify",
+		`refs/tags/v{current}`,
+	}).ok
 
 	local nextVersion = resolveNextVersion(current, tagExists, bumpKind)
 	local changedFiles = stringifyPaths(prepareReleaseFiles(nextVersion, changes))

@@ -7,7 +7,8 @@ local REPLACEMENTS: { [string]: string } = {
 }
 
 local function escapeXmlAttribute(value: string): string
-	return (value:gsub("[&<>\"']", REPLACEMENTS))
+	local escaped = value:gsub("[&<>\"']", REPLACEMENTS)
+	return escaped
 end
 
 return escapeXmlAttribute

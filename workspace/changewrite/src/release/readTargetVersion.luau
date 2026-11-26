@@ -6,10 +6,9 @@ local types = require("@root/release/types")
 type VersionTarget = types.VersionTarget
 
 local function readTargetVersion(target: VersionTarget): string
-	local file = target.file
-	local content = fs.readFileToString(file)
+	local content = fs.readFileToString(target.file)
 	local version = content:match(getVersionPattern(target))
-	assert(version, `Could not find a version in {file}`)
+	assert(version, `Could not find a version in {target.file}`)
 	return version
 end
 

@@ -7,7 +7,7 @@ type Path = types.Path
 export type Canvas = {
 	width: number,
 	height: number,
-	fillPath: (Path, Color) -> (),
+	fillPath: (path: Path, color: Color) -> (),
 	toRgba: () -> buffer,
 }
 

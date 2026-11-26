@@ -27,8 +27,12 @@ local function bump()
 	local target = parser:get("version") :: string
 
 	local nextVersion: string
-	if target == "major" or target == "minor" or target == "patch" then
-		nextVersion = getNextVersion(getCurrentVersion(), target)
+	if
+		target == semver.VersionComponent.Major
+		or target == semver.VersionComponent.Minor
+		or target == semver.VersionComponent.Patch
+	then
+		nextVersion = getNextVersion(getCurrentVersion(), target :: semver.VersionComponent)
 	else
 		parseVersion(target)
 		nextVersion = target
