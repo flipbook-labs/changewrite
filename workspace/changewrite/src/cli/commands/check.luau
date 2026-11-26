@@ -200,10 +200,12 @@ local function checkChips(entries: { releaseTypes.UnreleasedChange })
 	end
 end
 
--- Reports every problem across all entries in one run, then exits if there
--- were any: entries that don't parse or are still Markdown first, then
--- summaries that break the length or one-line rules. Returns the parsed
--- entries when all of them pass.
+--[[
+	Reports every problem across all entries in one run, then exits if there
+	were any: entries that don't parse or are still Markdown first, then
+	summaries that break the length or one-line rules. Returns the parsed
+	entries when all of them pass.
+]]
 local function checkEntries(): { releaseTypes.UnreleasedChange }
 	local result = collectUnreleasedChanges()
 	local problems = table.clone(result.problems)

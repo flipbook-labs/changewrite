@@ -12,20 +12,24 @@ export type EntryFile = {
 	source: string,
 }
 
--- An error from parsing an entry arrives prefixed with the Changewrite source
--- file and line that raised it, such as a check in `parseUnreleasedChange`.
--- That position tells someone fixing the entry nothing, so the prefix is
--- dropped. Only the leading prefix goes: a syntax error keeps the line number
--- inside the entry that comes later in the message.
+--[[
+	An error from parsing an entry arrives prefixed with the Changewrite source
+	file and line that raised it, such as a check in `parseUnreleasedChange`.
+	That position tells someone fixing the entry nothing, so the prefix is
+	dropped. Only the leading prefix goes: a syntax error keeps the line number
+	inside the entry that comes later in the message.
+]]
 local function stripErrorPosition(err: unknown): string
 	local message = tostring(err)
 	return message:match("^[^\n]-:%d+: (.*)$") or message
 end
 
--- Parses every entry file, so one bad entry doesn't hide the ones after it.
--- Each file that fails to parse becomes a problem naming the file and the
--- reason, and the rest still parse into changes. Both lists come back sorted by
--- file name.
+--[[
+	Parses every entry file, so one bad entry doesn't hide the ones after it.
+	Each file that fails to parse becomes a problem naming the file and the
+	reason, and the rest still parse into changes. Both lists come back sorted by
+	file name.
+]]
 local function parseEntryFiles(files: { EntryFile }, categories: { string }?, kinds: { string }?): ParsedEntryFiles
 	local sorted = table.clone(files)
 	table.sort(sorted, function(a: EntryFile, b: EntryFile)
