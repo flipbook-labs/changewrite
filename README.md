@@ -59,7 +59,7 @@ return {
 
 [`.changes/README.md`](.changes/README.md) covers every field, including a longer `body`.
 
-Run `changewrite check` to validate a branch's entries. To fail pull requests that don't add one, run the Action again in a separate workflow triggered by `pull_request`, with `fetch-depth: 0` on checkout and `require-entry: true`. That input runs only the entry check and skips releases, so keep it out of the release workflow.
+Run `changewrite check` to validate a branch's entries. It fails a branch that adds more than one, which `maxEntriesPerPullRequest` changes. To fail pull requests that don't add one, run the Action again in a separate workflow triggered by `pull_request`, with `fetch-depth: 0` on checkout and `require-entry: true`. That input runs only the entry check and skips releases, so keep it out of the release workflow.
 
 ## Configure
 
