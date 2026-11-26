@@ -303,7 +303,7 @@ test.suite("renderRichChangelogSection", function(suite)
 		end)
 
 		assert.eq(success, false)
-		assert.neq(string.find(tostring(err), "changewrite generate", 1, true), nil)
+		assert.neq(tostring(err):find("changewrite generate", 1, true), nil)
 	end)
 
 	suite:case("links a pull request by number when the repository is unknown", function(assert)

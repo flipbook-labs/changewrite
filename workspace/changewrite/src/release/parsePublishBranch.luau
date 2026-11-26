@@ -2,12 +2,11 @@ local constants = require("@root/release/constants")
 local types = require("@root/release/types")
 
 local function parsePublishBranch(config: types.Config): string
-	local release = config.release
-	if typeof(release) ~= "table" then
+	if typeof(config.release) ~= "table" then
 		return constants.PUBLISH_BRANCH
 	end
 
-	local branch = (release :: { [string]: unknown }).branch
+	local branch = (config.release :: { [string]: unknown }).branch
 	if branch == nil then
 		return constants.PUBLISH_BRANCH
 	end

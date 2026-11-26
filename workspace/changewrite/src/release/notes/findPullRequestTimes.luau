@@ -3,10 +3,12 @@ local process = require("@std/process")
 local config = require("@root/config")
 local parsePullRequestTimes = require("@root/release/notes/parsePullRequestTimes")
 
--- Finds when each of these pull requests merged, from the commits in the
--- current history, keyed by PR number. A PR with no merging commit in the
--- history is left out. It reads the log once for all of them, since a release
--- can have dozens of entries that name their PR.
+--[[
+	Finds when each of these pull requests merged, from the commits in the
+	current history, keyed by PR number. A PR with no merging commit in the
+	history is left out. It reads the log once for all of them, since a release
+	can have dozens of entries that name their PR.
+]]
 local function findPullRequestTimes(prs: { number }): { [number]: number }
 	if #prs == 0 then
 		return {}

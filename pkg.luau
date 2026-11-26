@@ -5,7 +5,7 @@
 -- declares that package's dependencies. `lute run install` vendors every
 -- member's dependencies into this folder's `.lpm/`, so the `.lute` scripts can
 -- require them too. `dev_dependencies` here holds what no member needs, like
--- the agent-skills library that agents read.
+-- the agent-skills library that agents read and the CodeQuality lint rules.
 local function member(name: string)
 	return { sourceKind = "path", source = `./workspace/{name}` }
 end
@@ -24,6 +24,11 @@ return {
 				rev = "v0.9.0",
 				sourceKind = "github",
 				source = "https://github.com/flipbook-labs/agent-skills",
+			},
+			["code-quality"] = {
+				rev = "v0.8.0",
+				sourceKind = "github",
+				source = "https://github.com/flipbook-labs/code-quality",
 			},
 		},
 	},

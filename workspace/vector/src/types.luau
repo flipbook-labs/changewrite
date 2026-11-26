@@ -2,8 +2,22 @@
 export type PathCommand =
 	{ op: "M", x: number, y: number }
 	| { op: "L", x: number, y: number }
-	| { op: "Q", x1: number, y1: number, x: number, y: number }
-	| { op: "C", x1: number, y1: number, x2: number, y2: number, x: number, y: number }
+	| {
+		op: "Q",
+		x1: number,
+		y1: number,
+		x: number,
+		y: number,
+	}
+	| {
+		op: "C",
+		x1: number,
+		y1: number,
+		x2: number,
+		y2: number,
+		x: number,
+		y: number,
+	}
 	| { op: "Z" }
 
 export type Path = { PathCommand }

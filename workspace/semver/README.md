@@ -26,7 +26,7 @@ print(semver.getNextVersion("1.4.2", "minor")) --> 1.5.0
 print(semver.pickHighestVersion({ "1.2.0", "1.10.0", "1.9.3" })) --> 1.10.0
 ```
 
-`parseVersion` splits a version into its three numbers, and `parseVersionComponent` checks that a string is `major`, `minor`, or `patch`, erroring otherwise. Versions are plain `x.y.z`, with no `v` prefix, pre-release tag, or build metadata.
+`parseVersion` splits a version into its three numbers, and `parseVersionComponent` checks that a string is `major`, `minor`, or `patch`, erroring otherwise. `semver.VersionComponent` names those three values, as in `semver.VersionComponent.Minor`. Versions are plain `x.y.z`, with no `v` prefix, pre-release tag, or build metadata.
 
 ## Contributing
 

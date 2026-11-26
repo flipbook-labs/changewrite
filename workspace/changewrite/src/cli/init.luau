@@ -23,9 +23,9 @@ local function findSubcommand(args: { string }): (string?, number?)
 	local i = 2
 	while i <= #args do
 		local arg = args[i]
-		if string.sub(arg, 1, 2) == "--" then
+		if arg:sub(1, 2) == "--" then
 			i += 2
-		elseif string.sub(arg, 1, 1) == "-" then
+		elseif arg:sub(1, 1) == "-" then
 			i += 1
 		else
 			return arg, i

@@ -56,12 +56,14 @@ local function toHex(channel: number): string
 	return string.format("%02x", math.round(math.clamp(fromLinear(channel), 0, 1) * 255))
 end
 
--- A color picked to read on a white page is usually too dark on GitHub's dark
--- background. This returns the dark color mode's version of a chip's color:
--- the same hue and chroma, LIGHTNESS_STEP lighter in OKLCH, up to white. When
--- that lighter color is more saturated than sRGB can show, its chroma is
--- reduced until it fits. Scaling OKLab's a and b together does that while
--- keeping the hue.
+--[[
+	A color picked to read on a white page is usually too dark on GitHub's dark
+	background. This returns the dark color mode's version of a chip's color:
+	the same hue and chroma, LIGHTNESS_STEP lighter in OKLCH, up to white. When
+	that lighter color is more saturated than sRGB can show, its chroma is
+	reduced until it fits. Scaling OKLab's a and b together does that while
+	keeping the hue.
+]]
 local function deriveDarkColor(color: string): string
 	local lightness, a, b = toOklab(parseHexColor(color))
 	lightness = math.min(lightness + LIGHTNESS_STEP, 1)

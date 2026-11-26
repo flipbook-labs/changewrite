@@ -1,7 +1,9 @@
--- A summary is one line in a long list of changes. Past a short sentence it
--- reads as a paragraph a skimming reader skips, and a line break would split
--- its list item. Returns a message for each way the summary falls short, or an
--- empty list when it's fine.
+--[[
+	A summary is one line in a long list of changes. Past a short sentence it
+	reads as a paragraph a skimming reader skips, and a line break would split
+	its list item. Returns a message for each way the summary falls short, or an
+	empty list when it's fine.
+]]
 local function findSummaryProblems(summary: string, maxLength: number): { string }
 	local problems: { string } = {}
 	if summary:find("\n", 1, true) then

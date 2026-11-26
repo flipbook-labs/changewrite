@@ -1,13 +1,15 @@
 local path = require("@std/path")
 local semver = require("@workspace/semver")
 
+local ChangeFlag = require("@root/release/ChangeFlag")
+
 type VersionComponent = semver.VersionComponent
 
 -- changewrite.luau's table, as the file returned it. `validateConfigFields`
 -- checks its field names, and each parse module reads and checks one setting.
 export type Config = { [string]: unknown }
 
-export type ChangeFlag = "Breaking" | "Deprecated" | "Security"
+export type ChangeFlag = ChangeFlag.ChangeFlag
 
 export type ParsedUnreleasedChange = {
 	bump: VersionComponent,

@@ -43,7 +43,12 @@ local function draft()
 		In any case, we work around this by making sure the first release points
 		at HEAD to bootstrap the project into the Changewrite release flow.
 	]]
-	local existingTags = process.run({ config.gitCmd, "tag", "--list", "v*" })
+	local existingTags = process.run({
+		config.gitCmd,
+		"tag",
+		"--list",
+		"v*",
+	})
 	assert(existingTags.ok, existingTags.stderr)
 	local isFirstRelease = existingTags.stdout:match("%S") == nil
 
@@ -61,7 +66,12 @@ local function draft()
 		)
 	end
 
-	if process.run({ config.ghCmd, "release", "view", tag }).ok then
+	if process.run({
+		config.ghCmd,
+		"release",
+		"view",
+		tag,
+	}).ok then
 		print(`Release {tag} already exists`)
 		return
 	end

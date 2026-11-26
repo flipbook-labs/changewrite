@@ -1,16 +1,19 @@
+local ChangeFlag = require("@root/release/ChangeFlag")
 local deriveDarkColor = require("@root/chips/deriveDarkColor")
 local types = require("@root/chips/types")
 
 type ChipStyle = types.ChipStyle
 
--- The flags' built-in styles. A `flag.<name>` table in changewrite.luau
--- overrides any of these fields. Most dark colors come from deriveDarkColor.
--- Security keeps its hand-picked one, because the derived color is 0.027 from
--- it in OKLab, past the roughly 0.02 where a difference becomes noticeable.
+--[[
+	The flags' built-in styles. A `flag.<name>` table in changewrite.luau
+	overrides any of these fields. Most dark colors come from deriveDarkColor.
+	Security keeps its hand-picked one, because the derived color is 0.027 from
+	it in OKLab, past the roughly 0.02 where a difference becomes noticeable.
+]]
 local flagStyles: { [string]: ChipStyle } = {
 	Breaking = {
 		group = "flag",
-		name = "Breaking",
+		name = ChangeFlag.Breaking,
 		text = "Breaking",
 		colorMode = {
 			light = { color = "#c8264b" },
@@ -19,7 +22,7 @@ local flagStyles: { [string]: ChipStyle } = {
 	},
 	Deprecated = {
 		group = "flag",
-		name = "Deprecated",
+		name = ChangeFlag.Deprecated,
 		text = "Deprecated",
 		colorMode = {
 			light = { color = "#6b7380" },
@@ -28,7 +31,7 @@ local flagStyles: { [string]: ChipStyle } = {
 	},
 	Security = {
 		group = "flag",
-		name = "Security",
+		name = ChangeFlag.Security,
 		text = "Security",
 		colorMode = {
 			light = { color = "#d4540b" },

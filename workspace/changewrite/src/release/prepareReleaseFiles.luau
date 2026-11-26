@@ -54,10 +54,12 @@ local function prepareReleaseFiles(nextVersion: string, changes: { UnreleasedCha
 			local origin = findEntryOrigin(change.file)
 			local copy = table.clone(change)
 			copy.pr = change.pr or origin.pr
-			-- An entry that names its PR was usually added by a different one,
-			-- such as a PR that backfills entries. It sorts by when its own PR
-			-- merged, so it lands among the changes it came before. If that
-			-- merge isn't in the history, it sorts by the commit that added it.
+			--[[
+				An entry that names its PR was usually added by a different one,
+				such as a PR that backfills entries. It sorts by when its own PR
+				merged, so it lands among the changes it came before. If that
+				merge isn't in the history, it sorts by the commit that added it.
+			]]
 			local time = if change.pr then prTimes[change.pr] or origin.addedAt else origin.addedAt
 			if time then
 				addedAt[copy] = time
@@ -67,10 +69,12 @@ local function prepareReleaseFiles(nextVersion: string, changes: { UnreleasedCha
 		resolved = sortByAddedAt(resolved, addedAt)
 		local repositoryUrl = getRepositoryUrl()
 		local assetsDir = getAssetsDir()
-		-- Only chips whose files `changewrite generate` has written get markup.
-		-- An entry that uses any other chip fails to render with a message
-		-- naming that command, instead of linking an image that doesn't exist.
-		-- Files that exist but are out of date are `check`'s job to catch.
+		--[[
+			Only chips whose files `changewrite generate` has written get markup.
+			An entry that uses any other chip fails to render with a message
+			naming that command, instead of linking an image that doesn't exist.
+			Files that exist but are out of date are `check`'s job to catch.
+		]]
 		local generated: { planChips.PlannedChip } = {}
 		for _, chip in planChips(readChipStyles()) do
 			if fs.exists(path.join(assetsDir, chip.files.fallback)) then

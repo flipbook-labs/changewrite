@@ -7,11 +7,13 @@ local types = require("@root/release/types")
 
 type UnreleasedChange = types.UnreleasedChange
 
--- One entry in a category: chips, the summary (or only the highlight title,
--- where the rest is shown under Highlights), its pull request, then the
--- body collapsed below. The chips mark where each entry starts, so an
--- entry with chips needs no list marker. An entry without any keeps a bullet,
--- so it doesn't read as a stray paragraph.
+--[[
+	One entry in a category: chips, the summary (or only the highlight title,
+	where the rest is shown under Highlights), its pull request, then the
+	body collapsed below. The chips mark where each entry starts, so an
+	entry with chips needs no list marker. An entry without any keeps a bullet,
+	so it doesn't read as a stray paragraph.
+]]
 local function renderEntryText(entry: UnreleasedChange, context: notesTypes.NotesContext, isTitleOnly: boolean): string
 	local isTitle = isTitleOnly and entry.highlight ~= nil
 	local text = if isTitle and entry.highlight then entry.highlight else entry.summary

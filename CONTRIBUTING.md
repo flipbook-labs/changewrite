@@ -7,7 +7,7 @@ Changewrite uses [Rokit](https://github.com/rojo-rbx/rokit) for toolchain manage
 ```sh
 rokit install
 lute run install   # vendor dependencies into .lpm/
-lute run analyze   # run the stylua and luau-lsp checks
+lute run analyze   # run the stylua, CodeQuality lint, and luau-lsp checks
 lute run build     # compile the changewrite binary into build/
 lute test          # run the *.spec.luau test suite
 ```

@@ -13,16 +13,18 @@ export type UnlockInput = {
 	baseHead: string?,
 }
 
--- Returns the state an unlock should post, or nil to post nothing.
---
--- Commit statuses belong to commits, not pull requests, so a pull request whose
--- head is the publish branch's commit (such as one from a fork) would unlock the
--- publish PR too. The release run owns that commit's status, so an explicit sha
--- that matches it is left alone.
---
--- When the base branch has moved past the commit the publish branch was
--- refreshed from, the publish PR is missing that change, so it gets locked
--- instead. A newer release run refreshes and unlocks it.
+--[[
+	Returns the state an unlock should post, or nil to post nothing.
+
+	Commit statuses belong to commits, not pull requests, so a pull request whose
+	head is the publish branch's commit (such as one from a fork) would unlock the
+	publish PR too. The release run owns that commit's status, so an explicit sha
+	that matches it is left alone.
+
+	When the base branch has moved past the commit the publish branch was
+	refreshed from, the publish PR is missing that change, so it gets locked
+	instead. A newer release run refreshes and unlocks it.
+]]
 local function resolveUnlockState(input: UnlockInput): buildStatusArgs.State?
 	if input.isExplicitSha and input.sha == input.publishHead then
 		return nil

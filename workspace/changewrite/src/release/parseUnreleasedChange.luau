@@ -40,7 +40,7 @@ local function readFlags(value: unknown): { ChangeFlag }
 	for _, flag in value :: { unknown } do
 		assert(typeof(flag) == "string", "Unreleased change flags must be a list of strings")
 		assert(
-			table.find(constants.CHANGE_FLAGS, flag) ~= nil,
+			table.find(constants.CHANGE_FLAGS, flag :: ChangeFlag) ~= nil,
 			`Unreleased change flag "{flag}" is not supported. Expected any of: {table.concat(
 				constants.CHANGE_FLAGS,
 				", "
@@ -61,15 +61,17 @@ local function readPullRequest(value: unknown): number?
 	return value :: number?
 end
 
--- An entry is a Luau file that returns a table of its fields. `runSandboxed`
--- runs it with a limited set of globals, so a value can be computed, such as a
--- body joined from paragraphs.
---
--- `categories` and `kinds` are the lists `changewrite.luau` configures. Once a
--- repo configures either list, every entry has to pick a value from it, so no
--- entry renders without a heading or a chip. Without a `categories` list, an
--- entry may leave out its category and lands under Changes. A repo that
--- configures no kinds can't use the field.
+--[[
+	An entry is a Luau file that returns a table of its fields. `runSandboxed`
+	runs it with a limited set of globals, so a value can be computed, such as a
+	body joined from paragraphs.
+
+	`categories` and `kinds` are the lists `changewrite.luau` configures. Once a
+	repo configures either list, every entry has to pick a value from it, so no
+	entry renders without a heading or a chip. Without a `categories` list, an
+	entry may leave out its category and lands under Changes. A repo that
+	configures no kinds can't use the field.
+]]
 local function parseUnreleasedChange(
 	source: string,
 	categories: { string }?,

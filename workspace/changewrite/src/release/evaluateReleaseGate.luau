@@ -38,10 +38,12 @@ local function evaluateReleaseGate(input: GateInput): GateResult
 		}
 	end
 
-	-- An untagged version only means "publish me" when a release was actually
-	-- prepared for it (the changelog documents it). A pristine repo carrying an
-	-- untagged version has no such section, so it stays quiet instead of minting
-	-- a release nobody asked for.
+	--[[
+		An untagged version only means "publish me" when a release was actually
+		prepared for it (the changelog documents it). A pristine repo carrying an
+		untagged version has no such section, so it stays quiet instead of minting
+		a release nobody asked for.
+	]]
 	if not input.tagExists and input.releasePrepared then
 		return {
 			version = input.version,

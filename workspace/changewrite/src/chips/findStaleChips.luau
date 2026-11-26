@@ -2,11 +2,13 @@ local planChips = require("@root/chips/planChips")
 
 type PlannedChip = planChips.PlannedChip
 
--- Compares the files `changewrite generate` would write with the ones on disk,
--- and returns one line for each chip that's out of date. `drawn` maps each
--- filename to the contents just drawn for it, and `readFile` returns a file's
--- contents on disk, or nil when it's missing. Chips removed from
--- changewrite.luau aren't reported, since their files stay for past releases.
+--[[
+	Compares the files `changewrite generate` would write with the ones on disk,
+	and returns one line for each chip that's out of date. `drawn` maps each
+	filename to the contents just drawn for it, and `readFile` returns a file's
+	contents on disk, or nil when it's missing. Chips removed from
+	changewrite.luau aren't reported, since their files stay for past releases.
+]]
 local function findStaleChips(
 	planned: { PlannedChip },
 	drawn: { [string]: string },

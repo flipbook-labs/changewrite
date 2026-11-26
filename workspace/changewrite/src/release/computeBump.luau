@@ -3,9 +3,9 @@ local semver = require("@workspace/semver")
 type VersionComponent = semver.VersionComponent
 
 local RANK: { [VersionComponent]: number } = {
-	patch = 1,
-	minor = 2,
-	major = 3,
+	[semver.VersionComponent.Patch] = 1,
+	[semver.VersionComponent.Minor] = 2,
+	[semver.VersionComponent.Major] = 3,
 }
 
 local function computeBump(components: { VersionComponent }): VersionComponent?

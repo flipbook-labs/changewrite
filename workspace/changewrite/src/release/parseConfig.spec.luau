@@ -13,7 +13,7 @@ test.suite("parseConfig", function(suite)
 		local config = parseConfig('return {\n\tcategories = { "Features" },\n\tversion = { current = "1.2.3" },\n}\n')
 
 		assert.eq((config.categories :: { string })[1], "Features")
-		assert.eq((config.version :: any).current, "1.2.3")
+		assert.eq((config.version :: { current: string }).current, "1.2.3")
 	end)
 
 	suite:case("lets a value come from a local", function(assert)
@@ -28,7 +28,7 @@ return {
 }
 ]])
 
-		assert.eq((config.kind :: any).runtime.color, "#7c5cff")
+		assert.eq((config.kind :: { runtime: { color: string } }).runtime.color, "#7c5cff")
 	end)
 
 	suite:case("rejects a config that requires a module", function(assert)
