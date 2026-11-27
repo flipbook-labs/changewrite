@@ -2,8 +2,13 @@ local test = require("@std/test")
 
 local renderPreviewComment = require("@root/release/renderPreviewComment")
 
-local LEAD =
-	"**Changelog preview:** how this pull request's entries will read in the next release. Other entries and sections are cut, and … marks each cut."
+local LEAD = table.concat({
+	"# Changelog Preview",
+	"",
+	"Below is your change in context of next release's changelog. Use this to inform how you write your changelog entry, so it fits well with the others.",
+	"",
+	"See [Changewrite](https://github.com/flipbook-labs/changewrite) for more.",
+}, "\n")
 
 test.suite("renderPreviewComment", function(suite)
 	suite:case("puts the excerpt under a rule after the lead", function(assert)

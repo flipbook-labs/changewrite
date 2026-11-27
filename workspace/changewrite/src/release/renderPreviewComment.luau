@@ -1,5 +1,3 @@
-local constants = require("@root/release/constants")
-
 export type PreviewCommentInput = {
 	-- The excerpt of the next release's CHANGELOG.md section.
 	section: string,
@@ -15,7 +13,11 @@ export type PreviewCommentInput = {
 -- The preview of a pull request's changelog entries, as Markdown.
 local function renderPreviewComment(input: PreviewCommentInput): string
 	local lines = {
-		`**Changelog preview:** how this pull request's entries will read in the next release. Other entries and sections are cut, and {constants.EXCERPT_CUT} marks each cut.`,
+		"# Changelog Preview",
+		"",
+		"Below is your change in context of next release's changelog. Use this to inform how you write your changelog entry, so it fits well with the others.",
+		"",
+		"See [Changewrite](https://github.com/flipbook-labs/changewrite) for more.",
 	}
 
 	if input.versionWithout and input.versionWithout ~= input.version then
