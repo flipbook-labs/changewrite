@@ -117,7 +117,11 @@ local function syncComment(repo: string, pullRequest: number, body: string?)
 	})
 	local existingIds: { number } = {}
 	for _, line in splitLines(listed) do
-		table.insert(existingIds, assert(tonumber(line), `gh listed a comment id that isn't a number: {line}`))
+		-- With no preview comment yet, gh prints nothing, which splits into one
+		-- empty line.
+		if line ~= "" then
+			table.insert(existingIds, assert(tonumber(line), `gh listed a comment id that isn't a number: {line}`))
+		end
 	end
 
 	for _, planned in planPreviewComment(existingIds, body) do
