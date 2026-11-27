@@ -1,4 +1,7 @@
+local constants = require("@root/release/constants")
+local excerptItems = require("@root/release/excerptItems")
 local isBreaking = require("@root/release/notes/isBreaking")
+local isFocused = require("@root/release/notes/isFocused")
 local notesTypes = require("@root/release/notes/types")
 local renderChips = require("@root/release/notes/renderChips")
 local renderPullRequestLink = require("@root/release/notes/renderPullRequestLink")
@@ -18,11 +21,13 @@ end
 
 local function renderHighlights(entries: { UnreleasedChange }, context: notesTypes.NotesContext): string?
 	local blocks: { string } = {}
+	local focused: { boolean } = {}
 	for _, entry in entries do
 		local title = entry.highlight
 		if title == nil then
 			continue
 		end
+		table.insert(focused, isFocused(entry, context))
 
 		local chips = renderChips(entry, context.chips)
 		-- A bold line rather than a heading, because GitHub renders heading text
@@ -45,6 +50,14 @@ local function renderHighlights(entries: { UnreleasedChange }, context: notesTyp
 			text ..= `\n\n{entry.body}`
 		end
 		table.insert(blocks, quote(`{heading}\n\n{text}`))
+	end
+
+	if context.focus then
+		local excerpt = excerptItems(blocks, focused, constants.EXCERPT_NEIGHBORS)
+		if excerpt == nil then
+			return nil
+		end
+		blocks = excerpt
 	end
 
 	if #blocks == 0 then

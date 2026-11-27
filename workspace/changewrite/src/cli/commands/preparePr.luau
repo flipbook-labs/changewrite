@@ -1,13 +1,9 @@
 local cli = require("@lpm/batteries@v1.0.1-nightly.20261115/cli")
 local json = require("@std/json")
-local process = require("@std/process")
 
-local computeBump = require("@root/release/computeBump")
-local config = require("@root/config")
-local getCurrentVersion = require("@root/release/getCurrentVersion")
 local prepareReleaseFiles = require("@root/release/prepareReleaseFiles")
 local readUnreleasedChanges = require("@root/release/readUnreleasedChanges")
-local resolveNextVersion = require("@root/release/resolveNextVersion")
+local resolveReleaseVersion = require("@root/release/resolveReleaseVersion")
 local stringifyPaths = require("@root/stringifyPaths")
 local types = require("@root/cli/types")
 
@@ -20,8 +16,6 @@ parser:add("help", "flag", {
 })
 
 local function preparePr()
-	local current = getCurrentVersion()
-
 	local changes = readUnreleasedChanges()
 	assert(
 		#changes > 0,
@@ -29,21 +23,7 @@ local function preparePr()
 			.. "Add a markdown entry under the configured unreleased_changes directory."
 	)
 
-	local bumps = {}
-	for _, change in changes do
-		table.insert(bumps, change.bump)
-	end
-	local bumpKind = computeBump(bumps)
-
-	local tagExists = process.run({
-		config.gitCmd,
-		"rev-parse",
-		"-q",
-		"--verify",
-		`refs/tags/v{current}`,
-	}).ok
-
-	local nextVersion = resolveNextVersion(current, tagExists, bumpKind)
+	local nextVersion = resolveReleaseVersion(changes)
 	local changedFiles = stringifyPaths(prepareReleaseFiles(nextVersion, changes))
 
 	print(json.serialize({

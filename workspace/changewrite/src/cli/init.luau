@@ -13,6 +13,7 @@ local initCommand = require("@self/commands/initProject")
 local lockCommand = require("@self/commands/lock")
 local notesCommand = require("@self/commands/notes")
 local preparePrCommand = require("@self/commands/preparePr")
+local previewCommand = require("@self/commands/preview")
 local publishCommand = require("@self/commands/publish")
 local unlockCommand = require("@self/commands/unlock")
 
@@ -44,6 +45,7 @@ local availableCommands: { [string]: types.Command } = {
 	["prepare-pr"] = preparePrCommand,
 	bump = bumpCommand,
 	check = checkCommand,
+	preview = previewCommand,
 	generate = generateCommand,
 	branches = branchesCommand,
 	lock = lockCommand,

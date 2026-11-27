@@ -53,6 +53,7 @@ jobs:
     timeout-minutes: 5
     if: github.event_name == 'pull_request'
     permissions:
+      pull-requests: write
       statuses: write
     steps:
       - uses: actions/checkout@v7
@@ -79,6 +80,7 @@ jobs:
       - uses: ./
         with:
           require-entry: 'true'
+          preview-comment: 'true'
 
       - uses: ./publish-lock
         if: github.head_ref != 'publish-next-version'

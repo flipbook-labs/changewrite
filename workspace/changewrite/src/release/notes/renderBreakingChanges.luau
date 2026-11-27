@@ -1,4 +1,7 @@
+local constants = require("@root/release/constants")
+local excerptItems = require("@root/release/excerptItems")
 local isBreaking = require("@root/release/notes/isBreaking")
+local isFocused = require("@root/release/notes/isFocused")
 local notesTypes = require("@root/release/notes/types")
 local renderChips = require("@root/release/notes/renderChips")
 local renderPullRequestLink = require("@root/release/notes/renderPullRequestLink")
@@ -8,6 +11,7 @@ type UnreleasedChange = types.UnreleasedChange
 
 local function renderBreakingChanges(entries: { UnreleasedChange }, context: notesTypes.NotesContext): string?
 	local items: { string } = {}
+	local focused: { boolean } = {}
 	for _, entry in entries do
 		if not isBreaking(entry) then
 			continue
@@ -28,6 +32,15 @@ local function renderBreakingChanges(entries: { UnreleasedChange }, context: not
 		else
 			table.insert(items, lead .. text)
 		end
+		table.insert(focused, isFocused(entry, context))
+	end
+
+	if context.focus then
+		local excerpt = excerptItems(items, focused, constants.EXCERPT_NEIGHBORS)
+		if excerpt == nil then
+			return nil
+		end
+		items = excerpt
 	end
 
 	if #items == 0 then

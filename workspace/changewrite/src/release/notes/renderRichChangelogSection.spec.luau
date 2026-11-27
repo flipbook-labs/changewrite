@@ -44,6 +44,15 @@ local function entry(summary: string, fields: EntryFields): UnreleasedChange
 	}
 end
 
+-- The focus for a changelog preview of the entries with these summaries.
+local function focusOn(...: string): types.Focus
+	local focus: types.Focus = {}
+	for _, summary in { ... } do
+		focus[tostring(path.parse(summary))] = true
+	end
+	return focus
+end
+
 test.suite("renderRichChangelogSection", function(suite)
 	suite:case("lays out a release from action to information", function(assert)
 		local section = renderRichChangelogSection("2.0.0", {
@@ -352,5 +361,181 @@ test.suite("renderRichChangelogSection", function(suite)
 		assert.eq(section:find("\n## ", 1, true), nil)
 		assert.neq(section:find("> #### Migration", 1, true), nil)
 		assert.neq(section:find("#### Why", 1, true), nil)
+	end)
+	suite:case("previews a breaking entry with the banner, the stats line, and its section", function(assert)
+		local section = renderRichChangelogSection("2.0.0", {
+			entry("Remove the old loader.", {
+				category = "Features",
+				kind = "engine",
+				flags = { "Breaking" },
+				pr = 9,
+				body = "Call the new loader instead.",
+			}),
+			entry("Fix a crash on reload.", { category = "Fixes", kind = "ui", pr = 7 }),
+			entry("Restructure CI.", { category = "Internal", pr = 3 }),
+		}, {
+			categories = { "Features", "Fixes", "Internal" },
+			collapsed = { "Internal" },
+			repositoryUrl = REPO,
+			chips = CHIPS,
+			focus = focusOn("Remove the old loader."),
+		})
+
+		assert.eq(
+			section,
+			table.concat({
+				"## v2.0.0",
+				"",
+				"> [!WARNING]",
+				"> Action required: this release has breaking changes. Each one under [Breaking changes](#breaking-changes) says what changed.",
+				"",
+				"Breaking 1 · Fixes 1 · Internal 1",
+				"",
+				"### Breaking changes",
+				"",
+				`[engine] [breaking] Remove the old loader. ([#9]({REPO}/pull/9))`,
+				"",
+				"Call the new loader instead.",
+				"",
+				"…",
+			}, "\n")
+		)
+	end)
+
+	suite:case("cuts a category down to the focused entry and one neighbor on each side", function(assert)
+		local entries = { entry("Add a thing.", { category = "Features" }) }
+		for index = 1, 5 do
+			table.insert(entries, entry(`Fix {index}.`, { category = "Fixes" }))
+		end
+
+		local section = renderRichChangelogSection("1.0.1", entries, {
+			categories = { "Features", "Fixes" },
+			collapsed = {},
+			focus = focusOn("Fix 3."),
+		})
+
+		assert.eq(
+			section,
+			table.concat({
+				"## v1.0.1",
+				"",
+				"Features 1 · Fixes 5",
+				"",
+				"…",
+				"",
+				"### Fixes",
+				"",
+				"…",
+				"",
+				"- Fix 2.",
+				"",
+				"- Fix 3.",
+				"",
+				"- Fix 4.",
+				"",
+				"…",
+			}, "\n")
+		)
+	end)
+
+	suite:case("keeps a collapsed category's toggle and full count when the focused entry is folded", function(assert)
+		local entries: { UnreleasedChange } = {}
+		for index = 1, 5 do
+			table.insert(entries, entry(`Chore {index}.`, { category = "Internal" }))
+		end
+
+		local section = renderRichChangelogSection("1.0.1", entries, {
+			categories = { "Internal" },
+			collapsed = { "Internal" },
+			collapsedVisible = 2,
+			focus = focusOn("Chore 5."),
+		})
+
+		assert.eq(
+			section,
+			table.concat({
+				"## v1.0.1",
+				"",
+				"Internal 5",
+				"",
+				"### Internal",
+				"",
+				"…",
+				"",
+				"<details>",
+				"<summary>See 3 more</summary>",
+				"",
+				"…",
+				"",
+				"- Chore 4.",
+				"",
+				"- Chore 5.",
+				"",
+				"</details>",
+			}, "\n")
+		)
+	end)
+
+	suite:case("cuts a collapsed category's folded entries when the focused entry is visible", function(assert)
+		local entries: { UnreleasedChange } = {}
+		for index = 1, 5 do
+			table.insert(entries, entry(`Chore {index}.`, { category = "Internal" }))
+		end
+
+		local section = renderRichChangelogSection("1.0.1", entries, {
+			categories = { "Internal" },
+			collapsed = { "Internal" },
+			collapsedVisible = 2,
+			focus = focusOn("Chore 1."),
+		})
+
+		assert.strContains(
+			section,
+			table.concat({
+				"### Internal",
+				"",
+				"- Chore 1.",
+				"",
+				"- Chore 2.",
+				"",
+				"<details>",
+				"<summary>See 3 more</summary>",
+				"",
+				"…",
+				"",
+				"</details>",
+			}, "\n")
+		)
+	end)
+
+	suite:case("shows the TL;DR built from highlights when a focused entry is highlighted", function(assert)
+		local section = renderRichChangelogSection("1.2.0", {
+			entry("One.", { highlight = "Alpha" }),
+			entry("Two.", { highlight = "Beta" }),
+		}, {
+			collapsed = {},
+			focus = focusOn("One."),
+		})
+
+		assert.strContains(section, "## v1.2.0\n\nHighlights: Alpha and Beta.\n\nChanges 2\n\n### Highlights")
+	end)
+
+	suite:case("cuts a hand-written TL;DR and a banner no focused entry calls for", function(assert)
+		local section = renderRichChangelogSection("2.0.0", {
+			entry("Remove the old loader.", { flags = { "Breaking" } }),
+			entry("Add a thing.", { highlight = "A thing" }),
+		}, {
+			collapsed = {},
+			summary = {
+				file = path.parse("release.md"),
+				tldr = "A big release.",
+			},
+			chips = CHIPS,
+			focus = focusOn("Add a thing."),
+		})
+
+		assert.strContains(section, "## v2.0.0\n\n…\n\nBreaking 1 · Changes 1\n\n…\n\n### Highlights")
+		assert.eq(section:find("A big release.", 1, true), nil)
+		assert.eq(section:find("[!WARNING]", 1, true), nil)
 	end)
 end)

@@ -61,6 +61,8 @@ return {
 
 Run `changewrite check` to validate a branch's entries. It fails a branch that adds more than one, which `maxEntriesPerPullRequest` changes. To fail pull requests that don't add one, run the Action again in a separate workflow triggered by `pull_request`, with `fetch-depth: 0` on checkout and `require-entry: true`. That input runs only the entry check and skips releases, so keep it out of the release workflow.
 
+Run `changewrite preview` to see how a branch's entries will read in the next release. It shows the version heading, the sections the entries land in with the entries around them, and any banner or Breaking changes section they add, and marks everything it leaves out with `…`. To post that preview on each pull request, add `preview-comment: true` next to `require-entry: true` and give the job `pull-requests: write`.
+
 ## Configure
 
 `changewrite.luau` returns the settings as a table: the current version, the files it's mirrored into, and the categories and kinds entries can use. The publish PR's title and body, and hooks that run after the release is drafted or published, are Action inputs.

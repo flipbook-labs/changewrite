@@ -93,6 +93,15 @@ inputs:
       only this check and skips the release flow.
     required: false
     default: "false"
+  preview-comment:
+    description: >-
+      Post a comment on the pull request that previews how its changelog entries
+      will read in the next release, keep it up to date on each run, and delete
+      it once the pull request adds no entries. Runs only for pull_request
+      events, and skips pull requests from forks, whose token can't comment.
+      Set it alongside require-entry, and grant the job pull-requests: write.
+    required: false
+    default: "false"
   post-draft-hook:
     description: >-
       Bash run after the draft release is created, before it is published. Use it
@@ -144,6 +153,20 @@ runs:
       env:
         GH_TOKEN: ${{ inputs.github-token }}
       run: bash "$GITHUB_ACTION_PATH/scripts/install-changewrite.sh"
+
+    # Runs before the entry check, so a pull request that removes its last
+    # entry still gets its preview comment deleted when that check fails.
+    - name: Preview changelog entries
+      if: inputs.preview-comment == 'true' && github.event_name == 'pull_request'
+      shell: bash
+      env:
+        BASE_REF: ${{ github.base_ref }}
+        GH_TOKEN: ${{ inputs.github-token }}
+      run: |
+        set -euo pipefail
+
+        git fetch --no-tags origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+        "$CHANGEWRITE_BIN" preview --comment
 
     - name: Require an unreleased change entry
       if: inputs.require-entry == 'true'

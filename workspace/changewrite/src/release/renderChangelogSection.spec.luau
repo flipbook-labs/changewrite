@@ -139,4 +139,29 @@ test.suite("renderChangelogSection", function(suite)
 
 		assert.eq(section:match("^## (%S+)"), "v2.1.0")
 	end)
+
+	suite:case("previews only the categories with focused entries, cutting the rest", function(assert)
+		local section = renderChangelogSection("0.4.0", {
+			entry("minor", "Features", "Add one thing."),
+			entry("minor", "Features", "Add another thing."),
+			entry("patch", "Fixes", "Fix a crash.", "It happened on reload."),
+		}, { "Features", "Fixes" }, {
+			[tostring(path.parse("Fix a crash."))] = true,
+		})
+
+		assert.eq(
+			section,
+			table.concat({
+				"## v0.4.0",
+				"",
+				"…",
+				"",
+				"### Fixes",
+				"",
+				"- Fix a crash.",
+				"",
+				"  It happened on reload.",
+			}, "\n")
+		)
+	end)
 end)
