@@ -8,6 +8,7 @@ local constants = require("@root/release/constants")
 local findBranchEntries = require("@root/release/findBranchEntries")
 local getPullRequestNumber = require("@root/release/getPullRequestNumber")
 local isSameRepositoryPullRequest = require("@root/release/isSameRepositoryPullRequest")
+local parseCommentIds = require("@root/release/parseCommentIds")
 local planPreviewComment = require("@root/release/planPreviewComment")
 local readCollapsedCategories = require("@root/release/readCollapsedCategories")
 local readGithubEvent = require("@root/release/readGithubEvent")
@@ -18,7 +19,6 @@ local renderPreviewComment = require("@root/release/renderPreviewComment")
 local renderReleaseSection = require("@root/release/renderReleaseSection")
 local resolveBaseBranch = require("@root/release/resolveBaseBranch")
 local resolveReleaseVersion = require("@root/release/resolveReleaseVersion")
-local splitLines = require("@root/release/splitLines")
 local types = require("@root/cli/types")
 local usesRichNotes = require("@root/release/notes/usesRichNotes")
 
@@ -115,14 +115,7 @@ local function syncComment(repo: string, pullRequest: number, body: string?)
 		"--jq",
 		`.[] | select(.body | startswith("{constants.PREVIEW_COMMENT_MARKER}")) | .id`,
 	})
-	local existingIds: { number } = {}
-	for _, line in splitLines(listed) do
-		-- With no preview comment yet, gh prints nothing, which splits into one
-		-- empty line.
-		if line ~= "" then
-			table.insert(existingIds, assert(tonumber(line), `gh listed a comment id that isn't a number: {line}`))
-		end
-	end
+	local existingIds = parseCommentIds(listed)
 
 	for _, planned in planPreviewComment(existingIds, body) do
 		if planned.step == PreviewCommentStep.Create and body then
