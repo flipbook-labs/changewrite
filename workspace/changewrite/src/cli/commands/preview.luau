@@ -3,9 +3,11 @@ local path = require("@std/path")
 local process = require("@std/process")
 
 local PreviewCommentStep = require("@root/release/PreviewCommentStep")
+local chomp = require("@root/chomp")
 local config = require("@root/config")
 local constants = require("@root/release/constants")
 local findBranchEntries = require("@root/release/findBranchEntries")
+local getPullRequestHeadSha = require("@root/release/getPullRequestHeadSha")
 local getPullRequestNumber = require("@root/release/getPullRequestNumber")
 local isSameRepositoryPullRequest = require("@root/release/isSameRepositoryPullRequest")
 local parseCommentIds = require("@root/release/parseCommentIds")
@@ -108,12 +110,17 @@ end
 
 -- Makes the pull request's preview comment match `body`.
 local function syncComment(repo: string, pullRequest: number, body: string?)
+	--[[
+		Only a bot posts the preview, whether through GITHUB_TOKEN or a GitHub
+		App token, so a person's comment that quotes the marker is never
+		taken for it and overwritten.
+	]]
 	local listed = runGh({
 		"api",
 		"--paginate",
 		`repos/{repo}/issues/{pullRequest}/comments`,
 		"--jq",
-		`.[] | select(.body | startswith("{constants.PREVIEW_COMMENT_MARKER}")) | .id`,
+		`.[] | select(.user.type == "Bot" and (.body | startswith("{constants.PREVIEW_COMMENT_MARKER}"))) | .id`,
 	})
 	local existingIds = parseCommentIds(listed)
 
@@ -170,6 +177,24 @@ local function run()
 	local repo = process.env.GITHUB_REPOSITORY
 	assert(repo and repo ~= "", "--comment needs GITHUB_REPOSITORY, which GitHub Actions sets.")
 	local preview = renderPreview(pullRequest)
+
+	--[[
+		Runs for successive pushes can overlap, so a run that finishes after a
+		newer push could overwrite that push's preview with an older one. Only
+		the run for the pull request's current head writes.
+	]]
+	local runHead = getPullRequestHeadSha(event)
+	local currentHead = chomp(runGh({
+		"api",
+		`repos/{repo}/pulls/{pullRequest}`,
+		"--jq",
+		".head.sha",
+	}))
+	if runHead ~= currentHead then
+		print(`Skipping the changelog preview comment, since #{pullRequest} has moved on to {currentHead}.`)
+		return
+	end
+
 	syncComment(repo, pullRequest, if preview then `{constants.PREVIEW_COMMENT_MARKER}\n{preview}` else nil)
 end
 
