@@ -26,6 +26,9 @@ export type UnreleasedChange = ParsedUnreleasedChange & {
 	file: path.Path,
 }
 
+-- The entry files a changelog preview is about, keyed by path.
+export type Focus = { [string]: true }
+
 -- Something wrong with one entry file, and the file it's in.
 export type EntryProblem = {
 	file: path.Path,

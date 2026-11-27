@@ -1,5 +1,8 @@
+local ChangeFlag = require("@root/release/ChangeFlag")
 local demoteHeadings = require("@root/release/notes/demoteHeadings")
+local excerptItems = require("@root/release/excerptItems")
 local isBreaking = require("@root/release/notes/isBreaking")
+local isFocused = require("@root/release/notes/isFocused")
 local notesTypes = require("@root/release/notes/types")
 local renderActionBanner = require("@root/release/notes/renderActionBanner")
 local renderBreakingChanges = require("@root/release/notes/renderBreakingChanges")
@@ -21,11 +24,50 @@ export type RichSectionOptions = {
 	summary: ReleaseSummary?,
 	repositoryUrl: string?,
 	chips: notesTypes.ChipMarkup?,
+	-- Renders a changelog preview of these entry files instead of the whole
+	-- section. See `NotesContext.focus`.
+	focus: types.Focus?,
 }
 
--- Lays the section out so what a reader has to act on comes before what is
--- only informational: banner, TL;DR, breaking changes, highlights, then each
--- category, with collapsed categories last.
+-- In a changelog preview, the banner shows when one of the focused entries
+-- calls for it.
+local function isBannerFocused(entries: { UnreleasedChange }, context: notesTypes.NotesContext): boolean
+	for _, entry in entries do
+		if isFocused(entry, context) and (isBreaking(entry) or table.find(entry.flags, ChangeFlag.Security)) then
+			return true
+		end
+	end
+	return false
+end
+
+-- In a changelog preview, the TL;DR shows when it's built from highlight
+-- titles and one of them is a focused entry's.
+local function isTldrFocused(
+	summary: ReleaseSummary?,
+	entries: { UnreleasedChange },
+	context: notesTypes.NotesContext
+): boolean
+	if summary then
+		return false
+	end
+	for _, entry in entries do
+		if isFocused(entry, context) and entry.highlight then
+			return true
+		end
+	end
+	return false
+end
+
+--[[
+	Lays the section out so what a reader has to act on comes before what is
+	only informational: banner, TL;DR, breaking changes, highlights, then each
+	category, with collapsed categories last.
+
+	A changelog preview keeps the same layout but shows only the parts its
+	focused entries appear in or change, and replaces each run of parts it
+	leaves out with one excerpt marker. The stats line always shows, since
+	every entry changes its counts.
+]]
 local function renderRichChangelogSection(
 	version: string,
 	entries: { UnreleasedChange },
@@ -68,33 +110,53 @@ local function renderRichChangelogSection(
 		table.sort(categories)
 	end
 
-	local blocks: { string } = {}
-	local function add(block: string?)
-		if block then
-			table.insert(blocks, block)
-		end
-	end
-
 	local context: notesTypes.NotesContext = {
 		repositoryUrl = options.repositoryUrl,
 		chips = options.chips or {},
 	}
+	local focusContext: notesTypes.NotesContext = table.clone(context)
+	focusContext.focus = options.focus
 
-	add(renderActionBanner(entries))
-	add(renderReleaseTldr(summary, entries))
-	add(renderStatsLine(entries, categories))
-	add(renderBreakingChanges(entries, context))
-	add(renderHighlights(entries, context))
+	-- Each part of the section as the full release renders it, and whether a
+	-- changelog preview shows it. A part the release doesn't have is skipped.
+	local parts: { string } = {}
+	local focusedParts: { boolean } = {}
+	local function add(part: string?, focusedPart: string?)
+		if part then
+			table.insert(parts, focusedPart or part)
+			table.insert(focusedParts, focusedPart ~= nil)
+		end
+	end
 
+	local banner = renderActionBanner(entries)
+	add(banner, if isBannerFocused(entries, focusContext) then banner else nil)
+	local tldr = renderReleaseTldr(summary, entries)
+	add(tldr, if isTldrFocused(summary, entries, focusContext) then tldr else nil)
+	local stats = renderStatsLine(entries, categories)
+	add(stats, stats)
+	add(renderBreakingChanges(entries, context), renderBreakingChanges(entries, focusContext))
+	add(renderHighlights(entries, context), renderHighlights(entries, focusContext))
+
+	local function addCategory(category: string, visibleCount: number)
+		add(
+			renderCategory(category, byCategory[category], context, visibleCount),
+			renderCategory(category, byCategory[category], focusContext, visibleCount)
+		)
+	end
 	for _, category in categories do
 		if byCategory[category] and not table.find(options.collapsed, category) then
-			add(renderCategory(category, byCategory[category], context, math.huge))
+			addCategory(category, math.huge)
 		end
 	end
 	for _, category in categories do
 		if byCategory[category] and table.find(options.collapsed, category) then
-			add(renderCategory(category, byCategory[category], context, options.collapsedVisible or math.huge))
+			addCategory(category, options.collapsedVisible or math.huge)
 		end
+	end
+
+	local blocks = parts
+	if options.focus then
+		blocks = excerptItems(parts, focusedParts, 0) or {}
 	end
 
 	local section = `## v{plain}`

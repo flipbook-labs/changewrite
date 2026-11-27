@@ -36,6 +36,11 @@ return {
 		"Dependencies",
 	},
 	DEFAULT_PATTERNS = DEFAULT_PATTERNS,
+	-- The line a changelog preview puts where it leaves out entries or sections.
+	EXCERPT_CUT = "…",
+	-- How many entries a changelog preview keeps on each side of one the pull
+	-- request adds, so the preview shows where that entry lands.
+	EXCERPT_NEIGHBORS = 1,
 	DEFAULT_UNRELEASED_CHANGES_DIR = "./.changes/",
 	MIRROR_MANIFESTS = MIRROR_MANIFESTS,
 	-- Maps a manifest to the newer manifest that replaces it. Lute reads
@@ -47,6 +52,9 @@ return {
 	-- The commit-status context the publish lock posts under. Make this a
 	-- required status check on the base branch for the lock to block a merge.
 	PUBLISH_LOCK_CONTEXT = "publish-lock",
+	-- Starts the body of the pull request comment `changewrite preview --comment`
+	-- posts, so a later run finds that comment to update or delete it.
+	PREVIEW_COMMENT_MARKER = "<!-- changewrite-preview -->",
 
 	-- The branch a release run regenerates the publish PR on when
 	-- `release.branch` is unset. Mirrors the action's `branch` input default.

@@ -12,6 +12,7 @@ local initCommand = require("@root/cli/commands/initProject")
 local lockCommand = require("@root/cli/commands/lock")
 local notesCommand = require("@root/cli/commands/notes")
 local preparePrCommand = require("@root/cli/commands/preparePr")
+local previewCommand = require("@root/cli/commands/preview")
 local publishCommand = require("@root/cli/commands/publish")
 local unlockCommand = require("@root/cli/commands/unlock")
 
@@ -58,6 +59,10 @@ local function run()
 			{
 				name = "check",
 				description = checkCommand.summary,
+			},
+			{
+				name = "preview",
+				description = previewCommand.summary,
 			},
 			{
 				name = "generate",
